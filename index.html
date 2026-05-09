@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Trang chuyển hướng / On Thi</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;max-width:900px;margin:40px auto;padding:0 20px;color:#111}
+    header{margin-bottom:1rem}
+    a{color:#0b63d6}
+    .note{color:#555;font-size:0.95rem}
+    ul{line-height:1.6}
+    input{padding:.4rem;margin-right:.5rem}
+    .redirect-box{margin-top:1rem}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Chọn trang để mở</h1>
+    <p class="note">Bạn có thể bấm một trong các liên kết bên dưới, hoặc thêm <code>?p=ten-file.html</code> vào URL để tự động chuyển hướng.</p>
+  </header>
+
+  <main>
+    <ul>
+      <li><a href="chuan-hoa-phan-ra-csdl.html">chuan-hoa-phan-ra-csdl.html</a></li>
+      <li><a href="dai-so-quan-he.html">dai-so-quan-he.html</a></li>
+      <li><a href="dang_chuan_db.html">dang_chuan_db.html</a></li>
+      <li><a href="database-concepts-vi.html">database-concepts-vi.html</a></li>
+      <li><a href="dslk_kep_flashcards.html">dslk_kep_flashcards.html</a></li>
+      <li><a href="erd-review.html">erd-review.html</a></li>
+      <li><a href="flashcard_dequy.html">flashcard_dequy.html</a></li>
+      <li><a href="on-tap-csdl-quan-he.html">on-tap-csdl-quan-he.html</a></li>
+      <li><a href="on-tap-phu-thuoc-ham.html">on-tap-phu-thuoc-ham.html</a></li>
+      <li><a href="onthi_v5.html">onthi_v5.html</a></li>
+      <li><a href="sql-onthi.html">sql-onthi.html</a></li>
+    </ul>
+
+    <div class="redirect-box">
+      <label for="page">Chuyển hướng nhanh:</label>
+      <input id="page" placeholder="vd: onthi_v5.html"/>
+      <button id="go">Mở</button>
+    </div>
+  </main>
+
+  <script>
+    function redirectTo(page){
+      if(!page) return;
+      try{
+        var p = String(page).trim();
+        if(!/^[a-zA-Z0-9_\-\.]+\.html$/.test(p)) return;
+        window.location.href = p;
+      }catch(e){/*ignore*/}
+    }
+
+    const params = new URLSearchParams(location.search);
+    const p = params.get('p') || params.get('page');
+    if(p){
+      redirectTo(p);
+    }
+
+    document.getElementById('go').addEventListener('click', function(){
+      const val = document.getElementById('page').value;
+      redirectTo(val);
+    });
+    document.getElementById('page').addEventListener('keyup', function(e){ if(e.key==='Enter') document.getElementById('go').click(); });
+  </script>
+</body>
+</html>
