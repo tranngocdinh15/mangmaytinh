@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flashcard Đệ Quy – Ôn Thi Trắc Nghiệm</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --card-front: #1a2332;
+    --card-back: #1a2d1a;
+    --accent: #58e06a;
+    --accent2: #f7c948;
+    --accent3: #58b4e0;
+    --accent4: #e05878;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --border: #30363d;
+    --radius: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Baloo 2', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-top: 6px;
+  }
+
+  /* PROGRESS */
+  .progress-bar-wrap {
+    max-width: 700px;
+    margin: 0 auto 32px;
+    background: var(--border);
+    border-radius: 99px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+  .progress-label {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+  }
+
+  /* CARD AREA */
+  .card-area {
+    max-width: 700px;
+    margin: 0 auto;
+    perspective: 1200px;
+  }
+
+  .card-wrapper {
+    width: 100%;
+    min-height: 320px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .card {
+    width: 100%;
+    min-height: 320px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(.4,0,.2,1);
+    border-radius: var(--radius);
+  }
+
+  .card.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute;
+    width: 100%;
+    min-height: 320px;
+    backface-visibility: hidden;
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1.5px solid var(--border);
+  }
+
+  .card-front {
+    background: var(--card-front);
+    border-top: 4px solid var(--accent3);
+  }
+
+  .card-back {
+    background: var(--card-back);
+    border-top: 4px solid var(--accent);
+    transform: rotateY(180deg);
+  }
+
+  .card-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent3);
+    margin-bottom: 14px;
+  }
+
+  .card-back .card-tag { color: var(--accent); }
+
+  .card-question {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    font-weight: 700;
+    line-height: 1.55;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .card-hint {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-hint svg { flex-shrink: 0; }
+
+  .card-answer {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .tip-box {
+    margin-top: 18px;
+    background: rgba(88,224,106,0.08);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    color: var(--accent);
+    line-height: 1.5;
+  }
+  .tip-box strong { color: var(--accent2); }
+
+  code {
+    font-family: 'Fira Code', monospace;
+    background: rgba(255,255,255,0.07);
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.88em;
+    color: var(--accent2);
+  }
+
+  pre {
+    font-family: 'Fira Code', monospace;
+    background: rgba(0,0,0,0.35);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 0.8rem;
+    color: #cdd9e5;
+    overflow-x: auto;
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+
+  /* NAV BUTTONS */
+  .nav {
+    max-width: 700px;
+    margin: 24px auto 0;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 10px 26px;
+    border-radius: 99px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.15s;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn-prev { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+  .btn-prev:hover { border-color: var(--muted); }
+  .btn-flip { background: var(--accent3); color: #0d1117; }
+  .btn-flip:hover { opacity: 0.88; }
+  .btn-next { background: var(--accent); color: #0d1117; }
+  .btn-next:hover { opacity: 0.88; }
+
+  /* CATEGORY CHIPS */
+  .cats {
+    max-width: 700px;
+    margin: 0 auto 28px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .cat-chip {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 99px;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.2s;
+    background: var(--surface);
+    color: var(--muted);
+  }
+  .cat-chip.active { border-color: var(--accent2); color: var(--accent2); }
+  .cat-chip:hover { color: var(--text); }
+
+  /* COUNTER */
+  .counter {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.88rem;
+    margin-top: 14px;
+  }
+
+  /* COMPLETION */
+  .done-msg {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--accent2);
+    font-size: 1.3rem;
+    font-weight: 700;
+    display: none;
+  }
+
+  @keyframes pop { 0%{transform:scale(.85);opacity:0} 100%{transform:scale(1);opacity:1} }
+  .card-wrapper { animation: pop 0.3s ease; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚡ Flashcard Đệ Quy</h1>
+  <p>Ôn thi trắc nghiệm · Cấu trúc dữ liệu & Giải thuật · C</p>
+</header>
+
+<div class="cats" id="catBar"></div>
+
+<div class="progress-label" id="progLabel">Card 1 / 20</div>
+<div class="progress-bar-wrap">
+  <div class="progress-bar-fill" id="progFill" style="width:5%"></div>
+</div>
+
+<div class="card-area">
+  <div class="card-wrapper" id="cardWrapper" onclick="flipCard()">
+    <div class="card" id="theCard">
+      <div class="card-face card-front" id="frontFace"></div>
+      <div class="card-face card-back"  id="backFace"></div>
+    </div>
+  </div>
+  <div class="done-msg" id="doneMsg">🎉 Bạn đã ôn hết tất cả flashcard! Làm lại từ đầu nhé.</div>
+</div>
+
+<div class="nav">
+  <button class="btn btn-prev" onclick="prevCard()">← Trước</button>
+  <button class="btn btn-flip" onclick="flipCard()">🔄 Lật</button>
+  <button class="btn btn-next" onclick="nextCard()">Tiếp →</button>
+</div>
+<div class="counter" id="counter"></div>
+
+<script>
+const ALL_CARDS = [
+  // ── KHÁI NIỆM CƠ BẢN ─────────────────────────────────────────
+  {
+    cat: "Khái niệm",
+    q: "Hai điều kiện BẮT BUỘC của một hàm đệ quy hợp lệ là gì?",
+    a: "1. <strong>Base case (điều kiện dừng)</strong> – trường hợp đơn giản trả về ngay.<br>2. <strong>Recursion step</strong> – mỗi lần gọi lại phải làm nhỏ bài toán để tiến về base case.",
+    tip: "🧠 Nhớ: <strong>\"Dừng + Thu nhỏ\"</strong>. Thiếu 1 trong 2 → vô hạn hoặc sai kết quả."
+  },
+  {
+    cat: "Khái niệm",
+    q: "Hàm đệ quy <em>trực tiếp</em> và <em>gián tiếp</em> khác nhau thế nào?",
+    a: "<strong>Trực tiếp</strong>: hàm A gọi lại chính A.<br><strong>Gián tiếp</strong>: A gọi B, B gọi lại A (hoặc chuỗi dài hơn).",
+    tip: "🧠 Ảnh: Gương phản chiếu thẳng = trực tiếp. Hai gương đối nhau = gián tiếp (hỗ tương)."
+  },
+  {
+    cat: "Khái niệm",
+    q: "Stack (ngăn xếp) đóng vai trò gì trong đệ quy?",
+    a: "Mỗi lần gọi hàm, hệ thống đẩy <strong>stack frame</strong> (biến cục bộ + địa chỉ trả về) lên stack. Khi hàm kết thúc, frame được <em>pop</em> ra. Đệ quy sâu → stack lớn → nguy cơ <strong>stack overflow</strong>.",
+    tip: "🧠 Hình dung: chồng đĩa – đặt vào khi gọi, lấy ra khi trả về."
+  },
+  {
+    cat: "Khái niệm",
+    q: "Khi nào đệ quy gây ra Stack Overflow?",
+    a: "Khi <strong>không có base case</strong> (đệ quy vô hạn) hoặc <strong>đệ quy sâu quá</strong> (n rất lớn), stack hệ thống bị cạn kiệt bộ nhớ.",
+    tip: "🧠 Từ khóa: \"vô hạn\" hoặc \"quá sâu\" → Stack Overflow."
+  },
+
+  // ── PHÂN LOẠI ─────────────────────────────────────────────────
+  {
+    cat: "Phân loại",
+    q: "4 dạng đệ quy theo cách gọi lại là gì?",
+    a: "1. <strong>Tuyến tính</strong>: 1 lần gọi đệ quy trong thân hàm.<br>2. <strong>Nhị phân</strong>: 2 lần gọi (Fibonacci).<br>3. <strong>Hỗ tương</strong>: A gọi B, B gọi A.<br>4. <strong>Phi tuyến</strong>: lời gọi đệ quy nằm trong vòng lặp.",
+    tip: "🧠 <strong>Tuyến – Nhị – Hỗ – Phi</strong>. Đếm số lời gọi trong thân hàm để nhận dạng."
+  },
+  {
+    cat: "Phân loại",
+    q: "Fibonacci là ví dụ điển hình của dạng đệ quy nào?",
+    a: "<strong>Đệ quy nhị phân</strong> – vì trong thân hàm có <strong>2 lời gọi</strong>: <code>fibo(n-1) + fibo(n-2)</code>.",
+    tip: "🧠 \"Nhị\" = 2. Fibonacci gọi 2 lần → nhị phân."
+  },
+  {
+    cat: "Phân loại",
+    q: "Đâu là đặc điểm nhận dạng đệ quy PHI TUYẾN?",
+    a: "Lời gọi đệ quy <strong>nằm bên trong vòng lặp</strong> (for/while), không phải gọi thẳng 1 hay 2 lần cố định.<br>Ví dụ: <code>for(i=1;i&lt;=n;i++) f += i*i*F(i-1);</code>",
+    tip: "🧠 \"Phi tuyến\" ≈ không phải đường thẳng → gọi nhiều lần biến thiên (vòng lặp)."
+  },
+  {
+    cat: "Phân loại",
+    q: "Tính giai thừa <code>n!</code> là ví dụ điển hình của dạng đệ quy nào?",
+    a: "<strong>Đệ quy tuyến tính</strong> – chỉ có <strong>1 lời gọi</strong> trong thân: <code>return n * giaithua(n-1);</code>",
+    tip: "🧠 1 lời gọi = tuyến tính. Đơn giản nhất trong 4 dạng."
+  },
+
+  // ── MÃ CODE ───────────────────────────────────────────────────
+  {
+    cat: "Code C",
+    q: "Viết hàm đệ quy tính n! (giai thừa) bằng C. Base case là gì?",
+    a: `<pre>int giaithua(int n) {
+    if (n &lt;= 1) return 1;   // base case
+    return n * giaithua(n-1);
+}</pre>Base case: <code>n &lt;= 1</code> → trả về <code>1</code>.`,
+    tip: "🧠 0! = 1! = 1 → điều kiện <code>n &lt;= 1</code> xử lý cả hai."
+  },
+  {
+    cat: "Code C",
+    q: "Hàm Fibonacci đệ quy: <code>fibo(0)</code> và <code>fibo(1)</code> trả về bao nhiêu theo code trong slide?",
+    a: `Cả hai đều trả về <strong>1</strong>.<br><pre>int fibo(int n) {
+    if (n == 0 || n == 1) return 1;
+    return fibo(n-1) + fibo(n-2);
+}</pre>`,
+    tip: "🧠 Một số tài liệu dùng fibo(0)=0, fibo(1)=1 – hãy kiểm tra đề thi dùng định nghĩa nào!"
+  },
+  {
+    cat: "Code C",
+    q: "<code>fibo(4)</code> = ? (với fibo(0)=fibo(1)=1)",
+    a: "fibo(4) = fibo(3) + fibo(2)<br>= (fibo(2)+fibo(1)) + (fibo(1)+fibo(0))<br>= (2+1) + (1+1) = <strong>5</strong>",
+    tip: "🧠 Dãy: 1, 1, 2, 3, <strong>5</strong>, 8, 13… (đếm index từ 0)"
+  },
+  {
+    cat: "Code C",
+    q: "Đoạn code sau tính gì? <code>if(n==0) return 1; return n*giaithua(n-1);</code> — giaithua(3) = ?",
+    a: "Tính giai thừa.<br>giaithua(3) = 3 × giaithua(2) = 3 × 2 × giaithua(1) = 3 × 2 × 1 = <strong>6</strong>",
+    tip: "🧠 Nhân từ n về 1: 3→2→1. Kết quả = 3×2×1 = 6."
+  },
+
+  // ── ĐỘ PHỨC TẠP ──────────────────────────────────────────────
+  {
+    cat: "Độ phức tạp",
+    q: "Độ phức tạp thời gian của Fibonacci đệ quy ngây thơ là gì? Tại sao xấu?",
+    a: "<strong>O(2ⁿ)</strong> – bởi vì mỗi lần gọi sinh ra 2 lời gọi con, tạo cây nhị phân có 2ⁿ nút.<br>Nhiều bài toán con bị <strong>tính lại nhiều lần</strong> (ví dụ fibo(2) được tính rất nhiều lần).",
+    tip: "🧠 \"Nhị phân không nhớ\" → 2ⁿ. Giải pháp: Memoization hoặc DP."
+  },
+  {
+    cat: "Độ phức tạp",
+    q: "Độ phức tạp thời gian của giai thừa đệ quy là gì?",
+    a: "<strong>O(n)</strong> – vì chỉ có 1 lời gọi mỗi bước, thực hiện đúng n lần.",
+    tip: "🧠 1 lời gọi mỗi bước × n bước = O(n). Tuyến tính = tuyến tính."
+  },
+  {
+    cat: "Độ phức tạp",
+    q: "Fibonacci vòng lặp (dùng mảng hoặc 2 biến) có độ phức tạp thế nào?",
+    a: "Thời gian: <strong>O(n)</strong><br>Bộ nhớ (dùng mảng): <strong>O(n)</strong><br>Bộ nhớ (dùng 2 biến a,b): <strong>O(1)</strong>",
+    tip: "🧠 Vòng lặp + 2 biến = tối ưu nhất. O(n) thời gian, O(1) bộ nhớ."
+  },
+
+  // ── ƯU NHƯỢC ĐIỂM ─────────────────────────────────────────────
+  {
+    cat: "Ưu/Nhược điểm",
+    q: "Liệt kê ƯU ĐIỂM của đệ quy.",
+    a: "✅ Code <strong>ngắn gọn, dễ đọc</strong>, thể hiện rõ cấu trúc bài toán.<br>✅ Phù hợp bài toán tự nhiên có cấu trúc đệ quy (cây, phân chia, backtracking).<br>✅ Dễ cài đặt từ định nghĩa toán học.",
+    tip: "🧠 Từ khóa: <strong>\"dễ hiểu, rõ ràng, ngắn\"</strong>."
+  },
+  {
+    cat: "Ưu/Nhược điểm",
+    q: "Liệt kê NHƯỢC ĐIỂM của đệ quy.",
+    a: "❌ Tốn bộ nhớ <strong>stack</strong> khi đệ quy sâu.<br>❌ Có thể lặp tính lại phép tính (như Fibonacci).<br>❌ Nguy cơ <strong>stack overflow</strong>.<br>❌ Thường chậm hơn vòng lặp.",
+    tip: "🧠 \"Bộ nhớ – Trùng lặp – Overflow\" = 3 nhược điểm chính."
+  },
+  {
+    cat: "Ưu/Nhược điểm",
+    q: "Mục đích của KHỬ ĐỆ QUY là gì? Hai cách thông dụng?",
+    a: "Tối ưu <strong>bộ nhớ và/hoặc thời gian</strong>.<br>1. <strong>Vòng lặp</strong> (iterative): thay thế trực tiếp.<br>2. <strong>Memoization / Dynamic Programming</strong>: lưu kết quả đã tính.",
+    tip: "🧠 Khử đệ quy = đổi \"stack ẩn\" thành \"vòng lặp hiện\"."
+  },
+
+  // ── BẪY THI ───────────────────────────────────────────────────
+  {
+    cat: "Bẫy thi",
+    q: "Hàm sau có lỗi gì?\n<code>int f(int n){ return n * f(n-1); }</code>",
+    a: "<strong>Thiếu base case</strong> – không có điều kiện dừng → đệ quy vô hạn → <strong>Stack Overflow</strong>.",
+    tip: "🧠 Câu hỏi bẫy hay gặp: thiếu <code>if(n==0) return 1;</code>"
+  },
+  {
+    cat: "Bẫy thi",
+    q: "Đệ quy và vòng lặp về mặt lý thuyết có tương đương nhau không?",
+    a: "<strong>Có</strong> – bất kỳ bài toán nào giải được bằng đệ quy đều có thể viết lại bằng vòng lặp (iterative) và ngược lại.",
+    tip: "🧠 Đề thi hay hỏi: \"đệ quy tương đương ___?\" → <strong>vòng lặp</strong>."
+  },
+  {
+    cat: "Bẫy thi",
+    q: "Phân biệt: <em>recursion step phải làm gì</em> để đệ quy hội tụ?",
+    a: "Phải <strong>làm nhỏ bài toán</strong> – tham số truyền vào lời gọi đệ quy phải tiến <strong>về phía base case</strong> (ví dụ: n-1, n/2, …). Nếu không, đệ quy không hội tụ.",
+    tip: "🧠 Quy tắc vàng: mỗi bước đệ quy phải \"gần base case hơn bước trước\"."
+  },
+];
+
+// ── STATE ────────────────────────────────────────────────────────
+let activeCat = "Tất cả";
+let filtered  = [...ALL_CARDS];
+let idx       = 0;
+let flipped   = false;
+
+// ── CATEGORY BAR ─────────────────────────────────────────────────
+function buildCats() {
+  const cats = ["Tất cả", ...new Set(ALL_CARDS.map(c => c.cat))];
+  const bar  = document.getElementById("catBar");
+  bar.innerHTML = "";
+  cats.forEach(cat => {
+    const el = document.createElement("div");
+    el.className = "cat-chip" + (cat === activeCat ? " active" : "");
+    el.textContent = cat;
+    el.onclick = () => { activeCat = cat; filterCards(); buildCats(); };
+    bar.appendChild(el);
+  });
+}
+
+function filterCards() {
+  filtered = activeCat === "Tất cả" ? [...ALL_CARDS] : ALL_CARDS.filter(c => c.cat === activeCat);
+  idx = 0;
+  renderCard();
+}
+
+// ── RENDER ───────────────────────────────────────────────────────
+function renderCard() {
+  const wrap   = document.getElementById("cardWrapper");
+  const done   = document.getElementById("doneMsg");
+  const card   = document.getElementById("theCard");
+  const front  = document.getElementById("frontFace");
+  const back   = document.getElementById("backFace");
+
+  flipped = false;
+  card.classList.remove("flipped");
+
+  if (idx >= filtered.length) {
+    wrap.style.display = "none";
+    done.style.display = "block";
+    document.getElementById("progFill").style.width = "100%";
+    document.getElementById("progLabel").textContent = `Hoàn thành! ${filtered.length}/${filtered.length}`;
+    document.getElementById("counter").textContent = "";
+    return;
+  }
+
+  wrap.style.display = "block";
+  done.style.display = "none";
+
+  const c = filtered[idx];
+
+  front.innerHTML = `
+    <div>
+      <div class="card-tag">📌 ${c.cat} · Câu ${idx+1}</div>
+      <div class="card-question">${c.q}</div>
+    </div>
+    <div class="card-hint">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      Nhấp vào card hoặc bấm 🔄 để xem đáp án
+    </div>
+  `;
+
+  back.innerHTML = `
+    <div>
+      <div class="card-tag">✅ Đáp án</div>
+      <div class="card-answer">${c.a}</div>
+    </div>
+    <div class="tip-box">💡 <strong>Mẹo nhớ:</strong> ${c.tip}</div>
+  `;
+
+  // progress
+  const pct = Math.round(((idx + 1) / filtered.length) * 100);
+  document.getElementById("progFill").style.width = pct + "%";
+  document.getElementById("progLabel").textContent = `Card ${idx+1} / ${filtered.length}`;
+  document.getElementById("counter").textContent = `${filtered.length} flashcard · Danh mục: ${activeCat}`;
+
+  // re-trigger animation
+  wrap.style.animation = "none";
+  wrap.offsetHeight;
+  wrap.style.animation = "";
+}
+
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById("theCard").classList.toggle("flipped", flipped);
+}
+
+function nextCard() {
+  idx++;
+  renderCard();
+}
+
+function prevCard() {
+  if (idx > 0) { idx--; renderCard(); }
+}
+
+// keyboard
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") nextCard();
+  if (e.key === "ArrowLeft")  prevCard();
+  if (e.key === " " || e.key === "Enter") { e.preventDefault(); flipCard(); }
+});
+
+// init
+buildCats();
+renderCard();
+</script>
+</body>
+</html>

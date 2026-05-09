@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ôn Thi Giải Thuật — Tìm Kiếm & Sắp Xếp C</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+:root{--bg:#0d1117;--sur:#161b22;--sur2:#21262d;--bdr:#30363d;--tx:#e6edf3;--mu:#8b949e;--ac:#58a6ff;--gn:#3fb950;--yw:#d29922;--or:#db6d28;--rd:#f85149;--pu:#bc8cff;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--tx);font-family:'Be Vietnam Pro',sans-serif;min-height:100vh;}
+header{background:var(--bg);border-bottom:1px solid var(--bdr);padding:16px 20px;position:sticky;top:0;z-index:100;}
+.h-top{display:flex;align-items:center;gap:10px;}
+header h1{font-size:17px;font-weight:800;color:var(--ac);}
+header p{font-size:11px;color:var(--mu);margin-top:2px;}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;padding:12px 20px 0;border-bottom:1px solid var(--bdr);}
+.tab{padding:7px 14px;border-radius:8px 8px 0 0;border:1px solid transparent;border-bottom:none;background:none;color:var(--mu);cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;transition:all .2s;white-space:nowrap;}
+.tab:hover{color:var(--tx);background:var(--sur2);}
+.tab.on{color:var(--ac);background:var(--sur);border-color:var(--bdr);margin-bottom:-1px;padding-bottom:8px;}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;}
+main{padding:20px;max-width:880px;margin:0 auto;}
+.sec{display:none;}.sec.on{display:block;}
+/* ── COMMON ── */
+.ttl{font-size:19px;font-weight:800;margin-bottom:5px;}
+.sub{font-size:13px;color:var(--mu);margin-bottom:20px;}
+.btn{padding:8px 18px;border-radius:8px;border:1px solid var(--bdr);background:var(--sur2);color:var(--tx);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn:hover:not(:disabled){background:var(--ac);border-color:var(--ac);color:#000;}
+.btn.pri{background:var(--ac);border-color:var(--ac);color:#000;}
+.btn:disabled{opacity:.4;cursor:default;}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.pbar{height:4px;background:var(--sur2);border-radius:2px;overflow:hidden;margin-bottom:18px;}
+.pfill{height:100%;background:linear-gradient(90deg,var(--ac),var(--pu));border-radius:2px;transition:width .4s;}
+/* ── FILTER BAR ── */
+.fbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
+.fb{padding:4px 12px;border-radius:20px;border:1px solid var(--bdr);background:none;color:var(--mu);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;transition:all .15s;}
+.fb.on{color:#000;}
+.fb[data-k="all"].on{background:var(--tx);border-color:var(--tx);}
+.fb[data-k="search"].on{background:var(--ac);border-color:var(--ac);}
+.fb[data-k="sort1"].on{background:var(--pu);border-color:var(--pu);}
+.fb[data-k="sort2"].on{background:var(--yw);border-color:var(--yw);}
+.fb[data-k="bigo"].on{background:#ff8080;border-color:#ff8080;}
+.fb[data-k="code"].on{background:var(--gn);border-color:var(--gn);}
+/* ── FLASHCARD ── */
+.fcwrap{perspective:1200px;margin-bottom:18px;cursor:pointer;user-select:none;}
+.fc{width:100%;min-height:240px;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1);border-radius:14px;}
+.fc.flip{transform:rotateY(180deg);}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;border:1px solid var(--bdr);padding:24px;display:flex;flex-direction:column;justify-content:center;}
+.front{background:var(--sur);}
+.back{background:linear-gradient(135deg,#0d2136,#0d1f0d);transform:rotateY(180deg);border-color:#2d4a2d;}
+.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:12px;align-self:flex-start;}
+.ts{background:#1f3a5f;color:var(--ac);}
+.ts1{background:#3a1f5f;color:var(--pu);}
+.ts2{background:#3a2a00;color:var(--yw);}
+.tb{background:#3a0d00;color:#ff8080;}
+.tc{background:#0d2a0d;color:var(--gn);}
+.tt{background:#3a1a0d;color:var(--or);}
+.fcq{font-size:16px;font-weight:700;line-height:1.5;}
+.fca{font-size:14px;line-height:1.7;color:#b7f3b7;}
+.fca strong{color:#7ee787;}
+.fca code{font-family:'JetBrains Mono',monospace;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;font-size:12px;color:#79c0ff;}
+.tip{margin-top:14px;padding:10px 12px;background:rgba(210,153,34,.1);border-left:3px solid var(--yw);border-radius:0 6px 6px 0;font-size:12px;color:#e3b341;}
+.fchint{margin-top:8px;font-size:12px;color:var(--mu);font-style:italic;}
+.fcnav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+/* ── TABLES ── */
+.twrap{overflow-x:auto;margin-bottom:24px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:var(--sur2);color:var(--ac);padding:9px 12px;text-align:left;border:1px solid var(--bdr);font-weight:700;white-space:nowrap;}
+td{padding:8px 12px;border:1px solid var(--bdr);color:var(--tx);}
+tr:nth-child(even) td{background:rgba(255,255,255,.025);}
+.cg{color:var(--gn);font-weight:700;}.cy{color:var(--yw);font-weight:700;}.cr{color:var(--rd);font-weight:700;}.cb{color:var(--ac);font-weight:700;}.cp{color:var(--pu);font-weight:700;}
+/* ── CODE ── */
+.cblk{background:#0d1117;border:1px solid var(--bdr);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.chd{background:var(--sur2);padding:7px 14px;font-size:12px;color:var(--mu);display:flex;justify-content:space-between;border-bottom:1px solid var(--bdr);}
+.chd .lg{color:var(--gn);font-weight:700;}
+pre{padding:14px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.6;color:#c9d1d9;}
+.kw{color:#ff7b72;}.fn{color:#d2a8ff;}.cm{color:#8b949e;font-style:italic;}.nm{color:#79c0ff;}.tp{color:#ffa657;}
+/* ── INFO CARDS ── */
+.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-bottom:20px;}
+.icard{background:var(--sur);border:1px solid var(--bdr);border-radius:10px;padding:16px;}
+.icard h3{font-size:13px;font-weight:700;margin-bottom:8px;}
+.icard ul{list-style:none;}
+.icard li{font-size:12px;color:var(--mu);padding:3px 0;border-bottom:1px solid #1c2128;}
+.icard li:last-child{border-bottom:none;}
+.icard li strong{color:var(--tx);}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;}
+.bgg{background:rgba(63,185,80,.15);color:var(--gn);}
+.bgy{background:rgba(210,153,34,.15);color:var(--yw);}
+.bgb{background:rgba(88,166,255,.15);color:var(--ac);}
+.bgp{background:rgba(188,140,255,.15);color:var(--pu);}
+.hr{border:none;border-top:1px solid var(--bdr);margin:20px 0;}
+/* ── ACCORDION ── */
+.acc{margin-bottom:8px;border-radius:10px;overflow:hidden;border:1px solid var(--bdr);}
+.ahd{width:100%;background:var(--sur2);border:none;padding:13px 16px;text-align:left;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;color:var(--tx);display:flex;align-items:center;justify-content:space-between;transition:background .18s;}
+.ahd:hover{background:#2d333b;}
+.ahd.op{background:#1c2f4a;color:var(--ac);}
+.aarw{font-size:11px;transition:transform .22s;}
+.ahd.op .aarw{transform:rotate(90deg);}
+.abd{display:none;padding:0 16px 16px;background:var(--sur);}
+.abd.op{display:block;}
+.tb4{margin-top:14px;}
+.tb4 h4{font-size:13px;font-weight:700;color:var(--ac);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--bdr);}
+.tb4 p,.tb4 li{font-size:13px;color:#b0bac6;line-height:1.7;}
+.tb4 ul{padding-left:16px;}.tb4 li{margin-bottom:3px;}.tb4 li strong{color:var(--tx);}
+.fbox{background:#0d1f0d;border:1px solid #2d4a2d;border-radius:7px;padding:9px 12px;margin:8px 0;font-family:'JetBrains Mono',monospace;font-size:13px;color:#7ee787;}
+.wbox{background:rgba(248,81,73,.08);border-left:3px solid var(--rd);border-radius:0 7px 7px 0;padding:9px 12px;margin:8px 0;font-size:13px;color:#ffb3b0;}
+.nbox{background:rgba(88,166,255,.08);border-left:3px solid var(--ac);border-radius:0 7px 7px 0;padding:9px 12px;margin:8px 0;font-size:13px;color:#a5c8f5;}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:540px){.twocol{grid-template-columns:1fr;}}
+.mc{background:var(--sur2);border:1px solid var(--bdr);border-radius:7px;padding:10px;}
+.mc h5{font-size:12px;font-weight:700;margin-bottom:5px;color:var(--yw);}
+.mc p{font-size:12px;color:var(--mu);line-height:1.6;}
+.sl{counter-reset:s;list-style:none;padding:0;}
+.sl li{counter-increment:s;display:flex;gap:8px;align-items:flex-start;margin-bottom:7px;font-size:13px;color:#b0bac6;}
+.sl li::before{content:counter(s);min-width:20px;height:20px;background:var(--ac);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:1px;}
+.hl{color:#ff9a3c;font-weight:700;}.hlg{color:var(--gn);font-weight:700;}.hlb{color:var(--ac);font-weight:700;}.hlr{color:var(--rd);font-weight:700;}.hlp{color:var(--pu);font-weight:700;}
+/* ── QUIZ ── */
+.qcard{background:var(--sur);border:1px solid var(--bdr);border-radius:14px;padding:22px;margin-bottom:16px;}
+.qsbar{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
+.qsbar span{font-size:13px;color:var(--mu);}
+.qopt{width:100%;padding:11px 14px;border-radius:9px;border:1px solid var(--bdr);background:var(--sur2);color:var(--tx);font-family:inherit;font-size:14px;cursor:pointer;text-align:left;transition:all .15s;display:flex;align-items:flex-start;gap:9px;margin-bottom:8px;}
+.qopt:hover:not(:disabled){border-color:var(--ac);background:#1c2f4a;}
+.qopt.sel{border-color:var(--ac);background:#1c2f4a;color:var(--ac);}
+.qopt.ok{border-color:var(--gn);background:rgba(63,185,80,.12);color:var(--gn);}
+.qopt.no{border-color:var(--rd);background:rgba(248,81,73,.1);color:var(--rd);}
+.qopt:disabled{cursor:default;}
+.qltr{min-width:22px;height:22px;border-radius:50%;background:var(--bdr);color:var(--tx);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:1px;}
+.qopt.sel .qltr{background:var(--ac);color:#000;}
+.qopt.ok .qltr{background:var(--gn);color:#000;}
+.qopt.no .qltr{background:var(--rd);color:#fff;}
+.qexp{display:none;margin-top:14px;padding:12px;border-radius:8px;font-size:13px;line-height:1.7;}
+.qresult{display:none;margin-top:20px;background:var(--sur2);border:1px solid var(--bdr);border-radius:14px;padding:26px;text-align:center;}
+.qcode{background:#0d1117;border:1px solid var(--bdr);border-radius:8px;margin:12px 0;overflow:hidden;}
+.qcode-hd{background:var(--sur2);padding:6px 12px;font-size:12px;color:var(--mu);border-bottom:1px solid var(--bdr);}
+.qcode pre{padding:12px;font-size:13px;color:#c9d1d9;}
+@media(max-width:580px){main{padding:12px;}.fcq{font-size:14px;}.face{padding:18px;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="h-top">
+    <span style="font-size:22px">📚</span>
+    <div>
+      <h1>Giải Thuật Tìm Kiếm &amp; Sắp Xếp — C</h1>
+      <p>Flashcard ôn thi trắc nghiệm · Bài 3, 4, 5</p>
+    </div>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab on"  onclick="sw(this,'flashcard')"><span class="dot" style="background:var(--ac)"></span>Flashcard</button>
+  <button class="tab"     onclick="sw(this,'compare')"><span class="dot" style="background:var(--gn)"></span>Bảng so sánh</button>
+  <button class="tab"     onclick="sw(this,'code')"><span class="dot" style="background:var(--pu)"></span>Code mẫu</button>
+  <button class="tab"     onclick="sw(this,'bigo')"><span class="dot" style="background:var(--or)"></span>Big-O nhanh</button>
+  <button class="tab"     onclick="sw(this,'theory')"><span class="dot" style="background:var(--pu)"></span>Lý thuyết</button>
+  <button class="tab"     onclick="sw(this,'quiz')"><span class="dot" style="background:var(--gn)"></span>Trắc nghiệm</button>
+</div>
+
+<main>
+
+<!-- ═══ FLASHCARD ═══ -->
+<section id="s-flashcard" class="sec on">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;flex-wrap:wrap;gap:8px;">
+    <div class="ttl" style="margin:0">🃏 Flashcard ôn tập</div>
+    <div style="display:flex;gap:6px;"><button class="btn btn-sm" onclick="fcShuffle()">🔀 Trộn</button><button class="btn btn-sm" onclick="fcReset()">↺ Reset</button></div>
+  </div>
+  <p class="sub">Click thẻ để lật · ← → hoặc A D · Space để lật</p>
+  <div class="fbar" id="fc-filter">
+    <button class="fb on" data-k="all" onclick="fcFilter('all')">Tất cả</button>
+    <button class="fb" data-k="search" onclick="fcFilter('search')">🔍 Tìm kiếm</button>
+    <button class="fb" data-k="sort1" onclick="fcFilter('sort1')">🔁 O(n²)</button>
+    <button class="fb" data-k="sort2" onclick="fcFilter('sort2')">⚡ O(nlogn)</button>
+    <button class="fb" data-k="bigo" onclick="fcFilter('bigo')">📊 Big-O</button>
+    <button class="fb" data-k="code" onclick="fcFilter('code')">💻 Code</button>
+    <button class="fb" data-k="trick" onclick="fcFilter('trick')">💡 Mẹo</button>
+  </div>
+  <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><div style="font-size:13px;color:var(--mu)">Thẻ <b id="fc-cur" style="color:var(--ac)">1</b> / <b id="fc-tot" style="color:var(--ac)">1</b></div><div style="font-size:11px;color:var(--mu)">Click thẻ để lật ↔</div></div>
+  <div class="pbar"><div class="pfill" id="fc-prog" style="width:0%"></div></div>
+  <div class="fcwrap" onclick="fcFlip()">
+    <div class="fc" id="fc">
+      <div class="face front">
+        <div class="tag ts" id="fc-tag">Tìm kiếm</div>
+        <div class="fcq" id="fc-q">...</div>
+        <div class="fchint" id="fc-hint"></div>
+        <div style="position:absolute;bottom:14px;right:18px;font-size:16px;opacity:.3">↔</div>
+      </div>
+      <div class="face back">
+        <div class="tag tc" style="margin-bottom:10px">✅ Đáp án</div>
+        <div class="fca" id="fc-a">...</div>
+        <div class="tip" id="fc-tip" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+  <div class="fcnav">
+    <button class="btn" onclick="fcPrev()">← Trước</button>
+    <button class="btn pri" onclick="fcFlip()">Lật thẻ</button>
+    <button class="btn" onclick="fcNext()">Tiếp →</button>
+  </div>
+</section>
+
+<!-- ═══ COMPARE ═══ -->
+<section id="s-compare" class="sec">
+  <div class="ttl">📊 Bảng so sánh thuật toán</div>
+  <p class="sub">Tổng hợp Best/Average/Worst case và tính ổn định</p>
+  <h3 style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--ac)">⚔️ Tìm kiếm</h3>
+  <div class="twrap"><table>
+    <tr><th>Thuật toán</th><th>Điều kiện</th><th>Best</th><th>Average</th><th>Worst</th><th>Ổn định</th></tr>
+    <tr><td><strong>Linear Search</strong></td><td>Mảng bất kỳ</td><td class="cg">O(1)</td><td class="cy">O(n)</td><td class="cr">O(n)</td><td class="cg">✓</td></tr>
+    <tr><td><strong>Binary Search</strong></td><td><span class="cr">Mảng đã sắp</span></td><td class="cg">O(1)</td><td class="cg">O(log n)</td><td class="cg">O(log n)</td><td class="cg">✓</td></tr>
+  </table></div>
+  <hr class="hr">
+  <h3 style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--pu)">🔃 Sắp xếp O(n²)</h3>
+  <div class="twrap"><table>
+    <tr><th>Thuật toán</th><th>Best</th><th>Average</th><th>Worst</th><th>Swap worst</th><th>Ổn định</th></tr>
+    <tr><td><strong>Interchange</strong></td><td class="cy">O(n²)</td><td class="cy">O(n²)</td><td class="cr">O(n²)</td><td class="cr">n(n-1)/2</td><td class="cr">✗</td></tr>
+    <tr><td><strong>Bubble Sort</strong></td><td class="cy">O(n²)</td><td class="cy">O(n²)</td><td class="cr">O(n²)</td><td class="cr">n(n-1)/2</td><td class="cg">✓</td></tr>
+    <tr><td><strong>Selection Sort</strong></td><td class="cy">O(n²)</td><td class="cy">O(n²)</td><td class="cr">O(n²)</td><td class="cg">n−1 ★</td><td class="cr">✗</td></tr>
+    <tr><td><strong>Insertion Sort</strong></td><td class="cg">O(n) ★</td><td class="cy">O(n²)</td><td class="cr">O(n²)</td><td class="cy">n(n-1)/2</td><td class="cg">✓</td></tr>
+  </table></div>
+  <hr class="hr">
+  <h3 style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--yw)">⚡ Sắp xếp O(n log n)</h3>
+  <div class="twrap"><table>
+    <tr><th>Thuật toán</th><th>Best</th><th>Average</th><th>Worst</th><th>Bộ nhớ thêm</th><th>Ổn định</th></tr>
+    <tr><td><strong>Quick Sort</strong></td><td class="cg">O(n)</td><td class="cg">O(n log n)</td><td class="cr">O(n²) !</td><td class="cg">O(log n)</td><td class="cr">✗</td></tr>
+    <tr><td><strong>Merge Sort</strong></td><td class="cg">O(n log n)</td><td class="cg">O(n log n)</td><td class="cg">O(n log n) ★</td><td class="cr">O(n)</td><td class="cg">✓</td></tr>
+  </table></div>
+  <hr class="hr">
+  <div class="igrid">
+    <div class="icard"><h3>🥇 Mảng gần có thứ tự</h3><ul><li><strong>Tốt nhất:</strong> <span class="badge bgg">Insertion Sort O(n)</span></li><li>Bubble Sort cũng tốt</li><li>Quick Sort kém nhất</li></ul></div>
+    <div class="icard"><h3>🔢 Ít hoán vị nhất</h3><ul><li><strong>Ít nhất:</strong> <span class="badge bgb">Selection Sort (n−1)</span></li><li>Phù hợp khi swap tốn kém</li></ul></div>
+    <div class="icard"><h3>⚡ Nhanh trung bình</h3><ul><li><strong>Thực tế:</strong> <span class="badge bgy">Quick Sort</span></li><li>Hằng số nhỏ, cache-friendly</li></ul></div>
+    <div class="icard"><h3>🛡️ Worst case tốt nhất</h3><ul><li><strong>Đảm bảo:</strong> <span class="badge bgg">Merge Sort</span></li><li>Luôn O(n log n)</li><li>Tốn O(n) RAM thêm</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ CODE ═══ -->
+<section id="s-code" class="sec">
+  <div class="ttl">💻 Code mẫu C</div>
+  <p class="sub">7 thuật toán đầy đủ với comment giải thích</p>
+  <div class="cblk"><div class="chd"><span>Linear Search</span><span class="lg">C</span></div>
+  <pre><span class="tp">int</span> <span class="fn">LinearSearch</span>(<span class="tp">int</span> a[], <span class="tp">int</span> n, <span class="tp">int</span> x) {
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i &lt; n; i++)
+        <span class="kw">if</span> (a[i] == x) <span class="kw">return</span> i;  <span class="cm">// tìm thấy</span>
+    <span class="kw">return</span> <span class="nm">-1</span>;  <span class="cm">// không tìm thấy</span>
+}</pre></div>
+  <div class="cblk"><div class="chd"><span>Binary Search</span><span class="lg">C</span></div>
+  <pre><span class="tp">int</span> <span class="fn">BinarySearch</span>(<span class="tp">int</span> a[], <span class="tp">int</span> n, <span class="tp">int</span> x) {
+    <span class="tp">int</span> left = <span class="nm">0</span>, right = n - <span class="nm">1</span>;
+    <span class="kw">while</span> (left &lt;= right) {              <span class="cm">// điều kiện: <=</span>
+        <span class="tp">int</span> mid = (left + right) / <span class="nm">2</span>;
+        <span class="kw">if</span>      (a[mid] == x) <span class="kw">return</span> mid;
+        <span class="kw">else if</span> (a[mid] &lt;  x) left  = mid + <span class="nm">1</span>;  <span class="cm">// tìm phải</span>
+        <span class="kw">else</span>                  right = mid - <span class="nm">1</span>;  <span class="cm">// tìm trái</span>
+    }
+    <span class="kw">return</span> <span class="nm">-1</span>;
+}</pre></div>
+  <div class="cblk"><div class="chd"><span>Interchange Sort</span><span class="lg">C</span></div>
+  <pre><span class="kw">void</span> <span class="fn">InterchangeSort</span>(<span class="tp">int</span> a[], <span class="tp">int</span> n) {
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i &lt; n-<span class="nm">1</span>; i++)           <span class="cm">// xuất phát từ ĐẦU</span>
+        <span class="kw">for</span> (<span class="tp">int</span> j = i+<span class="nm">1</span>; j &lt; n; j++)
+            <span class="kw">if</span> (a[i] &gt; a[j]) {               <span class="cm">// nghịch thế → đổi chỗ</span>
+                <span class="tp">int</span> t=a[i]; a[i]=a[j]; a[j]=t;
+            }
+}</pre></div>
+  <div class="cblk"><div class="chd"><span>Bubble Sort</span><span class="lg">C</span></div>
+  <pre><span class="kw">void</span> <span class="fn">BubbleSort</span>(<span class="tp">int</span> a[], <span class="tp">int</span> n) {
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i &lt; n-<span class="nm">1</span>; i++)
+        <span class="kw">for</span> (<span class="tp">int</span> j = n-<span class="nm">1</span>; j &gt; i; j--)  <span class="cm">// xuất phát từ CUỐI</span>
+            <span class="kw">if</span> (a[j] &lt; a[j-<span class="nm">1</span>]) {          <span class="cm">// cặp kề nhau</span>
+                <span class="tp">int</span> t=a[j]; a[j]=a[j-<span class="nm">1</span>]; a[j-<span class="nm">1</span>]=t;
+            }
+}</pre></div>
+  <div class="cblk"><div class="chd"><span>Selection Sort</span><span class="lg">C</span></div>
+  <pre><span class="kw">void</span> <span class="fn">SelectionSort</span>(<span class="tp">int</span> a[], <span class="tp">int</span> n) {
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">0</span>; i &lt; n-<span class="nm">1</span>; i++) {
+        <span class="tp">int</span> mn = i;
+        <span class="kw">for</span> (<span class="tp">int</span> j = i+<span class="nm">1</span>; j &lt; n; j++)
+            <span class="kw">if</span> (a[j] &lt; a[mn]) mn = j;    <span class="cm">// chỉ lưu vị trí min</span>
+        <span class="kw">if</span> (mn != i) { <span class="tp">int</span> t=a[i]; a[i]=a[mn]; a[mn]=t; } <span class="cm">// swap 1 lần</span>
+    }
+}</pre></div>
+  <div class="cblk"><div class="chd"><span>Insertion Sort</span><span class="lg">C</span></div>
+  <pre><span class="kw">void</span> <span class="fn">InsertionSort</span>(<span class="tp">int</span> a[], <span class="tp">int</span> n) {
+    <span class="kw">for</span> (<span class="tp">int</span> i = <span class="nm">1</span>; i &lt; n; i++) {   <span class="cm">// bắt đầu từ i=1!</span>
+        <span class="tp">int</span> key = a[i], j = i-<span class="nm">1</span>;
+        <span class="kw">while</span> (j &gt;= <span class="nm">0</span> &amp;&amp; a[j] &gt; key) { a[j+<span class="nm">1</span>]=a[j]; j--; }
+        a[j+<span class="nm">1</span>] = key;               <span class="cm">// chèn key vào đúng chỗ</span>
+    }
+}</pre></div>
+  <div class="cblk"><div class="chd"><span>Quick Sort</span><span class="lg">C</span></div>
+  <pre><span class="kw">void</span> <span class="fn">QuickSort</span>(<span class="tp">int</span> a[], <span class="tp">int</span> L, <span class="tp">int</span> R) {
+    <span class="tp">int</span> i=L, j=R, x=a[(L+R)/<span class="nm">2</span>];  <span class="cm">// pivot = phần tử giữa</span>
+    <span class="kw">while</span> (i &lt;= j) {
+        <span class="kw">while</span> (a[i] &lt; x) i++;
+        <span class="kw">while</span> (a[j] &gt; x) j--;
+        <span class="kw">if</span> (i &lt;= j) { <span class="tp">int</span> t=a[i]; a[i]=a[j]; a[j]=t; i++; j--; }
+    }
+    <span class="kw">if</span> (L &lt; j) <span class="fn">QuickSort</span>(a, L, j);
+    <span class="kw">if</span> (i &lt; R) <span class="fn">QuickSort</span>(a, i, R);
+}</pre></div>
+  <div class="cblk"><div class="chd"><span>Merge Sort</span><span class="lg">C</span></div>
+  <pre><span class="kw">void</span> <span class="fn">merge</span>(<span class="tp">int</span> a[], <span class="tp">int</span> l, <span class="tp">int</span> m, <span class="tp">int</span> r) {
+    <span class="tp">int</span> n1=m-l+<span class="nm">1</span>, n2=r-m, L[n1], R[n2];
+    <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nm">0</span>;i&lt;n1;i++) L[i]=a[l+i];
+    <span class="kw">for</span>(<span class="tp">int</span> j=<span class="nm">0</span>;j&lt;n2;j++) R[j]=a[m+<span class="nm">1</span>+j];
+    <span class="tp">int</span> i=<span class="nm">0</span>,j=<span class="nm">0</span>,k=l;
+    <span class="kw">while</span>(i&lt;n1 &amp;&amp; j&lt;n2) a[k++]=(L[i]&lt;=R[j])?L[i++]:R[j++];
+    <span class="kw">while</span>(i&lt;n1) a[k++]=L[i++];
+    <span class="kw">while</span>(j&lt;n2) a[k++]=R[j++];
+}
+<span class="kw">void</span> <span class="fn">MergeSort</span>(<span class="tp">int</span> a[], <span class="tp">int</span> l, <span class="tp">int</span> r) {
+    <span class="kw">if</span>(l &lt; r) { <span class="tp">int</span> m=(l+r)/<span class="nm">2</span>; <span class="fn">MergeSort</span>(a,l,m); <span class="fn">MergeSort</span>(a,m+<span class="nm">1</span>,r); <span class="fn">merge</span>(a,l,m,r); }
+}</pre></div>
+</section>
+
+<!-- ═══ BIG-O ═══ -->
+<section id="s-bigo" class="sec">
+  <div class="ttl">📊 Big-O nhanh</div>
+  <p class="sub">O(1) &lt; O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n²)</p>
+  <div class="igrid">
+    <div class="icard"><h3>🟢 O(1)</h3><ul><li>Truy cập a[i]</li><li>Binary Search best case</li></ul></div>
+    <div class="icard"><h3>🔵 O(log n)</h3><ul><li>Binary Search avg/worst</li><li>n=1024 → chỉ 10 bước</li></ul></div>
+    <div class="icard"><h3>🟡 O(n)</h3><ul><li>Linear Search avg/worst</li><li><strong>Insertion Sort best case!</strong></li></ul></div>
+    <div class="icard"><h3>🟠 O(n log n)</h3><ul><li>Quick Sort best/avg</li><li>Merge Sort mọi TH</li></ul></div>
+    <div class="icard"><h3>🔴 O(n²)</h3><ul><li>Interchange, Bubble, Selection, Insertion</li><li>Quick Sort worst case</li></ul></div>
+    <div class="icard"><h3>📌 Công thức so sánh</h3><ul><li>Linear TB: <strong>(n+1)/2</strong></li><li>Interchange/Bubble/Selection: <strong>n(n-1)/2</strong></li><li>Insertion best: <strong>n-1</strong></li></ul></div>
+  </div>
+  <hr class="hr">
+  <div class="igrid">
+    <div class="icard" style="border-color:#6b1515"><h3 style="color:var(--rd)">❗ Bẫy 1</h3><ul><li>Interchange j từ <strong>i+1</strong>, Bubble j từ <strong>n-1</strong></li><li>Interchange unstable, Bubble stable</li></ul></div>
+    <div class="icard" style="border-color:#6b1515"><h3 style="color:var(--rd)">❗ Bẫy 2</h3><ul><li>Insertion: best O(n) khi mảng đã sắp</li><li>Duy nhất O(n²) có best O(n)</li></ul></div>
+    <div class="icard" style="border-color:#6b1515"><h3 style="color:var(--rd)">❗ Bẫy 3</h3><ul><li>Quick Sort worst O(n²)</li><li>Khi mảng đã sắp + pivot đầu/cuối</li></ul></div>
+    <div class="icard" style="border-color:#6b1515"><h3 style="color:var(--rd)">❗ Bẫy 4</h3><ul><li>Binary Search <strong>bắt buộc</strong> mảng có thứ tự</li><li>Hay hỏi "điều kiện áp dụng"</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ THEORY ═══ -->
+<section id="s-theory" class="sec">
+  <div class="ttl">📖 Lý Thuyết Trọng Tâm</div>
+  <p class="sub">Toàn bộ lý thuyết từ slide bài 3, 4, 5 — click tiêu đề để mở</p>
+  <div id="theory-root"></div>
+</section>
+
+<!-- ═══ QUIZ ═══ -->
+<section id="s-quiz" class="sec">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;flex-wrap:wrap;gap:8px;">
+    <div class="ttl" style="margin:0">📝 Bài Tập Trắc Nghiệm</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button class="btn btn-sm" onclick="qShuffle()">🔀 Trộn đề</button>
+      <button class="btn btn-sm" onclick="qRestart()">↺ Làm lại</button>
+    </div>
+  </div>
+  <p class="sub">40 câu — chọn đáp án rồi nhấn Kiểm tra</p>
+
+  <div class="fbar" id="qfbar">
+    <button class="fb on" data-k="all"    onclick="qFilter('all')">Tất cả</button>
+    <button class="fb" data-k="search"   onclick="qFilter('search')">🔍 Tìm kiếm</button>
+    <button class="fb" data-k="sort1"    onclick="qFilter('sort1')">🔁 O(n²)</button>
+    <button class="fb" data-k="sort2"    onclick="qFilter('sort2')">⚡ O(nlogn)</button>
+    <button class="fb" data-k="bigo"     onclick="qFilter('bigo')">📊 Big-O</button>
+    <button class="fb" data-k="code"     onclick="qFilter('code')">💻 Code</button>
+  </div>
+
+  <div class="qsbar">
+    <span>Câu <b id="qcur" style="color:var(--ac)">1</b> / <b id="qtot" style="color:var(--ac)">40</b></span>
+    <span>Đúng: <b id="qok" style="color:var(--gn)">0</b> | Sai: <b id="qno" style="color:var(--rd)">0</b></span>
+    <div style="flex:1;min-width:80px;"><div class="pbar" style="margin:0"><div class="pfill" id="qprog" style="width:0%"></div></div></div>
+  </div>
+
+  <div class="qcard" id="qcard">
+    <div class="tag ts" id="qtag" style="margin-bottom:11px">Câu 1</div>
+    <div id="qtext" style="font-size:15px;font-weight:700;line-height:1.6;margin-bottom:4px;color:var(--tx)"></div>
+    <div class="qcode" id="qcodewrap" style="display:none">
+      <div class="qcode-hd">C — Đọc code</div>
+      <pre id="qcodepre" style="font-family:'JetBrains Mono',monospace;font-size:13px;"></pre>
+    </div>
+    <div id="qopts" style="margin-top:14px;"></div>
+    <div class="qexp" id="qexp"></div>
+  </div>
+
+  <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;">
+    <button class="btn" onclick="qPrev()">← Trước</button>
+    <button class="btn pri" id="qchk" onclick="qCheck()">✓ Kiểm tra</button>
+    <button class="btn" onclick="qNext()">Tiếp →</button>
+  </div>
+
+  <div class="qresult" id="qresult">
+    <div id="remoji" style="font-size:46px;margin-bottom:10px">🎉</div>
+    <div id="rtitle" style="font-size:20px;font-weight:800;margin-bottom:7px"></div>
+    <div id="rdetail" style="font-size:14px;color:var(--mu);margin-bottom:18px"></div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn pri" onclick="qRestart()">↺ Làm lại</button>
+      <button class="btn" onclick="qShuffle()">🔀 Đề mới</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+// ═══ TAB SWITCH ═══
+function sw(el, name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('s-' + name).classList.add('on');
+  if (name === 'quiz') qRender();
+  if (name === 'theory') buildTheory();
+}
+
+// ═══ FLASHCARD DATA ═══
+const CARDS = [
+  {cat:'search',q:'Tìm kiếm tuyến tính (Linear Search) có Big-O là bao nhiêu?',hint:'Xét best, average, worst',
+   a:'<strong>Best:</strong> O(1) — phần tử đầu là X<br><strong>Avg:</strong> O(n) — TB (n+1)/2 lần<br><strong>Worst:</strong> O(n) — cuối hoặc không có<br>⇒ <code>T(n) = O(n)</code>',
+   tip:'<b>Mẹo:</b> LINEAR = tuyến tính = O(n). Không cần điều kiện gì.'},
+  {cat:'search',q:'Điều kiện BẮT BUỘC để dùng Binary Search?',hint:'Bẫy kinh điển trong thi',
+   a:'<strong>Mảng phải có thứ tự (đã sắp xếp)</strong>. Nếu chưa sắp → Binary Search cho kết quả SAI.',
+   tip:'<b>Mẹo:</b> NHỊ PHÂN = chia đôi. Chỉ chia đôi đúng khi có thứ tự. Câu này hay bị bẫy!'},
+  {cat:'search',q:'Công thức tính chỉ số giữa trong Binary Search?',hint:'Có biến left và right',
+   a:'<code>mid = (left + right) / 2</code><br><br>• a[mid]==X → tìm thấy<br>• a[mid]&lt;X → <code>left=mid+1</code> (tìm phải)<br>• a[mid]&gt;X → <code>right=mid-1</code> (tìm trái)',
+   tip:'<b>Mẹo:</b> "Trái cộng phải chia 2". X lớn hơn → đi PHẢI (left tăng). X nhỏ hơn → đi TRÁI (right giảm).'},
+  {cat:'search',q:'Binary Search có Big-O là bao nhiêu?',hint:'Tại sao nhanh hơn Linear?',
+   a:'<strong>Best:</strong> O(1)<br><strong>Avg/Worst:</strong> O(log n)<br><br>Mỗi bước loại ½ phần tử còn lại.<br>n=1024 → tối đa 10 bước (log₂1024=10)',
+   tip:'<b>Mẹo:</b> log n = "Mỗi bước CẮT ĐÔI". Nhanh hơn O(n) rất nhiều.'},
+  {cat:'search',q:'Linear Search trả về gì khi không tìm thấy?',
+   a:'Trả về <strong>−1</strong> (hoặc NULL với danh sách liên kết).<br>Khi tìm thấy → trả về <strong>chỉ số (index)</strong>.',
+   tip:'<b>Mẹo:</b> −1 = "không có". Kiểm tra: <code>if(result >= 0)</code> là tìm thấy.'},
+  {cat:'search',q:'Số lần so sánh trung bình của Linear Search?',
+   a:'Trung bình: <strong>(n+1)/2</strong> lần so sánh<br>Best: 1, Worst: n, Avg: (n+1)/2',
+   tip:'<b>Mẹo:</b> "(n+1)/2 ≈ nửa n". Giả sử xác suất mỗi vị trí như nhau.'},
+  {cat:'sort1',q:'Điểm khác biệt CHÍNH giữa Interchange Sort và Bubble Sort?',hint:'Chú ý hướng duyệt vòng j',
+   a:'• <strong>Interchange:</strong> j từ <code>i+1→n-1</code> (từ đầu dãy), so sánh a[i] vs a[j]<br>• <strong>Bubble:</strong> j từ <code>n-1→i</code> (từ cuối dãy), so sánh CẶP KỀ a[j] vs a[j-1]<br><br>Interchange: unstable. Bubble: stable.',
+   tip:'<b>Mẹo:</b> Bubble = bọt nổi từ đáy. Bắt đầu CUỐI. So sánh CẠNH NHAU.'},
+  {cat:'sort1',q:'Thuật toán nào có số lần swap ÍT NHẤT?',
+   a:'<strong>Selection Sort</strong> — tối đa <strong>n−1 lần swap</strong>.<br>Lý do: chỉ swap 1 lần sau khi tìm được vị trí min.',
+   tip:'<b>Mẹo:</b> CHỌN = chọn MIN → đặt 1 lần. Phù hợp khi swap tốn kém.'},
+  {cat:'sort1',q:'Insertion Sort có best case O(n) khi nào?',
+   a:'Khi mảng <strong>đã có thứ tự tăng dần</strong>. Vòng while không bao giờ chạy → mỗi phần tử chỉ 1 lần so sánh → O(n).',
+   tip:'<b>Mẹo:</b> Insertion Sort là thuật toán O(n²) DUY NHẤT có best case O(n)!'},
+  {cat:'sort1',q:'Bubble Sort: phần tử nào nổi về đâu?',
+   a:'Phần tử <strong>NHỎ nhất "nổi bọt" về đầu dãy</strong> sau mỗi lượt.<br>Duyệt từ CUỐI, đổi cặp kề nhau nếu sai thứ tự.',
+   tip:'<b>Mẹo:</b> Bọt nước nổi từ đáy lên đầu = phần tử nhỏ đi về đầu.'},
+  {cat:'sort1',q:'Selection Sort: chọn gì và đặt vào đâu?',
+   a:'Mỗi lượt i: tìm <strong>phần tử NHỎ NHẤT</strong> trong a[i..n-1], swap với a[i].<br>Lưu <code>min_idx</code>, swap 1 lần sau khi tìm xong.',
+   tip:'<b>Mẹo:</b> CHỌN em nhỏ nhất → đặt đầu nhóm. Chọn xong mới swap, không swap giữa chừng.'},
+  {cat:'sort1',q:'Thuật toán O(n²) nào là STABLE?',hint:'Stable = phần tử bằng nhau giữ thứ tự',
+   a:'✅ <strong>Stable:</strong> Bubble Sort, Insertion Sort<br>❌ <strong>Unstable:</strong> Interchange Sort, Selection Sort',
+   tip:'<b>Mẹo:</b> "BI = Bubble + Insertion = Stable". Interchange và Selection unstable.'},
+  {cat:'sort2',q:'Quick Sort dùng pivot nào? Chia thành mấy phần?',
+   a:'Pivot = <code>a[(left+right)/2]</code> (phần tử giữa). Chia 3 phần:<br>• Phần 1: a[k] &lt; x<br>• Phần 2: a[k] == x<br>• Phần 3: a[k] &gt; x<br>Đệ quy 2 bên.',
+   tip:'<b>Mẹo:</b> Quick = chia 3. Pivot là anh giữa. Bên trái nhỏ, bên phải lớn.'},
+  {cat:'sort2',q:'Quick Sort có worst case O(n²) khi nào?',
+   a:'Khi mảng <strong>đã sắp xếp + pivot là đầu hoặc cuối</strong>.<br>Mỗi lần chia tạo (0, n-1) → n lần đệ quy → O(n²).<br>Khắc phục: chọn pivot = phần tử giữa.',
+   tip:'<b>Mẹo:</b> Quick Sort hay khi random, tệ khi sorted + pivot sai. Hay ra thi!'},
+  {cat:'sort2',q:'Merge Sort luôn O(n log n) trong mọi trường hợp — đúng không?',
+   a:'<strong>Đúng!</strong> Merge Sort luôn O(n log n) (best/avg/worst).<br>Nhược điểm: cần thêm <strong>O(n) bộ nhớ phụ</strong>.',
+   tip:'<b>Mẹo:</b> MERGE = luôn nlogn nhưng tốn RAM. Quick = nhanh hơn thực tế nhưng có worst O(n²).'},
+  {cat:'sort2',q:'Ý tưởng của Merge Sort?',
+   a:'<strong>Chia để trị (Divide & Conquer):</strong><br>1. Chia mảng thành 2 nửa<br>2. Đệ quy sắp từng nửa<br>3. Merge 2 nửa đã sắp thành 1 mảng có thứ tự',
+   tip:'<b>Mẹo:</b> "Chia đôi → sắp → ghép lại". Như trộn 2 bộ bài đã sắp sẵn.'},
+  {cat:'bigo',q:'Thứ tự tăng dần của Big-O?',
+   a:'<strong>O(1) &lt; O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n²)</strong><br><br>n=1000: O(1)=1, O(log n)≈10, O(n)=1000, O(n log n)≈10000, O(n²)=1.000.000',
+   tip:'<b>Mẹo:</b> "1 Log n nLogn n²" — đọc như một cụm. Mỗi bậc cách xa khi n lớn.'},
+  {cat:'bigo',q:'f(n)=2n²+3n+5. Big-O là bao nhiêu?',
+   a:'<strong>O(n²)</strong><br>Quy tắc: chỉ giữ bậc cao nhất, bỏ hệ số.<br>2n² + 3n + 5 → n² → O(n²)',
+   tip:'<b>Mẹo:</b> Nhìn bậc LỚN NHẤT. Hệ số và các hạng bậc thấp bỏ hết.'},
+  {cat:'bigo',q:'Big-O đo lường điều gì?',
+   a:'<strong>Cận trên (upper bound)</strong> của thời gian thực thi — worst case.<br>f(n)=O(g(n)) khi f(n) ≤ C·g(n) với mọi n ≥ n₀.',
+   tip:'<b>Mẹo:</b> Big-O = "tối đa". Không quan tâm hằng số hay ngôn ngữ lập trình.'},
+  {cat:'code',q:'Điều kiện vòng while trong Binary Search là gì?',
+   a:'<code>while (left &lt;= right)</code><br><br>Dùng &lt;= vì khi left==right vẫn còn 1 phần tử.<br>Nếu chỉ dùng &lt; → bỏ sót phần tử cuối!',
+   tip:'<b>Mẹo:</b> "Còn phần tử = left ≤ right". left > right mới là hết.'},
+  {cat:'code',q:'Hàm swap trong C phải dùng tham chiếu (&) vì sao?',
+   a:'Để <strong>thay đổi giá trị biến gốc</strong>, không phải bản sao.<br><code>void swap(int &a, int &b){int c=a;a=b;b=c;}</code>',
+   tip:'<b>Mẹo:</b> "c=a; a=b; b=c" — 3 bước. Như đổi 2 cái ly cần cái ly thứ 3.'},
+  {cat:'code',q:'Insertion Sort bắt đầu vòng for từ i=1, không phải i=0. Tại sao?',
+   a:'Phần tử a[0] đơn lẻ đã là "mảng có thứ tự" 1 phần tử.<br>Từ i=1 mới cần chèn vào đoạn đã sắp.',
+   tip:'<b>Mẹo:</b> Bài đầu tiên tự nhiên đúng chỗ rồi → bắt đầu từ bài 2 (i=1).'},
+  {cat:'trick',q:'Câu thần chú: Thuật toán nào xuất phát từ đầu, từ cuối, từ giữa?',
+   a:'• <strong>Interchange:</strong> vòng j từ i+1 → xuất phát ĐẦU dãy<br>• <strong>Bubble:</strong> vòng j từ n-1 → xuất phát CUỐI dãy<br>• <strong>Selection:</strong> tìm min đoạn i→n-1<br>• <strong>Binary Search:</strong> vào từ GIỮA',
+   tip:'<b>Câu thần chú:</b> "Inter từ đầu, Bubble từ đuôi, Selection chọn min, Binary chia đôi"'},
+  {cat:'trick',q:'"BIM ổn định" nghĩa là gì?',
+   a:'B-I-M = <strong>Bubble + Insertion + Merge</strong> đều là <strong>stable sort</strong>.<br>Còn lại (Interchange, Selection, Quick) đều unstable.',
+   tip:'<b>Mẹo:</b> Học thuộc "BIM ổn định" là nhớ ngay 3 stable sort trong bài.'},
+];
+
+// ═══ FLASHCARD STATE ═══
+let FC = {arr:[...CARDS], idx:0, flipped:false};
+function fcTagClass(cat){return {search:'ts',sort1:'ts1',sort2:'ts2',bigo:'tb',code:'tc',trick:'tt'}[cat]||'ts';}
+function fcTagName(cat){return {search:'🔍 Tìm kiếm',sort1:'🔁 O(n²)',sort2:'⚡ O(nlogn)',bigo:'📊 Big-O',code:'💻 Code',trick:'💡 Mẹo'}[cat]||cat;}
+function fcRender(){
+  const c=FC.arr[FC.idx];
+  document.getElementById('fc-tag').className='tag '+fcTagClass(c.cat);
+  document.getElementById('fc-tag').textContent=fcTagName(c.cat);
+  document.getElementById('fc-q').innerHTML=c.q;
+  document.getElementById('fc-hint').textContent=c.hint?'💭 '+c.hint:'';
+  document.getElementById('fc-a').innerHTML=c.a;
+  const t=document.getElementById('fc-tip');
+  if(c.tip){t.innerHTML=c.tip;t.style.display='block';}else{t.style.display='none';}
+  FC.flipped=false;
+  document.getElementById('fc').classList.remove('flip');
+  document.getElementById('fc-cur').textContent=FC.idx+1;
+  document.getElementById('fc-tot').textContent=FC.arr.length;
+  document.getElementById('fc-prog').style.width=((FC.idx+1)/FC.arr.length*100).toFixed(1)+'%';
+}
+function fcFlip(){FC.flipped=!FC.flipped;document.getElementById('fc').classList.toggle('flip',FC.flipped);}
+function fcNext(){FC.idx=(FC.idx+1)%FC.arr.length;fcRender();}
+function fcPrev(){FC.idx=(FC.idx-1+FC.arr.length)%FC.arr.length;fcRender();}
+function fcShuffle(){for(let i=FC.arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[FC.arr[i],FC.arr[j]]=[FC.arr[j],FC.arr[i]];}FC.idx=0;fcRender();}
+function fcReset(){FC.arr=[...CARDS];FC.idx=0;fcRender();document.querySelectorAll('#fc-filter .fb').forEach(b=>b.classList.remove('on'));document.querySelector('#fc-filter .fb[data-k="all"]').classList.add('on');}
+function fcFilter(k){
+  document.querySelectorAll('#fc-filter .fb').forEach(b=>b.classList.remove('on'));
+  document.querySelector('#fc-filter .fb[data-k="'+k+'"]').classList.add('on');
+  FC.arr=k==='all'?[...CARDS]:CARDS.filter(c=>c.cat===k);
+  FC.idx=0;fcRender();
+}
+fcRender();
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('s-flashcard').classList.contains('on')){
+    if(e.key==='ArrowRight'||e.key==='d')fcNext();
+    if(e.key==='ArrowLeft'||e.key==='a')fcPrev();
+    if(e.key===' '||e.key==='f'){e.preventDefault();fcFlip();}
+  }
+});
+
+// ═══ THEORY DATA ═══
+const THEORY=[
+  {id:'t1',icon:'🧩',title:'Bài 3 — Khái niệm Thuật Toán & Độ Phức Tạp',color:'#58a6ff',html:`
+    <div class="tb4"><h4>📌 Thuật toán là gì?</h4><p>Thuật toán (algorithm / giải thuật) là <strong>chuỗi hữu hạn các bước/thao tác</strong> để giải quyết một vấn đề.</p><div class="nbox">Ví dụ: tìm đường trong mê cung, tìm số lớn nhất, sắp xếp khối Rubik.</div></div>
+    <div class="tb4"><h4>⚖️ 2 Tiêu chuẩn đánh giá thuật toán "tốt"</h4><div class="twocol"><div class="mc"><h5>TC1 — Dễ hiểu, dễ lập trình</h5><p>Quan trọng khi dùng <span class="hl">một vài lần</span>.</p></div><div class="mc"><h5>TC2 — Nhanh, ít tài nguyên</h5><p>Quan trọng khi dùng <span class="hl">nhiều lần</span> hoặc dữ liệu lớn.</p></div></div></div>
+    <div class="tb4"><h4>⏱️ Đánh giá thời gian — Tính độc lập</h4><p>Phải độc lập với máy, ngôn ngữ, trình biên dịch. Dùng T(n) = số phép toán sơ cấp.</p><div class="nbox"><strong>Tình trạng dữ liệu</strong> cũng ảnh hưởng: mảng gần sắp thì sort nhanh hơn.</div></div>
+    <div class="tb4"><h4>🔵 Ký hiệu Big-O</h4><p>f(n)=O(g(n)) khi f(n) ≤ C·g(n) với mọi n ≥ n₀. Hằng số không quan trọng khi n→∞.</p><div class="fbox">f(n)=2n²+3n+5 → O(n²) (giữ bậc cao nhất, bỏ hệ số)</div><div class="wbox">⚠️ Thứ tự: O(1) &lt; O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n²) &lt; O(n³) &lt; O(2ⁿ)</div></div>
+    <div class="tb4"><h4>🔍 Tìm kiếm là gì?</h4><p>So khớp phần tử danh sách với giá trị khóa cho trước. Kết quả: vị trí phần tử thỏa mãn, hoặc <strong>−1/NULL</strong> nếu không có.</p></div>`},
+  {id:'t2',icon:'🔍',title:'Bài 3 — Tìm Kiếm Tuyến Tính (Linear Search)',color:'#58a6ff',html:`
+    <div class="tb4"><h4>💡 Ý tưởng</h4><ul class="sl"><li>i=0 (bắt đầu đầu tiên)</li><li>So sánh a[i] với X: bằng → tìm thấy, dừng</li><li>i=i+1. Nếu i=n → hết mảng, dừng. Ngược lại lặp bước 2</li></ul></div>
+    <div class="tb4"><h4>📊 Đánh giá</h4><div class="twocol"><div class="mc"><h5>🟢 Tốt nhất</h5><p>Phần tử đầu = X<br>So sánh: <span class="hlg">1</span> → O(1)</p></div><div class="mc"><h5>🔴 Xấu nhất</h5><p>Cuối hoặc không có<br>So sánh: <span class="hlr">n</span> → O(n)</p></div></div><div class="fbox">Trung bình: (n+1)/2 lần so sánh — T(n)=O(n)</div></div>
+    <div class="tb4"><h4>✅ Ưu/Nhược điểm</h4><div class="twocol"><div class="mc"><h5>✅ Ưu điểm</h5><p>Không cần sắp xếp, đơn giản</p></div><div class="mc"><h5>❌ Nhược điểm</h5><p>Chậm O(n) khi n lớn</p></div></div></div>`},
+  {id:'t3',icon:'🎯',title:'Bài 3 — Tìm Kiếm Nhị Phân (Binary Search)',color:'#3fb950',html:`
+    <div class="tb4"><h4>⚠️ Điều kiện — CỰC QUAN TRỌNG</h4><div class="wbox">Mảng <strong>BẮT BUỘC phải có thứ tự</strong> trước khi dùng Binary Search!</div></div>
+    <div class="tb4"><h4>💡 Ý tưởng — Chia đôi</h4><ul class="sl"><li>Left=0, Right=n-1</li><li>Mid=(Left+Right)/2 — lấy giữa</li><li>a[Mid]==X → tìm thấy; a[Mid]&lt;X → Left=Mid+1; a[Mid]&gt;X → Right=Mid-1</li><li>Left≤Right → lặp bước 2. Ngược lại → không tìm thấy</li></ul></div>
+    <div class="tb4"><h4>📊 Đánh giá</h4><div class="twocol"><div class="mc"><h5>🟢 Tốt nhất</h5><p>Giữa đúng là X → O(1)</p></div><div class="mc"><h5>🔵 Avg/Worst</h5><p>Mỗi bước loại ½ → <span class="hlb">O(log₂n)</span></p></div></div><div class="fbox">n=1024 → 10 bước | n=1.000.000 → 20 bước</div></div>
+    <div class="tb4"><h4>🔄 Binary Insertion Sort</h4><p>Dùng Binary Search tìm vị trí chèn → ít so sánh hơn, nhưng số lần dịch vẫn như cũ → vẫn O(n²).</p></div>`},
+  {id:'t4',icon:'🔁',title:'Bài 4 — Interchange Sort (Đổi Chỗ)',color:'#bc8cff',html:`
+    <div class="tb4"><h4>💡 Ý tưởng — Triệt tiêu nghịch thế</h4><p>Xuất phát <span class="hl">đầu dãy</span> (a[i]), tìm tất cả nghịch thế với a[i], đổi chỗ ngay khi phát hiện.</p><div class="nbox">Code: <strong>for(i=0;i&lt;n-1;i++) for(j=i+1;j&lt;n;j++) if(a[j]&lt;a[i]) swap</strong></div></div>
+    <div class="tb4"><h4>📊 Đánh giá</h4><div class="twocol"><div class="mc"><h5>🟢 Tốt nhất</h5><p>So sánh: <span class="hlg">n(n-1)/2</span><br>Swap: <span class="hlg">0</span></p></div><div class="mc"><h5>🔴 Xấu nhất</h5><p>So sánh: <span class="hlr">n(n-1)/2</span><br>Swap: <span class="hlr">n(n-1)/2</span></p></div></div><div class="fbox">Big-O: O(n²) — Unstable (không ổn định)</div></div>`},
+  {id:'t5',icon:'🫧',title:'Bài 4 — Bubble Sort (Nổi Bọt)',color:'#bc8cff',html:`
+    <div class="tb4"><h4>💡 Ý tưởng — Bọt nổi từ đáy</h4><p>Xuất phát <span class="hl">cuối dãy</span>, đổi các cặp kề nhau nếu sai thứ tự. Phần tử nhỏ "nổi" về đầu.</p><div class="nbox">Code: <strong>for(i=0;i&lt;n-1;i++) for(j=n-1;j&gt;i;j--) if(a[j]&lt;a[j-1]) swap</strong></div></div>
+    <div class="tb4"><h4>📊 Đánh giá</h4><div class="twocol"><div class="mc"><h5>🟢 Tốt nhất</h5><p>So sánh: n(n-1)/2, Swap: 0</p></div><div class="mc"><h5>🔴 Xấu nhất</h5><p>So sánh: n(n-1)/2, Swap: n(n-1)/2</p></div></div><div class="fbox">Big-O: O(n²) — ✅ Stable (ổn định)</div><div class="wbox">⚠️ Bubble và Interchange cùng n(n-1)/2 lần so sánh nhưng KHÁC: Bubble so cặp KỀ, Interchange so a[i] vs a[j] bất kỳ.</div></div>`},
+  {id:'t6',icon:'🎯',title:'Bài 4 — Selection Sort (Chọn Trực Tiếp)',color:'#bc8cff',html:`
+    <div class="tb4"><h4>💡 Ý tưởng</h4><p>Chọn phần tử nhỏ nhất đoạn còn lại, đưa về đầu đoạn. Lưu <code>min_idx</code> rồi swap 1 lần.</p><div class="nbox">Code: <strong>min_idx=i; for(j=i+1;j&lt;n;j++) if(a[j]&lt;a[min_idx]) min_idx=j; swap(a[i],a[min_idx]);</strong></div></div>
+    <div class="tb4"><h4>📊 Đánh giá</h4><div class="twocol"><div class="mc"><h5>🟢 Tốt nhất</h5><p>So sánh: n(n-1)/2, Swap: 0</p></div><div class="mc"><h5>🔴 Xấu nhất</h5><p>So sánh: n(n-1)/2, Swap: <span class="hlg">n-1 ← ÍT!</span></p></div></div><div class="fbox">Big-O: O(n²) — Unstable — Swap ÍT NHẤT trong O(n²)</div></div>`},
+  {id:'t7',icon:'📥',title:'Bài 4 — Insertion Sort (Chèn Trực Tiếp)',color:'#bc8cff',html:`
+    <div class="tb4"><h4>💡 Ý tưởng — Như xếp bài tú lơ khơ</h4><p>i-1 phần tử đầu đã có thứ tự. Chèn a[i] vào đúng vị trí trong đoạn đó.</p><div class="nbox">Code: <strong>key=a[i]; j=i-1; while(j≥0 &amp;&amp; a[j]&gt;key){a[j+1]=a[j]; j--;} a[j+1]=key;</strong></div></div>
+    <div class="tb4"><h4>📊 Đánh giá — ĐIỂM ĐẶC BIỆT</h4><div class="twocol"><div class="mc"><h5>🟢 Tốt nhất (mảng đã sắp)</h5><p>So sánh: <span class="hlg">n-1</span> → <strong>O(n) duy nhất!</strong></p></div><div class="mc"><h5>🔴 Xấu nhất</h5><p>So sánh: n(n-1)/2 → O(n²)</p></div></div><div class="fbox">Big-O: O(n²) nhưng best case O(n)! — ✅ Stable</div><div class="wbox">⭐ Thuật toán O(n²) DUY NHẤT có best case O(n). Hay ra thi!</div></div>`},
+  {id:'t8',icon:'⚡',title:'Bài 5 — Quick Sort (Sắp Xếp Nhanh)',color:'#d29922',html:`
+    <div class="tb4"><h4>💡 Ý tưởng — Phân hoạch chia 3</h4><p>Pivot = a[(left+right)/2]. Phân hoạch: trái &lt; pivot, giữa = pivot, phải &gt; pivot. Đệ quy 2 bên.</p><ul class="sl"><li>x=a[(L+R)/2], i=L, j=R</li><li>while(a[i]&lt;x) i++; while(a[j]&gt;x) j--</li><li>if(i≤j): swap, i++, j-- → lặp khi i≤j</li><li>if(L&lt;j) QS(L,j); if(i&lt;R) QS(i,R)</li></ul></div>
+    <div class="tb4"><h4>📊 Đánh giá</h4><div class="twocol"><div class="mc"><h5>✅ Ưu điểm</h5><p>Best O(n), avg O(n log n), cache-friendly, hằng số nhỏ</p></div><div class="mc"><h5>❌ Hạn chế</h5><p>Worst <span class="hlr">O(n²)</span> khi sorted+pivot đầu/cuối, đệ quy tốn RAM</p></div></div><div class="wbox">⚠️ Worst O(n²): mảng đã sắp + pivot đầu/cuối → mỗi lần chia 1 và n-1.</div></div>`},
+  {id:'t9',icon:'🔀',title:'Bài 5 — Merge Sort (Trộn Trực Tiếp)',color:'#d29922',html:`
+    <div class="tb4"><h4>💡 Ý tưởng — Chia để trị</h4><ul class="sl"><li>Chia mảng thành 2 nửa</li><li>Đệ quy sắp từng nửa</li><li>Merge 2 nửa đã sắp thành 1 mảng có thứ tự</li></ul></div>
+    <div class="tb4"><h4>📊 Đánh giá — ĐẶC BIỆT</h4><div class="twocol"><div class="mc"><h5>✅ Ưu điểm</h5><p>LUÔN <span class="hlg">O(n log n)</span>, Stable</p></div><div class="mc"><h5>❌ Hạn chế</h5><p>Cần thêm <span class="hlr">O(n) RAM</span></p></div></div><div class="fbox">Best/Avg/Worst: đều O(n log n) — Space: O(n)</div><div class="nbox">Quick nhanh hơn thực tế (cache), Merge đảm bảo hơn (worst).</div></div>`},
+  {id:'t10',icon:'🏁',title:'Tổng kết — So sánh & Chọn thuật toán',color:'#f778ba',html:`
+    <div class="tb4"><h4>🗺️ Bản đồ chọn thuật toán</h4><div class="twocol"><div class="mc"><h5>🔍 Tìm kiếm</h5><p>Chưa sắp → Linear | Đã sắp → Binary</p></div><div class="mc"><h5>🔃 Sort nhỏ/gần sắp</h5><p>Gần sắp → Insertion | Ít swap → Selection</p></div><div class="mc"><h5>⚡ Sort lớn</h5><p>Nhanh tb → Quick | Đảm bảo → Merge</p></div><div class="mc"><h5>🛡️ Stable sort</h5><p>O(n²): Bubble, Insertion | O(nlogn): Merge</p></div></div></div>
+    <div class="tb4"><h4>📋 Bảng số lần phép toán</h4><div class="fbox">Interchange: so sánh n(n-1)/2, swap 0→n(n-1)/2
+Bubble:      so sánh n(n-1)/2, swap 0→n(n-1)/2
+Selection:   so sánh n(n-1)/2, swap 0→n-1  ← ÍT NHẤT
+Insertion:   so sánh n-1→n(n-1)/2, best O(n)!
+Linear:      so sánh 1→n, avg (n+1)/2
+Binary:      so sánh 1→log₂n</div></div>
+    <div class="tb4"><h4>🎓 Top 5 hay ra thi</h4><ul><li style="margin-bottom:6px"><strong style="color:var(--rd)">1.</strong> Binary Search bắt buộc mảng có thứ tự</li><li style="margin-bottom:6px"><strong style="color:var(--gn)">2.</strong> Insertion Sort duy nhất có best O(n)</li><li style="margin-bottom:6px"><strong style="color:var(--yw)">3.</strong> Quick Sort worst O(n²) khi sorted+pivot đầu/cuối</li><li style="margin-bottom:6px"><strong style="color:var(--pu)">4.</strong> Selection Sort ít swap nhất: n-1</li><li style="margin-bottom:6px"><strong style="color:var(--ac)">5.</strong> Merge Sort luôn O(n log n), tốn O(n) RAM thêm</li></ul></div>`},
+];
+let theoryBuilt=false;
+function buildTheory(){
+  if(theoryBuilt)return;
+  theoryBuilt=true;
+  const root=document.getElementById('theory-root');
+  root.innerHTML=THEORY.map(t=>`
+    <div class="acc"><button class="ahd" onclick="toggleAcc('${t.id}')" id="ahd-${t.id}" style="border-left:3px solid ${t.color}">
+      <span>${t.icon} ${t.title}</span><span class="aarw">▶</span>
+    </button><div class="abd" id="abd-${t.id}">${t.html}</div></div>`).join('');
+}
+function toggleAcc(id){
+  const h=document.getElementById('ahd-'+id),b=document.getElementById('abd-'+id);
+  const op=b.classList.contains('op');
+  h.classList.toggle('op',!op);b.classList.toggle('op',!op);
+}
+
+// ═══ QUIZ DATA ═══
+const QS=[
+  {cat:'search',q:'Binary Search yêu cầu điều kiện gì đối với mảng?',code:'',
+   opts:['Phần tử phải phân biệt','Mảng phải đã được sắp xếp','Số phần tử là lũy thừa 2','Kích thước cố định'],
+   ans:1,ex:'Binary Search chia đôi vùng tìm kiếm — chỉ đúng khi mảng <strong>có thứ tự</strong>. Mảng chưa sắp → kết quả sai.'},
+  {cat:'search',q:'Độ phức tạp trung bình của Linear Search trên n phần tử?',code:'',
+   opts:['O(1)','O(log n)','O(n)','O(n²)'],
+   ans:2,ex:'Linear duyệt lần lượt. Trung bình tìm ở (n+1)/2 → <strong>O(n)</strong>.'},
+  {cat:'search',q:'Binary Search trên mảng 1024 phần tử cần tối đa bao nhiêu lần so sánh?',code:'',
+   opts:['10','12','16','512'],
+   ans:0,ex:'log₂(1024)=10. Mỗi bước loại ½ → tối đa <strong>10 lần</strong>.'},
+  {cat:'search',q:'Trong Binary Search: khi a[mid] < x thì làm gì?',code:'',
+   opts:['right = mid - 1','left = mid + 1','left = mid','right = mid'],
+   ans:1,ex:'a[mid]<x tức X nằm bên <strong>phải</strong> mid → <code>left=mid+1</code>.'},
+  {cat:'search',q:'Linear Search trả về gì khi không tìm thấy?',code:'',
+   opts:['0','NULL','−1','Không xác định'],
+   ans:2,ex:'Trả về <strong>−1</strong> (chỉ số hợp lệ ≥ 0, nên −1 là "không có").'},
+  {cat:'search',q:'Mảng {1,3,5,7,9,11}. Binary Search tìm x=7. Cần bao nhiêu lần so sánh?',code:'',
+   opts:['1','2','3','4'],
+   ans:2,ex:'mid=2(5)<7→left=3; mid=4(9)>7→right=3; mid=3(7)✓. Tổng <strong>3 lần</strong>.'},
+  {cat:'search',q:'Điều kiện vòng while đúng trong Binary Search?',code:'',
+   opts:['while(left < right)','while(left <= right)','while(left != right)','while(left > 0)'],
+   ans:1,ex:'Phải là <strong>left<=right</strong>. Khi left==right còn 1 phần tử cần kiểm tra.'},
+  {cat:'search',q:'Binary Insertion Sort khác Insertion Sort ở điểm nào?',code:'',
+   opts:['Sắp từ cuối lên','Dùng Binary Search tìm vị trí chèn','Không cần dịch phần tử','Độ phức tạp O(n log n)'],
+   ans:1,ex:'Dùng <strong>Binary Search</strong> thay Linear Search tìm vị trí chèn → ít so sánh hơn, nhưng dịch vẫn như cũ → vẫn O(n²).'},
+  {cat:'sort1',q:'Thuật toán nào có số lần swap ÍT NHẤT (worst case)?',code:'',
+   opts:['Bubble Sort','Interchange Sort','Selection Sort','Insertion Sort'],
+   ans:2,ex:'<strong>Selection Sort</strong>: tối đa <strong>n−1 swap</strong> (1 swap/lượt sau khi tìm min).'},
+  {cat:'sort1',q:'Bubble Sort khác Interchange Sort ở điểm nào?',code:'',
+   opts:['Bubble không cần swap','Bubble đổi chỗ cặp KỀ NHAU, duyệt từ CUỐI','Bubble có O(n log n)','Bubble chọn phần tử nhỏ nhất'],
+   ans:1,ex:'Bubble: đổi cặp <strong>kề nhau</strong>, j đi từ <strong>cuối xuống</strong>. Interchange: a[i] vs a[j] bất kỳ, j từ i+1 lên.'},
+  {cat:'sort1',q:'Thuật toán O(n²) nào là STABLE?',code:'',
+   opts:['Interchange Sort','Selection Sort','Cả 4 đều stable','Bubble Sort và Insertion Sort'],
+   ans:3,ex:'<strong>Bubble và Insertion</strong> stable. Interchange và Selection unstable.'},
+  {cat:'sort1',q:'Insertion Sort có best case O(n) khi nào?',code:'',
+   opts:['Mảng có phần tử đặc biệt','Mảng đã sắp xếp tăng dần','Mảng sắp ngược','Các phần tử bằng nhau'],
+   ans:1,ex:'Mảng <strong>đã sắp tăng dần</strong>: while không bao giờ chạy → n−1 so sánh → <strong>O(n)</strong>.'},
+  {cat:'sort1',q:'Mảng {5,3,8,1,9}. Sau 1 pass Bubble Sort, kết quả?',code:'',
+   opts:['{1,3,5,8,9}','{3,5,1,8,9}','{1,5,3,8,9}','{3,5,8,1,9}'],
+   ans:1,ex:'j từ 4 xuống: j=4: 9>1 ok; j=3: 1<8 ok; j=2: 8>3 swap→{5,3,1,8,9}; j=1: 3<5 swap→{3,5,1,8,9}. KQ: <strong>{3,5,1,8,9}</strong>.'},
+  {cat:'sort1',q:'Số lần so sánh của Interchange Sort với n phần tử (mọi trường hợp)?',code:'',
+   opts:['n−1','n(n−1)/2','n log n','n²'],
+   ans:1,ex:'2 vòng for lồng cố định → luôn <strong>n(n−1)/2</strong> lần so sánh. Chỉ swap thay đổi theo dữ liệu.'},
+  {cat:'sort1',q:'Mảng {4,2,7,1,5}. Sau lượt i=0 của Selection Sort?',code:'',
+   opts:['{1,2,7,4,5}','{1,4,7,2,5}','{1,2,4,7,5}','{2,4,7,1,5}'],
+   ans:0,ex:'min=1 tại vị trí 3. Swap a[0]↔a[3] → <strong>{1,2,7,4,5}</strong>.'},
+  {cat:'sort1',q:'Insertion Sort: số lần so sánh best case với n phần tử?',code:'',
+   opts:['1','n−1','n(n−1)/2','n log n'],
+   ans:1,ex:'Best case: vòng for n−1 lần, mỗi lần 1 so sánh → tổng <strong>n−1</strong> → O(n).'},
+  {cat:'sort1',q:'Điều nào ĐÚNG: Selection Sort vs Interchange Sort?',code:'',
+   opts:['Selection stable, Interchange không','Selection lưu min_idx, swap 1 lần sau; Interchange swap ngay','Selection có best O(n)','Interchange dùng ít bộ nhớ hơn'],
+   ans:1,ex:'<strong>Selection</strong>: lưu min_idx, swap 1 lần cuối → n−1 swap tối đa. <strong>Interchange</strong>: swap ngay khi nghịch thế → nhiều hơn.'},
+  {cat:'sort2',q:'Quick Sort worst case O(n²) xảy ra khi nào?',code:'',
+   opts:['Mảng nhiều phần tử trùng','Mảng đã sắp + pivot đầu hoặc cuối','Mảng ngẫu nhiên','n là số nguyên tố'],
+   ans:1,ex:'Sorted + pivot đầu/cuối → mỗi lần chia (0,n-1) → n đệ quy → <strong>O(n²)</strong>.'},
+  {cat:'sort2',q:'Merge Sort worst case?',code:'',
+   opts:['O(n)','O(n log n)','O(n²)','O(log n)'],
+   ans:1,ex:'Merge Sort luôn chia 2 và merge → <strong>O(n log n)</strong> mọi trường hợp.'},
+  {cat:'sort2',q:'Slide dùng pivot nào trong Quick Sort?',code:'',
+   opts:['Phần tử đầu','Phần tử cuối','a[(left+right)/2]','Phần tử nhỏ nhất'],
+   ans:2,ex:'Pivot = <code>a[(left+right)/2]</code> — <strong>phần tử giữa</strong>. Ít bị worst case hơn đầu/cuối.'},
+  {cat:'sort2',q:'Nhược điểm chính Merge Sort so với Quick Sort?',code:'',
+   opts:['Chậm hơn mọi TH','Cần O(n) bộ nhớ phụ','Không ổn định','Khó cài đặt hơn'],
+   ans:1,ex:'Merge Sort cần mảng tạm L[], R[] → tốn thêm <strong>O(n) RAM</strong>. Quick Sort in-place.'},
+  {cat:'sort2',q:'Quick Sort gọi đệ quy với điều kiện gì?',code:'',
+   opts:['if(left==right)','if(left<right) cả 2','if(left<j) và if(i<right)','Luôn đệ quy'],
+   ans:2,ex:'Sau phân hoạch: <code>if(left&lt;j) QS(L,j)</code> và <code>if(i&lt;right) QS(i,R)</code> — chỉ đệ quy khi còn ≥2 phần tử.'},
+  {cat:'sort2',q:'Ưu điểm Merge Sort so với Quick Sort?',code:'',
+   opts:['Nhanh hơn mọi TH','Không cần RAM phụ','Worst O(n log n) và stable','Dễ cài hơn'],
+   ans:2,ex:'Merge: <strong>worst O(n log n)</strong> và <strong>stable</strong>. Quick: worst O(n²), unstable nhưng nhanh hơn thực tế.'},
+  {cat:'sort2',q:'Merge Sort chia mảng {5,2,8,1} bước đầu tiên?',code:'',
+   opts:['{5} và {2,8,1}','{5,2} và {8,1}','{5,2,8} và {1}','Không chia'],
+   ans:1,ex:'mid=(0+3)/2=1. Nửa trái: a[0..1]=<strong>{5,2}</strong>, nửa phải: a[2..3]=<strong>{8,1}</strong>.'},
+  {cat:'bigo',q:'f(n)=3n³+2n²+5n+100. Big-O là?',code:'',
+   opts:['O(n²)','O(n³)','O(3n³)','O(n³+n²)'],
+   ans:1,ex:'Giữ bậc cao nhất, bỏ hệ số → <strong>O(n³)</strong>.'},
+  {cat:'bigo',q:'Thứ tự tăng dần đúng?',code:'',
+   opts:['O(n)<O(log n)<O(1)','O(1)<O(n)<O(log n)','O(1)<O(log n)<O(n)<O(n log n)<O(n²)','O(log n)<O(1)<O(n)'],
+   ans:2,ex:'<strong>O(1) &lt; O(log n) &lt; O(n) &lt; O(n log n) &lt; O(n²)</strong>.'},
+  {cat:'bigo',q:'T₁=1000n và T₂=n². Với n đủ lớn, cái nào tốt hơn?',code:'',
+   opts:['T₂ vì đơn giản','T₁ vì O(n)<O(n²) khi n→∞','Phụ thuộc C','Bằng nhau'],
+   ans:1,ex:'Khi n>1000: T₁=O(n) luôn nhanh hơn T₂=O(n²). Hằng số không quan trọng khi n→∞.'},
+  {cat:'bigo',q:'Big-O biểu diễn điều gì?',code:'',
+   opts:['Thời gian chạy chính xác (giây)','Cận trên (worst case) của thời gian','Thời gian tốt nhất','RAM sử dụng'],
+   ans:1,ex:'Big-O = <strong>cận trên/upper bound</strong> — worst case, độc lập máy tính và ngôn ngữ.'},
+  {cat:'bigo',q:'2 vòng for lồng, mỗi vòng n lần. Độ phức tạp?',code:'',
+   opts:['O(n)','O(2n)','O(n²)','O(n+n)'],
+   ans:2,ex:'n × n = n² phép toán → <strong>O(n²)</strong>. Dấu hiệu nhận biết các sort O(n²).'},
+  {cat:'bigo',q:'Thuật toán có best O(n) VÀ worst O(n²)?',code:'',
+   opts:['Merge Sort','Selection Sort','Quick Sort','Binary Search'],
+   ans:2,ex:'<strong>Quick Sort</strong>: best O(n), avg O(n log n), worst O(n²). Điểm đặc biệt hay ra thi.'},
+  {cat:'bigo',q:'T(n)=7 (hằng số). Big-O là?',code:'',
+   opts:['O(7)','O(n)','O(1)','O(0)'],
+   ans:2,ex:'Mọi hằng số → <strong>O(1)</strong>. Không phụ thuộc n.'},
+  {cat:'code',q:'Đoạn code dưới là thuật toán gì?',
+   code:'for(i=0;i<n-1;i++)\n  for(j=n-1;j>i;j--)\n    if(a[j]<a[j-1]) swap(a[j],a[j-1]);',
+   opts:['Interchange Sort','Bubble Sort','Selection Sort','Insertion Sort'],
+   ans:1,ex:'<strong>Bubble Sort</strong>: j từ n-1 xuống i, swap cặp kề a[j] và a[j-1].'},
+  {cat:'code',q:'Đoạn code dưới là thuật toán gì?',
+   code:'for(i=0;i<n-1;i++){\n  min_idx=i;\n  for(j=i+1;j<n;j++)\n    if(a[j]<a[min_idx]) min_idx=j;\n  swap(a[i],a[min_idx]);\n}',
+   opts:['Interchange Sort','Bubble Sort','Selection Sort','Insertion Sort'],
+   ans:2,ex:'<strong>Selection Sort</strong>: lưu min_idx, swap 1 lần NGOÀI vòng for j.'},
+  {cat:'code',q:'Insertion Sort bắt đầu từ i=1. Tại sao không phải i=0?',code:'',
+   opts:['a[0] luôn =0','a[0] đã là mảng 1 phần tử có thứ tự, chèn từ a[1]','Chỉ số bắt đầu từ 1','Tránh tràn bộ nhớ'],
+   ans:1,ex:'a[0] đơn lẻ đã là "mảng sắp" 1 phần tử. Từ <strong>i=1</strong> mới cần chèn.'},
+  {cat:'code',q:'Binary Search tìm x=11 trong {1,3,5,7,9,11,13,15}. Trả về chỉ số?',code:'',
+   opts:['4','5','6','3'],
+   ans:1,ex:'Bước 1: mid=3,a[3]=7<11→left=4. Bước 2: mid=5,a[5]=11=x → return <strong>5</strong>.'},
+  {cat:'code',q:'Hàm swap trong C phải dùng & (tham chiếu) vì sao?',code:'',
+   opts:['Chạy nhanh hơn','Thay đổi biến GỐC, không phải bản sao','C không hỗ trợ tham trị','Tiết kiệm RAM'],
+   ans:1,ex:'Tham trị tạo bản sao → biến gốc không đổi. Phải dùng <strong>tham chiếu (&)</strong>.'},
+  {cat:'code',q:'Mảng {6,3,8,2,9,1}. Sau lượt i=0 của Interchange Sort, a[0]=?',code:'',
+   opts:['1','2','3','6'],
+   ans:0,ex:'i=0: swap với 3→{3,..}; swap với 2→{2,..}; swap với 1→{1,...}. a[0]=<strong>1</strong>.'},
+  {cat:'code',q:'Đoạn code Quick Sort gọi đệ quy đúng cú pháp?',
+   code:'// sau khi phân hoạch, i và j đã gặp nhau\n// left, right, i, j là các biến phân hoạch',
+   opts:['QuickSort(left,right)','if(left<j) QS(left,j); if(i<right) QS(i,right)','QS(left,mid); QS(mid+1,right)','QS(0,n-1)'],
+   ans:1,ex:'<code>if(left&lt;j) QS(left,j)</code> và <code>if(i&lt;right) QS(i,right)</code> — chỉ đệ quy khi đoạn có ≥2 phần tử.'},
+  {cat:'code',q:'Trace Merge Sort {5,2,8,1}: sau bước merge cuối, kết quả?',code:'',
+   opts:['{1,2,5,8}','{2,5,1,8}','{1,5,2,8}','{2,1,5,8}'],
+   ans:0,ex:'Chia {5,2}→{2,5} và {8,1}→{1,8}. Merge {2,5} và {1,8} → <strong>{1,2,5,8}</strong>.'},
+  {cat:'code',q:'for(i=0;i<n-1;i++) for(j=i+1;j<n;j++) if(a[i]>a[j]) swap(a[i],a[j]); — thuật toán gì?',code:'',
+   opts:['Bubble Sort','Selection Sort','Interchange Sort','Insertion Sort'],
+   ans:2,ex:'j từ i+1 lên, swap ngay khi a[i]>a[j] → <strong>Interchange Sort</strong>. Dấu hiệu: j=i+1, swap ngay, không lưu min.'},
+];
+
+// ═══ QUIZ STATE ═══
+let QF=[...QS], QI=0, QANS=[], QSEL=null, QOK=0, QFAIL=0;
+
+function qInit(){
+  QANS=new Array(QF.length).fill(null);
+  QI=0;QSEL=null;QOK=0;QFAIL=0;
+  document.getElementById('qresult').style.display='none';
+  qRender();
+}
+
+function qRender(){
+  const q=QF[QI];
+  if(!q){return;}
+  // tag
+  const tagMap={search:['ts','🔍 Tìm kiếm'],sort1:['ts1','🔁 O(n²)'],sort2:['ts2','⚡ O(nlogn)'],bigo:['tb','📊 Big-O'],code:['tc','💻 Code']};
+  const[tc,tn]=tagMap[q.cat]||['ts','Câu'];
+  const tg=document.getElementById('qtag');
+  tg.className='tag '+tc;
+  tg.textContent='Câu '+(QI+1)+' — '+tn;
+  // counters
+  document.getElementById('qcur').textContent=QI+1;
+  document.getElementById('qtot').textContent=QF.length;
+  document.getElementById('qok').textContent=QOK;
+  document.getElementById('qno').textContent=QFAIL;
+  document.getElementById('qprog').style.width=((QI+1)/QF.length*100).toFixed(1)+'%';
+  // question
+  document.getElementById('qtext').textContent=q.q;
+  // code block
+  const cw=document.getElementById('qcodewrap');
+  if(q.code){cw.style.display='block';document.getElementById('qcodepre').textContent=q.code;}
+  else cw.style.display='none';
+  // options
+  const answered=QANS[QI];
+  const L=['A','B','C','D'];
+  let html='';
+  q.opts.forEach((o,i)=>{
+    let cls='qopt';
+    if(answered!==null){if(i===q.ans)cls+=' ok';else if(i===QSEL)cls+=' no';}
+    else if(i===QSEL)cls+=' sel';
+    const dis=answered!==null?'disabled':'';
+    html+=`<button class="${cls}" ${dis} onclick="qSel(${i})"><span class="qltr">${L[i]}</span><span>${o}</span></button>`;
+  });
+  document.getElementById('qopts').innerHTML=html;
+  // explain
+  const exp=document.getElementById('qexp');
+  if(answered!==null){
+    exp.style.display='block';
+    const ok=answered===true;
+    exp.style.background=ok?'rgba(63,185,80,.1)':'rgba(248,81,73,.08)';
+    exp.style.borderLeft=ok?'3px solid #3fb950':'3px solid #f85149';
+    exp.style.color=ok?'#7ee787':'#ffb3b0';
+    exp.style.borderRadius='0 8px 8px 0';
+    exp.innerHTML=(ok?'✅ Đúng! ':'❌ Sai! ')+q.ex;
+  } else {
+    exp.style.display='none';
+  }
+  // check btn
+  const cb=document.getElementById('qchk');
+  cb.disabled=(QSEL===null||answered!==null);
+  cb.style.opacity=cb.disabled?'0.4':'1';
+}
+
+function qSel(i){if(QANS[QI]!==null)return;QSEL=i;qRender();}
+function qCheck(){
+  if(QSEL===null||QANS[QI]!==null)return;
+  const ok=QSEL===QF[QI].ans;
+  QANS[QI]=ok;
+  if(ok)QOK++;else QFAIL++;
+  qRender();
+}
+function qNext(){if(QI<QF.length-1){QI++;QSEL=null;qRender();}else qDone();}
+function qPrev(){if(QI>0){QI--;QSEL=null;qRender();}}
+function qDone(){
+  const pct=Math.round(QOK/QF.length*100);
+  const e=pct>=80?'🏆':pct>=60?'😊':'📚';
+  const t=pct>=80?'Xuất sắc!':pct>=60?'Khá tốt!':'Cần ôn thêm!';
+  document.getElementById('remoji').textContent=e;
+  document.getElementById('rtitle').textContent=t;
+  document.getElementById('rdetail').innerHTML=`Đúng <strong style="color:#3fb950">${QOK}</strong> / ${QF.length} — Tỉ lệ <strong style="color:#58a6ff">${pct}%</strong>`;
+  document.getElementById('qresult').style.display='block';
+}
+function qShuffle(){
+  for(let i=QF.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[QF[i],QF[j]]=[QF[j],QF[i]];}
+  qInit();
+}
+function qRestart(){qInit();}
+function qFilter(k){
+  document.querySelectorAll('#qfbar .fb').forEach(b=>b.classList.remove('on'));
+  document.querySelector('#qfbar .fb[data-k="'+k+'"]').classList.add('on');
+  QF=k==='all'?[...QS]:QS.filter(q=>q.cat===k);
+  qInit();
+}
+
+// Auto-init quiz on page load
+qInit();
+</script>
+</body>
+</html>

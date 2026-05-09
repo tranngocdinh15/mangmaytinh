@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ôn Tập – Phụ Thuộc Hàm</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f1a;
+    --surface: #141827;
+    --card: #1a1f35;
+    --border: #252d4a;
+    --accent: #4f8ef7;
+    --accent2: #a78bfa;
+    --accent3: #34d399;
+    --accent4: #f59e0b;
+    --accent5: #f472b6;
+    --text: #e2e8f0;
+    --muted: #8892a4;
+    --highlight: #f0f4ff;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Be Vietnam Pro', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(79,142,247,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79,142,247,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 56px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .header .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, rgba(79,142,247,0.2), rgba(167,139,250,0.2));
+    border: 1px solid rgba(79,142,247,0.4);
+    border-radius: 100px;
+    padding: 6px 18px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .header h1 {
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.15;
+    background: linear-gradient(135deg, #e2e8f0 0%, var(--accent) 50%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 14px;
+  }
+
+  .header p {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 28px;
+  }
+  .progress-dot {
+    width: 32px;
+    height: 4px;
+    border-radius: 4px;
+    background: var(--border);
+    transition: background 0.4s;
+    cursor: pointer;
+  }
+  .progress-dot.active { background: var(--accent); }
+  .progress-dot.done { background: var(--accent3); }
+
+  /* Nav tabs */
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 36px;
+    animation: fadeUp 0.5s 0.2s ease both;
+  }
+
+  .nav-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-btn:hover { color: var(--text); border-color: var(--accent); background: var(--surface); }
+  .nav-btn.active { color: white; border-color: transparent; }
+  .nav-btn .num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .nav-btn:nth-child(1).active { background: linear-gradient(135deg, #4f8ef7, #6d6bfa); }
+  .nav-btn:nth-child(2).active { background: linear-gradient(135deg, #a78bfa, #e879f9); }
+  .nav-btn:nth-child(3).active { background: linear-gradient(135deg, #34d399, #059669); }
+  .nav-btn:nth-child(4).active { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+  .nav-btn:nth-child(5).active { background: linear-gradient(135deg, #f472b6, #ec4899); }
+  .nav-btn:nth-child(6).active { background: linear-gradient(135deg, #60a5fa, #34d399); }
+
+  /* Sections */
+  .section { display: none; animation: fadeUp 0.4s ease both; }
+  .section.active { display: block; }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .card.blue::before { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .card.purple::before { background: linear-gradient(90deg, var(--accent2), #e879f9); }
+  .card.green::before { background: linear-gradient(90deg, var(--accent3), #10b981); }
+  .card.amber::before { background: linear-gradient(90deg, var(--accent4), #ef4444); }
+  .card.pink::before { background: linear-gradient(90deg, var(--accent5), #be185d); }
+  .card.teal::before { background: linear-gradient(90deg, #60a5fa, var(--accent3)); }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--highlight);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-title .icon {
+    font-size: 20px;
+  }
+
+  .card p { color: var(--muted); margin-bottom: 10px; }
+  .card p:last-child { margin-bottom: 0; }
+
+  em { color: var(--text); font-style: normal; }
+
+  /* Formula block */
+  .formula {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--accent);
+    margin: 12px 0;
+    white-space: pre-wrap;
+    line-height: 1.8;
+  }
+  .formula.purple { border-left-color: var(--accent2); color: var(--accent2); }
+  .formula.green { border-left-color: var(--accent3); color: var(--accent3); }
+  .formula.amber { border-left-color: var(--accent4); color: var(--accent4); }
+  .formula.pink { border-left-color: var(--accent5); color: var(--accent5); }
+
+  /* Rules grid */
+  .rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+  }
+
+  .rule-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    transition: border-color 0.25s, transform 0.25s;
+    cursor: default;
+  }
+  .rule-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+  .rule-card .rule-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .rule-card .rule-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--highlight);
+    margin-bottom: 8px;
+  }
+  .rule-card .rule-formula {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent2);
+    margin-bottom: 8px;
+    padding: 6px 10px;
+    background: rgba(167,139,250,0.08);
+    border-radius: 6px;
+  }
+  .rule-card p { font-size: 13px; color: var(--muted); }
+
+  /* Steps */
+  .steps { margin-top: 14px; }
+  .step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: flex-start;
+  }
+  .step-num {
+    min-width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: white;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-body {}
+  .step-title { font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .step-desc { color: var(--muted); font-size: 14px; }
+
+  /* Example box */
+  .example-box {
+    background: rgba(52, 211, 153, 0.06);
+    border: 1px solid rgba(52,211,153,0.2);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-top: 14px;
+  }
+  .example-box .ex-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent3);
+    margin-bottom: 8px;
+  }
+
+  /* Warning / tip */
+  .tip {
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.25);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-top: 14px;
+    font-size: 14px;
+  }
+  .tip .tip-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--accent4); margin-bottom: 6px;
+  }
+  .tip p { color: var(--muted); font-size: 14px; }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 3px 3px 3px 0;
+  }
+  .tag.blue { background: rgba(79,142,247,0.15); color: var(--accent); }
+  .tag.purple { background: rgba(167,139,250,0.15); color: var(--accent2); }
+  .tag.green { background: rgba(52,211,153,0.15); color: var(--accent3); }
+  .tag.amber { background: rgba(245,158,11,0.15); color: var(--accent4); }
+  .tag.pink { background: rgba(244,114,182,0.15); color: var(--accent5); }
+
+  /* Quiz */
+  .quiz-area { margin-top: 16px; }
+  .quiz-q {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+  .quiz-q .q-text {
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 14px;
+    font-size: 15px;
+  }
+  .quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--muted);
+    transition: all 0.2s;
+    text-align: left;
+    font-family: var(--sans);
+  }
+  .quiz-opt:hover { border-color: var(--accent); color: var(--text); }
+  .quiz-opt.correct { border-color: var(--accent3); background: rgba(52,211,153,0.1); color: var(--accent3); }
+  .quiz-opt.wrong { border-color: #ef4444; background: rgba(239,68,68,0.08); color: #f87171; }
+  .quiz-opt.disabled { pointer-events: none; }
+  .quiz-feedback { font-size: 13px; margin-top: 10px; padding: 10px 14px; border-radius: 8px; }
+  .quiz-feedback.ok { background: rgba(52,211,153,0.1); color: var(--accent3); }
+  .quiz-feedback.ko { background: rgba(239,68,68,0.08); color: #f87171; }
+
+  /* Section title */
+  .section-heading {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--highlight);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-heading .line {
+    flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* Scroll indicator */
+  .scroll-top {
+    position: fixed;
+    bottom: 32px; right: 32px;
+    width: 44px; height: 44px;
+    background: var(--accent);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(79,142,247,0.4);
+    transition: opacity 0.3s, transform 0.3s;
+    border: none;
+    color: white;
+    font-size: 18px;
+    z-index: 100;
+  }
+  .scroll-top:hover { transform: translateY(-3px); }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 600px) {
+    .rules-grid { grid-template-columns: 1fr; }
+    .nav { gap: 6px; }
+    .nav-btn { font-size: 12px; padding: 6px 12px; }
+  }
+  
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  
+  ul.plain-list { list-style: none; padding: 0; }
+  ul.plain-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 14px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  ul.plain-list li:last-child { border-bottom: none; }
+  ul.plain-list li::before {
+    content: '▸';
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  
+  b { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge">📚 Cơ Sở Dữ Liệu</div>
+    <h1>Phụ Thuộc Hàm</h1>
+    <p>Tổng hợp lý thuyết & mẹo nhớ nhanh – bấm từng mục để ôn tập</p>
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-dot active" onclick="showSection(0)"></div>
+      <div class="progress-dot" onclick="showSection(1)"></div>
+      <div class="progress-dot" onclick="showSection(2)"></div>
+      <div class="progress-dot" onclick="showSection(3)"></div>
+      <div class="progress-dot" onclick="showSection(4)"></div>
+      <div class="progress-dot" onclick="showSection(5)"></div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <div class="nav">
+    <button class="nav-btn active" onclick="showSection(0)">
+      <span class="num">A</span> Khái niệm
+    </button>
+    <button class="nav-btn" onclick="showSection(1)">
+      <span class="num">B</span> Luật Armstrong
+    </button>
+    <button class="nav-btn" onclick="showSection(2)">
+      <span class="num">C</span> Bao đóng
+    </button>
+    <button class="nav-btn" onclick="showSection(3)">
+      <span class="num">D</span> Tương đương
+    </button>
+    <button class="nav-btn" onclick="showSection(4)">
+      <span class="num">E</span> Phủ tối thiểu
+    </button>
+    <button class="nav-btn" onclick="showSection(5)">
+      <span class="num">F</span> Khóa & Siêu khóa
+    </button>
+  </div>
+
+  <!-- ============ SECTION A ============ -->
+  <div class="section active" id="s0">
+    <div class="section-heading">💡 Khái Niệm Phụ Thuộc Hàm <span class="line"></span></div>
+
+    <div class="card blue">
+      <div class="card-title"><span class="icon">📖</span> Định nghĩa</div>
+      <p>Cho lược đồ quan hệ <em>R(U)</em> và tập thuộc tính <em>X, Y ⊆ U</em>.</p>
+      <p><em>Y phụ thuộc hàm vào X</em>, ký hiệu <em>X → Y</em>, nếu:</p>
+      <div class="formula">∀ t1, t2 ∈ r : t1[X] = t2[X]  ⟹  t1[Y] = t2[Y]</div>
+      <p>Tức là: <em>hai bộ bằng nhau trên X thì cũng bằng nhau trên Y.</em></p>
+    </div>
+
+    <div class="card blue">
+      <div class="card-title"><span class="icon">🧩</span> Các loại phụ thuộc hàm</div>
+      <div class="rules-grid" style="margin-top:8px;">
+        <div class="rule-card">
+          <div class="rule-num" style="color:var(--accent)">Loại 01</div>
+          <div class="rule-name">PTH đầy đủ</div>
+          <div class="rule-formula">X → Y và không X' ⊂ X nào có X' → Y</div>
+          <p>Không bỏ được thuộc tính nào trong X mà vẫn đúng.</p>
+        </div>
+        <div class="rule-card">
+          <div class="rule-num" style="color:var(--accent2)">Loại 02</div>
+          <div class="rule-name">PTH bộ phận</div>
+          <div class="rule-formula">∃ X' ⊂ X : X' → Y</div>
+          <p>Y phụ thuộc vào tập con thực sự của X.</p>
+        </div>
+        <div class="rule-card">
+          <div class="rule-num" style="color:var(--accent3)">Loại 03</div>
+          <div class="rule-name">PTH bắc cầu</div>
+          <div class="rule-formula">X → Z và Z → Y (Z không xác định X)</div>
+          <p>Y phụ thuộc gián tiếp qua Z.</p>
+        </div>
+        <div class="rule-card">
+          <div class="rule-num" style="color:var(--accent4)">Loại 04</div>
+          <div class="rule-name">PTH tầm thường</div>
+          <div class="rule-formula">X → Y khi Y ⊆ X</div>
+          <p>Luôn đúng, không mang thông tin.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip">
+      <div class="tip-label">💡 Mẹo nhớ nhanh</div>
+      <p><em>X → Y</em>: "Biết X là biết Y" — giống như biết Mã SV → biết Tên SV. Cùng mã SV thì tên phải giống nhau!</p>
+    </div>
+
+    <div class="card blue" style="margin-top:18px;">
+      <div class="card-title"><span class="icon">🎯</span> Kiểm tra nhanh</div>
+      <div class="quiz-area">
+        <div class="quiz-q">
+          <div class="q-text">Cho quan hệ r có 2 bộ t1[AB] = t2[AB]. Kết luận nào SAI?</div>
+          <div class="quiz-opts">
+            <button class="quiz-opt" onclick="answer(this,'ko','q1')">t1[A] = t2[A] → A → B luôn đúng</button>
+            <button class="quiz-opt" onclick="answer(this,'ok','q1')">AB → C chỉ đúng khi mọi bộ có AB bằng nhau thì C bằng nhau</button>
+            <button class="quiz-opt" onclick="answer(this,'ko','q1')">A → AB là PTH tầm thường</button>
+          </div>
+          <div class="quiz-feedback" id="q1" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SECTION B ============ -->
+  <div class="section" id="s1">
+    <div class="section-heading">⚡ 6 Luật Dẫn Armstrong <span class="line"></span></div>
+
+    <div class="card purple">
+      <div class="card-title"><span class="icon">📌</span> 3 Luật cơ bản (đủ &amp; sound)</div>
+      <p>Ba luật gốc của Armstrong — từ đây suy ra tất cả các luật còn lại.</p>
+    </div>
+
+    <div class="rules-grid">
+      <div class="rule-card" style="border-color:rgba(167,139,250,0.4)">
+        <div class="rule-num" style="color:var(--accent2)">Luật 1</div>
+        <div class="rule-name">🪞 Phản xạ (Reflexivity)</div>
+        <div class="rule-formula">Y ⊆ X  ⟹  X → Y</div>
+        <p>Tập lớn hơn luôn xác định tập con của nó. Đây là PTH tầm thường.</p>
+      </div>
+      <div class="rule-card" style="border-color:rgba(167,139,250,0.4)">
+        <div class="rule-num" style="color:var(--accent2)">Luật 2</div>
+        <div class="rule-name">➕ Tăng trưởng (Augmentation)</div>
+        <div class="rule-formula">X → Y  ⟹  XZ → YZ</div>
+        <p>Thêm cùng một tập Z vào cả hai vế, phụ thuộc hàm vẫn đúng.</p>
+      </div>
+      <div class="rule-card" style="border-color:rgba(167,139,250,0.4)">
+        <div class="rule-num" style="color:var(--accent2)">Luật 3</div>
+        <div class="rule-name">🔗 Bắc cầu (Transitivity)</div>
+        <div class="rule-formula">X → Y, Y → Z  ⟹  X → Z</div>
+        <p>Quy tắc tam đoạn luận — biết X biết Y, biết Y biết Z → biết X biết Z.</p>
+      </div>
+    </div>
+
+    <div class="card purple" style="margin-top:18px;">
+      <div class="card-title"><span class="icon">🔧</span> 3 Luật dẫn xuất (từ 3 luật cơ bản)</div>
+    </div>
+
+    <div class="rules-grid">
+      <div class="rule-card" style="border-color:rgba(232,121,249,0.3)">
+        <div class="rule-num" style="color:#e879f9">Luật 4</div>
+        <div class="rule-name">✂️ Thu hẹp (Decomposition)</div>
+        <div class="rule-formula">X → YZ  ⟹  X → Y  và  X → Z</div>
+        <p>Tách vế phải ra thành từng phụ thuộc nhỏ hơn.</p>
+      </div>
+      <div class="rule-card" style="border-color:rgba(232,121,249,0.3)">
+        <div class="rule-num" style="color:#e879f9">Luật 5</div>
+        <div class="rule-name">🔀 Hợp (Union)</div>
+        <div class="rule-formula">X → Y, X → Z  ⟹  X → YZ</div>
+        <p>Gộp vế phải lại — ngược với luật thu hẹp.</p>
+      </div>
+      <div class="rule-card" style="border-color:rgba(232,121,249,0.3)">
+        <div class="rule-num" style="color:#e879f9">Luật 6</div>
+        <div class="rule-name">🔄 Giả bắc cầu (Pseudo-transitivity)</div>
+        <div class="rule-formula">X → Y, YW → Z  ⟹  XW → Z</div>
+        <p>Kết hợp thêm W vào vế trái khi cần trung gian Y.</p>
+      </div>
+    </div>
+
+    <div class="tip" style="margin-top:18px;">
+      <div class="tip-label">💡 Mẹo ghi nhớ thứ tự</div>
+      <p><b>P – T – B – H – T – G:</b> <em>Phản xạ → Tăng trưởng → Bắc cầu → Hợp → Thu hẹp → Giả bắc cầu</em></p>
+      <p style="margin-top:8px;">Hoặc: <em>"Phòng Tối Buồn, Hai Tên Gian"</em> 😄</p>
+    </div>
+
+    <div class="card purple" style="margin-top:18px;">
+      <div class="card-title"><span class="icon">🎯</span> Kiểm tra nhanh</div>
+      <div class="quiz-area">
+        <div class="quiz-q">
+          <div class="q-text">Cho X → Y và X → Z. Áp dụng luật nào để kết luận X → YZ?</div>
+          <div class="quiz-opts">
+            <button class="quiz-opt" onclick="answer(this,'ko','q2')">Luật bắc cầu</button>
+            <button class="quiz-opt" onclick="answer(this,'ok','q2')">Luật hợp (Union)</button>
+            <button class="quiz-opt" onclick="answer(this,'ko','q2')">Luật tăng trưởng</button>
+          </div>
+          <div class="quiz-feedback" id="q2" style="display:none"></div>
+        </div>
+        <div class="quiz-q">
+          <div class="q-text">Cho AB → CD. Dùng luật nào để suy ra AB → C?</div>
+          <div class="quiz-opts">
+            <button class="quiz-opt" onclick="answer(this,'ok','q3')">Luật thu hẹp (Decomposition)</button>
+            <button class="quiz-opt" onclick="answer(this,'ko','q3')">Luật phản xạ</button>
+            <button class="quiz-opt" onclick="answer(this,'ko','q3')">Luật giả bắc cầu</button>
+          </div>
+          <div class="quiz-feedback" id="q3" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SECTION C ============ -->
+  <div class="section" id="s2">
+    <div class="section-heading">🔒 Bao Đóng <span class="line"></span></div>
+
+    <div class="card green">
+      <div class="card-title"><span class="icon">📖</span> Bao đóng của tập thuộc tính</div>
+      <p>Cho tập PTH <em>F</em> và tập thuộc tính <em>X</em>. Bao đóng của X theo F:</p>
+      <div class="formula class="green">X⁺_F = { A | X → A được suy ra từ F bằng luật Armstrong }</div>
+      <p>Hiểu đơn giản: <em>X⁺ là tất cả thuộc tính mà X có thể xác định được.</em></p>
+    </div>
+
+    <div class="card green">
+      <div class="card-title"><span class="icon">🛠️</span> Thuật toán tính X⁺</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Khởi tạo</div>
+            <div class="step-desc">Đặt X⁺ = X (tức là X xác định chính nó — luật phản xạ)</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Lặp cho đến khi X⁺ không thay đổi</div>
+            <div class="step-desc">Với mỗi PTH <em>Y → Z</em> trong F: nếu <em>Y ⊆ X⁺</em> thì thêm Z vào X⁺</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Kết quả</div>
+            <div class="step-desc">X⁺ chính là bao đóng của X. Dừng khi không còn thuộc tính nào thêm được.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="example-box">
+      <div class="ex-label">📝 Ví dụ minh họa</div>
+      <p style="color:var(--muted);font-size:14px;">Cho R(A,B,C,D,E) với F = { AB→C, B→D, CD→E, CE→A }</p>
+      <p style="color:var(--muted);font-size:14px;margin-top:6px;">Tính (AB)⁺:</p>
+      <div class="formula green">
+Bước 1: X⁺ = {A, B}
+
+Bước 2 - Lần 1:
+  AB→C : {A,B} ⊆ X⁺ → thêm C → X⁺ = {A,B,C}
+  B→D  : {B} ⊆ X⁺  → thêm D → X⁺ = {A,B,C,D}
+  CD→E : {C,D} ⊆ X⁺ → thêm E → X⁺ = {A,B,C,D,E}
+  CE→A : đã có A
+
+Kết quả: (AB)⁺ = {A,B,C,D,E} = U  ⟹  AB là khóa!</div>
+    </div>
+
+    <div class="card green" style="margin-top:18px;">
+      <div class="card-title"><span class="icon">🎯</span> Ứng dụng bao đóng</div>
+      <ul class="plain-list">
+        <li>Kiểm tra <em>X → Y</em> có thuộc F⁺ không: kiểm tra Y ⊆ X⁺</li>
+        <li>Tìm <em>khóa</em>: tập K là khóa nếu K⁺ = U</li>
+        <li>Tìm <em>phủ tối thiểu</em></li>
+        <li>Kiểm tra <em>hai tập PTH tương đương</em></li>
+      </ul>
+    </div>
+
+    <div class="card green">
+      <div class="card-title"><span class="icon">🎯</span> Kiểm tra nhanh</div>
+      <div class="quiz-area">
+        <div class="quiz-q">
+          <div class="q-text">Cho F = {A→B, B→C, A→D}. Tính A⁺ = ?</div>
+          <div class="quiz-opts">
+            <button class="quiz-opt" onclick="answer(this,'ko','q4')">A⁺ = {A, B}</button>
+            <button class="quiz-opt" onclick="answer(this,'ok','q4')">A⁺ = {A, B, C, D}</button>
+            <button class="quiz-opt" onclick="answer(this,'ko','q4')">A⁺ = {A, B, D}</button>
+          </div>
+          <div class="quiz-feedback" id="q4" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SECTION D ============ -->
+  <div class="section" id="s3">
+    <div class="section-heading">⚖️ Phụ Thuộc Hàm Tương Đương <span class="line"></span></div>
+
+    <div class="card amber">
+      <div class="card-title"><span class="icon">📖</span> Định nghĩa</div>
+      <p>Hai tập PTH <em>F</em> và <em>G</em> trên cùng lược đồ R được gọi là <em>tương đương</em> nếu:</p>
+      <div class="formula amber">F ≡ G  ⟺  F⁺ = G⁺</div>
+      <p>Tức là: <em>F và G suy diễn được cùng một tập PTH.</em></p>
+    </div>
+
+    <div class="card amber">
+      <div class="card-title"><span class="icon">🔍</span> Cách kiểm tra F ≡ G</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Kiểm tra F ⊆ G⁺</div>
+            <div class="step-desc">Với mỗi PTH <em>X → Y</em> trong F, tính X⁺ theo G. Nếu <em>Y ⊆ X⁺_G</em> thì được. Làm tất cả PTH trong F.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Kiểm tra G ⊆ F⁺</div>
+            <div class="step-desc">Tương tự, với mỗi PTH trong G, kiểm tra suy diễn được từ F không.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Kết luận</div>
+            <div class="step-desc">Cả hai điều kiện đều thỏa → <em>F ≡ G</em>. Thiếu một → không tương đương.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="example-box">
+      <div class="ex-label">📝 Ví dụ</div>
+      <p style="color:var(--muted);font-size:14px;">F = { A→B, B→C } &nbsp;|&nbsp; G = { A→B, A→C, B→C }</p>
+      <div class="formula amber">
+Kiểm tra F ⊆ G⁺:
+  A→B: A⁺_G = {A,B,C} → B ⊆ {A,B,C} ✓
+  B→C: B⁺_G = {B,C}   → C ⊆ {B,C}   ✓
+
+Kiểm tra G ⊆ F⁺:
+  A→B: A⁺_F = {A,B,C} → B ⊆ {A,B,C} ✓
+  A→C: A⁺_F = {A,B,C} → C ⊆ {A,B,C} ✓
+  B→C: B⁺_F = {B,C}   → C ⊆ {B,C}   ✓
+
+⟹ F ≡ G ✅</div>
+    </div>
+
+    <div class="tip" style="margin-top:18px;">
+      <div class="tip-label">💡 Mẹo nhớ</div>
+      <p>Tương đương = <em>"hai tập có thể suy ra lẫn nhau"</em>. Giống như hai phương trình toán học khác dạng nhưng cùng tập nghiệm.</p>
+      <p style="margin-top:6px;">Chỉ cần kiểm tra từng PTH trong F có suy được từ G không (và ngược lại) — <em>không cần so sánh F⁺ trực tiếp.</em></p>
+    </div>
+
+    <div class="card amber">
+      <div class="card-title"><span class="icon">🎯</span> Kiểm tra nhanh</div>
+      <div class="quiz-area">
+        <div class="quiz-q">
+          <div class="q-text">F = {A→BC} và G = {A→B, A→C}. Hai tập này có tương đương không?</div>
+          <div class="quiz-opts">
+            <button class="quiz-opt" onclick="answer(this,'ok','q5')">Có — vì dùng luật hợp/thu hẹp để chuyển đổi lẫn nhau</button>
+            <button class="quiz-opt" onclick="answer(this,'ko','q5')">Không — vì số lượng PTH khác nhau</button>
+            <button class="quiz-opt" onclick="answer(this,'ko','q5')">Chưa đủ thông tin để kết luận</button>
+          </div>
+          <div class="quiz-feedback" id="q5" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SECTION E ============ -->
+  <div class="section" id="s4">
+    <div class="section-heading">🧹 Phủ Tối Thiểu <span class="line"></span></div>
+
+    <div class="card pink">
+      <div class="card-title"><span class="icon">📖</span> Định nghĩa</div>
+      <p>Phủ tối thiểu (canonical cover) <em>F_c</em> của F là tập PTH thỏa:</p>
+      <ul class="plain-list" style="margin-top:10px;">
+        <li>F_c ≡ F (tương đương F)</li>
+        <li>Mọi PTH trong F_c có <em>vế phải là 1 thuộc tính</em></li>
+        <li>Không có PTH dư thừa (bỏ đi thì F_c không còn tương đương F)</li>
+        <li>Vế trái của mỗi PTH là <em>tối giản</em> (không bỏ bớt được)</li>
+      </ul>
+    </div>
+
+    <div class="card pink">
+      <div class="card-title"><span class="icon">🛠️</span> Thuật toán tìm phủ tối thiểu</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Tách vế phải</div>
+            <div class="step-desc">Chuyển mọi PTH về dạng <em>X → A</em> (1 thuộc tính ở vế phải). Dùng luật thu hẹp.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Tối giản vế trái</div>
+            <div class="step-desc">Với mỗi PTH <em>XY → A</em>, thử bỏ từng thuộc tính trong vế trái. Nếu <em>X → A</em> vẫn suy được từ F → giữ, bỏ Y đi.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Loại bỏ PTH dư thừa</div>
+            <div class="step-desc">Với mỗi PTH <em>X → A</em>, thử bỏ nó ra khỏi F. Nếu <em>X → A</em> vẫn suy được từ F còn lại → loại bỏ PTH đó.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="example-box">
+      <div class="ex-label">📝 Ví dụ</div>
+      <p style="color:var(--muted);font-size:14px;">F = { A→BC, B→C, AB→C }</p>
+      <div class="formula pink">
+B1 – Tách vế phải:
+  F = { A→B, A→C, B→C, AB→C }
+
+B2 – Tối giản vế trái của AB→C:
+  Thử bỏ A: B→C đã có trong F → AB→C dư thừa (xử lý ở B3)
+  (Ghi nhận, chuyển sang B3)
+
+B3 – Loại bỏ PTH dư thừa:
+  A→C : A⁺ từ {A→B, B→C, AB→C} = {A,B,C} → C ∈ A⁺ → A→C dư thừa → bỏ
+  AB→C: tương tự → bỏ
+
+Phủ tối thiểu: F_c = { A→B, B→C }</div>
+    </div>
+
+    <div class="tip" style="margin-top:18px;">
+      <div class="tip-label">⚠️ Lưu ý quan trọng</div>
+      <p>Phủ tối thiểu <b>không duy nhất</b> — có thể có nhiều phủ tối thiểu khác nhau nhưng đều tương đương F.</p>
+      <p style="margin-top:6px;">Thứ tự xử lý bước 2 và 3 có thể ảnh hưởng đến kết quả cụ thể.</p>
+    </div>
+
+    <div class="card pink">
+      <div class="card-title"><span class="icon">🎯</span> Kiểm tra nhanh</div>
+      <div class="quiz-area">
+        <div class="quiz-q">
+          <div class="q-text">Bước đầu tiên khi tìm phủ tối thiểu là gì?</div>
+          <div class="quiz-opts">
+            <button class="quiz-opt" onclick="answer(this,'ko','q6')">Loại bỏ PTH dư thừa</button>
+            <button class="quiz-opt" onclick="answer(this,'ok','q6')">Tách vế phải thành 1 thuộc tính</button>
+            <button class="quiz-opt" onclick="answer(this,'ko','q6')">Tính bao đóng tất cả vế trái</button>
+          </div>
+          <div class="quiz-feedback" id="q6" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SECTION F ============ -->
+  <div class="section" id="s5">
+    <div class="section-heading">🗝️ Khóa, Siêu Khóa &amp; Tìm Khóa <span class="line"></span></div>
+
+    <div class="card teal">
+      <div class="card-title"><span class="icon">📖</span> Các định nghĩa</div>
+      <div class="rules-grid" style="margin-top:8px;">
+        <div class="rule-card" style="border-color:rgba(96,165,250,0.4)">
+          <div class="rule-num" style="color:#60a5fa">Siêu khóa</div>
+          <div class="rule-name">Super Key</div>
+          <div class="rule-formula">K⁺ = U (toàn bộ thuộc tính)</div>
+          <p>Tập K xác định được tất cả thuộc tính. Có thể dư thừa.</p>
+        </div>
+        <div class="rule-card" style="border-color:rgba(52,211,153,0.4)">
+          <div class="rule-num" style="color:var(--accent3)">Khóa</div>
+          <div class="rule-name">Candidate Key</div>
+          <div class="rule-formula">K⁺ = U và K tối thiểu</div>
+          <p>Siêu khóa tối giản — không bỏ được thuộc tính nào mà vẫn là siêu khóa.</p>
+        </div>
+        <div class="rule-card" style="border-color:rgba(52,211,153,0.3)">
+          <div class="rule-num" style="color:var(--accent3)">Khóa chính</div>
+          <div class="rule-name">Primary Key</div>
+          <div class="rule-formula">1 khóa được chọn làm đại diện</div>
+          <p>Được chọn trong số các khóa dự tuyển (candidate key).</p>
+        </div>
+        <div class="rule-card" style="border-color:rgba(96,165,250,0.3)">
+          <div class="rule-num" style="color:#60a5fa">Thuộc tính khóa</div>
+          <div class="rule-name">Prime Attribute</div>
+          <div class="rule-formula">∃ khóa K : A ∈ K</div>
+          <p>Thuộc tính xuất hiện trong ít nhất một khóa dự tuyển.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card teal">
+      <div class="card-title"><span class="icon">🛠️</span> Thuật toán tìm tất cả khóa</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Phân loại thuộc tính</div>
+            <div class="step-desc">
+              <span class="tag blue">L</span> Chỉ xuất hiện ở vế trái &nbsp;
+              <span class="tag pink">R</span> Chỉ xuất hiện ở vế phải &nbsp;
+              <span class="tag amber">LR</span> Cả hai vế &nbsp;
+              <span class="tag purple">N</span> Không xuất hiện
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Xác định tập khóa lõi</div>
+            <div class="step-desc"><span class="tag blue">L</span> và <span class="tag purple">N</span> <b>bắt buộc</b> phải có trong mọi khóa. <span class="tag pink">R</span> không bao giờ thuộc khóa.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Tính bao đóng của tập lõi</div>
+            <div class="step-desc">Gọi tập lõi là K₀. Nếu K₀⁺ = U → K₀ là khóa duy nhất. Ngược lại, cần xét thêm thuộc tính <span class="tag amber">LR</span>.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Thêm thuộc tính LR</div>
+            <div class="step-desc">Lần lượt thêm từng tổ hợp thuộc tính <span class="tag amber">LR</span> vào K₀, tính bao đóng. Tổ hợp nào cho bao đóng = U và tối giản thì đó là khóa.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="example-box">
+      <div class="ex-label">📝 Ví dụ tìm khóa</div>
+      <p style="color:var(--muted);font-size:14px;">R(A,B,C,D) với F = { AB→C, C→D, D→A }</p>
+      <div class="formula green">
+Phân loại:
+  L  : B (chỉ ở vế trái)
+  R  : — (không có)
+  LR : A, C, D (xuất hiện cả hai vế)
+  N  : — (không có)
+
+Tập lõi K₀ = {B}
+B⁺ = {B} ≠ U → cần thêm thuộc tính LR
+
+Xét thêm A: {AB}⁺:
+  AB→C → thêm C → {A,B,C}
+  C→D  → thêm D → {A,B,C,D} = U  ✅  → AB là khóa
+
+Xét thêm C: {BC}⁺:
+  C→D  → {B,C,D}
+  D→A  → {A,B,C,D} = U  ✅  → BC là khóa
+
+Xét thêm D: {BD}⁺:
+  D→A  → {A,B,D}
+  AB→C → {A,B,C,D} = U  ✅  → BD là khóa
+
+⟹ Các khóa: AB, BC, BD</div>
+    </div>
+
+    <div class="tip" style="margin-top:18px;">
+      <div class="tip-label">💡 Mẹo nhớ phân loại thuộc tính</div>
+      <p><b>Vẽ bảng F nhanh:</b> Cột trái = vế trái, Cột phải = vế phải. Đánh dấu L/R/LR/N cho từng thuộc tính. <em>L và N luôn nằm trong khóa; R không bao giờ nằm trong khóa.</em></p>
+    </div>
+
+    <div class="card teal">
+      <div class="card-title"><span class="icon">🎯</span> Kiểm tra nhanh</div>
+      <div class="quiz-area">
+        <div class="quiz-q">
+          <div class="q-text">Thuộc tính chỉ xuất hiện ở vế PHẢI của các PTH thì:</div>
+          <div class="quiz-opts">
+            <button class="quiz-opt" onclick="answer(this,'ko','q7')">Bắt buộc phải thuộc mọi khóa</button>
+            <button class="quiz-opt" onclick="answer(this,'ok','q7')">Không bao giờ là thành phần của khóa</button>
+            <button class="quiz-opt" onclick="answer(this,'ko','q7')">Có thể thuộc hoặc không thuộc khóa</button>
+          </div>
+          <div class="quiz-feedback" id="q7" style="display:none"></div>
+        </div>
+        <div class="quiz-q">
+          <div class="q-text">Sự khác biệt giữa Siêu khóa và Khóa (Candidate Key) là gì?</div>
+          <div class="quiz-opts">
+            <button class="quiz-opt" onclick="answer(this,'ko','q8')">Siêu khóa nhỏ hơn khóa</button>
+            <button class="quiz-opt" onclick="answer(this,'ok','q8')">Khóa là siêu khóa tối giản — không bỏ được thuộc tính nào</button>
+            <button class="quiz-opt" onclick="answer(this,'ko','q8')">Mỗi quan hệ chỉ có đúng một siêu khóa</button>
+          </div>
+          <div class="quiz-feedback" id="q8" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Scroll to top -->
+<button class="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+const sections = document.querySelectorAll('.section');
+const navBtns = document.querySelectorAll('.nav-btn');
+const dots = document.querySelectorAll('.progress-dot');
+let current = 0;
+
+function showSection(i) {
+  sections[current].classList.remove('active');
+  navBtns[current].classList.remove('active');
+  dots[current].classList.remove('active');
+  if (i > current) dots[current].classList.add('done');
+  else dots[current].classList.remove('done');
+  
+  current = i;
+  sections[current].classList.add('active');
+  navBtns[current].classList.add('active');
+  dots[current].classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+const feedbacks = {
+  q1: { ok: "✅ Đúng! Đây là định nghĩa PTH — cần kiểm tra trên toàn bộ quan hệ r, không chỉ 2 bộ.", ko: "❌ Sai. Câu A sai vì: biết 2 bộ bằng nhau chưa chứng minh PTH cho toàn bộ r." },
+  q2: { ok: "✅ Đúng! X→Y, X→Z ⟹ X→YZ là Luật Hợp (Union).", ko: "❌ Sai. Luật bắc cầu cần chuỗi X→Y, Y→Z; Tăng trưởng thêm Z vào cả hai vế." },
+  q3: { ok: "✅ Đúng! AB→CD ⟹ AB→C là Luật Thu hẹp (Decomposition).", ko: "❌ Sai. Phản xạ cần Y⊆X. Giả bắc cầu cần 2 PTH." },
+  q4: { ok: "✅ Đúng! A⁺: A→B thêm B, B→C thêm C, A→D thêm D → {A,B,C,D}.", ko: "❌ Sai. Đừng quên: khi thêm B vào X⁺, áp dụng tiếp B→C để thêm C." },
+  q5: { ok: "✅ Đúng! F⟹G bằng luật thu hẹp; G⟹F bằng luật hợp → tương đương.", ko: "❌ Sai. Số lượng PTH không quyết định tương đương — F⁺ = G⁺ mới là tiêu chí." },
+  q6: { ok: "✅ Đúng! Bước 1 luôn là tách vế phải thành đơn thuộc tính.", ko: "❌ Sai. Phải chuẩn hóa vế phải trước, rồi mới tối giản vế trái, rồi mới loại dư thừa." },
+  q7: { ok: "✅ Đúng! Thuộc tính chỉ xuất hiện ở vế phải (R) không bao giờ là thành phần khóa.", ko: "❌ Sai. Thuộc tính R bị 'xác định', không 'xác định' thứ gì → không thể là khóa." },
+  q8: { ok: "✅ Đúng! Khóa = siêu khóa tối giản. Không tồn tại tập con nào của K cũng là siêu khóa.", ko: "❌ Sai. Siêu khóa có thể dư thừa thuộc tính; khóa là nhỏ nhất trong số siêu khóa." }
+};
+
+function answer(btn, type, qid) {
+  const parent = btn.closest('.quiz-q');
+  const opts = parent.querySelectorAll('.quiz-opt');
+  const fb = parent.querySelector('.quiz-feedback');
+  
+  opts.forEach(o => o.classList.add('disabled'));
+  btn.classList.add(type === 'ok' ? 'correct' : 'wrong');
+  
+  fb.style.display = 'block';
+  fb.className = 'quiz-feedback ' + (type === 'ok' ? 'ok' : 'ko');
+  fb.textContent = feedbacks[qid][type];
+}
+</script>
+</body>
+</html>

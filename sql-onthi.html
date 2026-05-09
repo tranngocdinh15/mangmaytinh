@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL — Ôn Thi Trắc Nghiệm</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --accent2: #3fb950;
+    --danger: #f85149;
+    --warn: #e3b341;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --code-bg: #1c2128;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 24px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(88,166,255,.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -1px;
+  }
+  header h1 span { color: var(--accent2); }
+  header p { color: var(--muted); margin-top: 6px; font-size: .9rem; }
+
+  /* ── NAV TABS ── */
+  nav {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 16px 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'Sora', sans-serif;
+    font-size: .82rem;
+    font-weight: 600;
+    padding: 8px 14px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color .2s, border-color .2s;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+
+  /* ── MAIN ── */
+  main { max-width: 960px; margin: 0 auto; padding: 32px 16px 64px; }
+
+  /* ── SECTION PANEL ── */
+  .panel { display: none; animation: fadeIn .3s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+  /* ── REFERENCE CARDS ── */
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    font-size: 1rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 32px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-bottom: 8px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    transition: border-color .2s, transform .2s;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .card h3 {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent2);
+    font-size: .9rem;
+    margin-bottom: 8px;
+  }
+  .card p { font-size: .84rem; color: var(--muted); margin-bottom: 10px; }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem;
+    color: #cdd9e5;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .kw { color: #ff7b72; }
+  .fn { color: #d2a8ff; }
+  .val { color: var(--accent2); }
+  .cm { color: var(--muted); font-style: italic; }
+
+  /* ── QUIZ ── */
+  .quiz-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+  .quiz-controls select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: .85rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent);
+    color: #0d1117;
+    border: none;
+    font-family: 'Sora', sans-serif;
+    font-size: .85rem;
+    font-weight: 700;
+    padding: 9px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity .2s, transform .15s;
+  }
+  .btn:hover { opacity: .88; transform: translateY(-1px); }
+  .btn.secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 4px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 4px;
+    transition: width .4s ease;
+  }
+
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .q-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .q-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .75rem;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .q-tag {
+    font-size: .72rem;
+    font-weight: 600;
+    color: var(--warn);
+    background: rgba(227,179,65,.12);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .q-text {
+    font-size: .95rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .q-text code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: .88em;
+    color: var(--accent);
+  }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .opt {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: .875rem;
+    transition: border-color .18s, background .18s;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .opt:hover:not(.disabled) { border-color: var(--accent); background: rgba(88,166,255,.07); }
+  .opt-letter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    width: 22px;
+    min-width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    transition: all .18s;
+  }
+  .opt.correct { border-color: var(--accent2) !important; background: rgba(63,185,80,.1) !important; }
+  .opt.correct .opt-letter { background: var(--accent2); color: #0d1117; border-color: var(--accent2); }
+  .opt.wrong { border-color: var(--danger) !important; background: rgba(248,81,73,.1) !important; }
+  .opt.wrong .opt-letter { background: var(--danger); color: #fff; border-color: var(--danger); }
+  .opt.disabled { cursor: default; }
+
+  .explanation {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: rgba(88,166,255,.07);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-size: .84rem;
+    color: #cdd9e5;
+    display: none;
+  }
+  .explanation.show { display: block; }
+  .explanation strong { color: var(--accent); }
+
+  .quiz-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+  }
+
+  /* ── SCORE ── */
+  #score-panel {
+    text-align: center;
+    padding: 48px 16px;
+  }
+  .score-ring {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 6px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    position: relative;
+  }
+  .score-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+  .score-sub { font-size: .75rem; color: var(--muted); }
+  .score-msg { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; }
+  .score-detail { color: var(--muted); font-size: .875rem; margin-bottom: 28px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span>SQL</span> — Ôn Thi Trắc Nghiệm</h1>
+  <p>Lý thuyết + 30 câu hỏi trắc nghiệm · Từ cơ bản đến nâng cao</p>
+</header>
+
+<nav>
+  <button class="tab-btn active" onclick="switchTab('ref')">📖 Lý thuyết</button>
+  <button class="tab-btn" onclick="switchTab('quiz')">🎯 Trắc nghiệm</button>
+</nav>
+
+<main>
+
+<!-- ══════════════ LÝ THUYẾT ══════════════ -->
+<div id="ref" class="panel active">
+
+  <div class="section-title">1 · DDL — Định nghĩa dữ liệu</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>CREATE TABLE</h3>
+      <p>Tạo bảng mới trong CSDL.</p>
+      <pre><span class="kw">CREATE TABLE</span> NhanVien (
+  id   <span class="fn">INT</span> <span class="kw">PRIMARY KEY</span>,
+  ten  <span class="fn">VARCHAR</span>(<span class="val">100</span>),
+  luong <span class="fn">DECIMAL</span>(<span class="val">10,2</span>)
+);</pre>
+    </div>
+    <div class="card">
+      <h3>ALTER TABLE</h3>
+      <p>Thêm / sửa / xoá cột hoặc ràng buộc.</p>
+      <pre><span class="kw">ALTER TABLE</span> NhanVien
+  <span class="kw">ADD</span> email <span class="fn">VARCHAR</span>(<span class="val">200</span>);
+
+<span class="kw">ALTER TABLE</span> NhanVien
+  <span class="kw">DROP COLUMN</span> email;</pre>
+    </div>
+    <div class="card">
+      <h3>DROP / TRUNCATE</h3>
+      <p>DROP xoá bảng. TRUNCATE xoá toàn bộ dữ liệu nhưng giữ cấu trúc.</p>
+      <pre><span class="kw">DROP TABLE</span> NhanVien;
+
+<span class="kw">TRUNCATE TABLE</span> NhanVien;</pre>
+    </div>
+    <div class="card">
+      <h3>Constraints</h3>
+      <p>Ràng buộc dữ liệu: PK, FK, UNIQUE, NOT NULL, CHECK, DEFAULT.</p>
+      <pre>id   <span class="fn">INT</span> <span class="kw">PRIMARY KEY</span>,
+dep  <span class="fn">INT</span> <span class="kw">REFERENCES</span> PhongBan(id),
+ten  <span class="fn">VARCHAR</span>(<span class="val">50</span>) <span class="kw">NOT NULL</span>,
+age  <span class="fn">INT</span> <span class="kw">CHECK</span> (age &gt; <span class="val">18</span>)</pre>
+    </div>
+  </div>
+
+  <div class="section-title">2 · DML — Thao tác dữ liệu</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>INSERT</h3>
+      <p>Chèn hàng mới vào bảng.</p>
+      <pre><span class="kw">INSERT INTO</span> NhanVien (id, ten, luong)
+<span class="kw">VALUES</span> (<span class="val">1</span>, <span class="val">'Minh'</span>, <span class="val">15000000</span>);
+
+<span class="cm">-- Chèn từ SELECT</span>
+<span class="kw">INSERT INTO</span> Archive
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> NhanVien <span class="kw">WHERE</span> luong &lt; <span class="val">5e6</span>;</pre>
+    </div>
+    <div class="card">
+      <h3>UPDATE</h3>
+      <p>Cập nhật dữ liệu. Nhớ thêm WHERE!</p>
+      <pre><span class="kw">UPDATE</span> NhanVien
+<span class="kw">SET</span>   luong = luong * <span class="val">1.1</span>,
+      email = <span class="val">'new@co.vn'</span>
+<span class="kw">WHERE</span> id = <span class="val">1</span>;</pre>
+    </div>
+    <div class="card">
+      <h3>DELETE</h3>
+      <p>Xoá hàng khỏi bảng.</p>
+      <pre><span class="kw">DELETE FROM</span> NhanVien
+<span class="kw">WHERE</span> luong &lt; <span class="val">3000000</span>;
+
+<span class="cm">-- Xoá toàn bộ (cẩn thận!)</span>
+<span class="kw">DELETE FROM</span> NhanVien;</pre>
+    </div>
+    <div class="card">
+      <h3>MERGE (UPSERT)</h3>
+      <p>Kết hợp INSERT + UPDATE + DELETE trong 1 lệnh.</p>
+      <pre><span class="kw">MERGE INTO</span> Target <span class="kw">AS</span> T
+<span class="kw">USING</span> Source <span class="kw">AS</span> S
+  <span class="kw">ON</span> T.id = S.id
+<span class="kw">WHEN MATCHED THEN UPDATE</span> ...
+<span class="kw">WHEN NOT MATCHED THEN INSERT</span> ...;</pre>
+    </div>
+  </div>
+
+  <div class="section-title">3 · DQL — Truy vấn dữ liệu</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>SELECT cơ bản</h3>
+      <p>Lấy dữ liệu từ bảng.</p>
+      <pre><span class="kw">SELECT</span> ten, luong
+<span class="kw">FROM</span>   NhanVien
+<span class="kw">WHERE</span>  luong &gt; <span class="val">10000000</span>
+<span class="kw">ORDER BY</span> luong <span class="kw">DESC</span>
+<span class="kw">LIMIT</span>  <span class="val">5</span>;</pre>
+    </div>
+    <div class="card">
+      <h3>GROUP BY + HAVING</h3>
+      <p>HAVING lọc nhóm (tương tự WHERE nhưng dùng sau GROUP BY).</p>
+      <pre><span class="kw">SELECT</span>   phong, <span class="fn">AVG</span>(luong) <span class="kw">AS</span> avg_luong
+<span class="kw">FROM</span>     NhanVien
+<span class="kw">GROUP BY</span> phong
+<span class="kw">HAVING</span>   <span class="fn">AVG</span>(luong) &gt; <span class="val">8000000</span>;</pre>
+    </div>
+    <div class="card">
+      <h3>Aggregate Functions</h3>
+      <p>Hàm tổng hợp thường dùng.</p>
+      <pre><span class="fn">COUNT</span>(*)          <span class="cm">-- đếm tất cả</span>
+<span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> x) <span class="cm">-- đếm phân biệt</span>
+<span class="fn">SUM</span>(luong)
+<span class="fn">AVG</span>(luong)
+<span class="fn">MIN</span>(luong), <span class="fn">MAX</span>(luong)</pre>
+    </div>
+    <div class="card">
+      <h3>Toán tử lọc</h3>
+      <p>Các điều kiện trong WHERE.</p>
+      <pre"><span class="kw">BETWEEN</span> <span class="val">5e6</span> <span class="kw">AND</span> <span class="val">15e6</span>
+<span class="kw">IN</span> (<span class="val">'IT'</span>, <span class="val">'HR'</span>, <span class="val">'Sales'</span>)
+<span class="kw">LIKE</span> <span class="val">'Nguy%'</span>        <span class="cm">-- % nhiều ký tự</span>
+<span class="kw">LIKE</span> <span class="val">'Minh_'</span>       <span class="cm">-- _ 1 ký tự</span>
+<span class="kw">IS NULL</span> / <span class="kw">IS NOT NULL</span></pre>
+    </div>
+  </div>
+
+  <div class="section-title">4 · JOIN — Kết hợp bảng</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>INNER JOIN</h3>
+      <p>Chỉ lấy hàng khớp ở cả hai bảng.</p>
+      <pre><span class="kw">SELECT</span> nv.ten, pb.ten_phong
+<span class="kw">FROM</span>   NhanVien nv
+<span class="kw">INNER JOIN</span> PhongBan pb
+  <span class="kw">ON</span> nv.phong_id = pb.id;</pre>
+    </div>
+    <div class="card">
+      <h3>LEFT / RIGHT JOIN</h3>
+      <p>Giữ toàn bộ bảng trái (LEFT) hoặc phải (RIGHT), bên kia NULL nếu không khớp.</p>
+      <pre><span class="kw">SELECT</span> nv.ten, pb.ten_phong
+<span class="kw">FROM</span>   NhanVien nv
+<span class="kw">LEFT JOIN</span> PhongBan pb
+  <span class="kw">ON</span> nv.phong_id = pb.id;</pre>
+    </div>
+    <div class="card">
+      <h3>FULL OUTER JOIN</h3>
+      <p>Giữ tất cả hàng từ cả hai bảng.</p>
+      <pre><span class="kw">SELECT</span> *
+<span class="kw">FROM</span>   A
+<span class="kw">FULL OUTER JOIN</span> B
+  <span class="kw">ON</span> A.id = B.id;</pre>
+    </div>
+    <div class="card">
+      <h3>SELF JOIN & CROSS JOIN</h3>
+      <p>SELF JOIN: bảng join với chính nó. CROSS JOIN: tích Đề-các.</p>
+      <pre><span class="cm">-- SELF JOIN: tìm quản lý</span>
+<span class="kw">SELECT</span> e.ten, m.ten <span class="kw">AS</span> quan_ly
+<span class="kw">FROM</span>  NhanVien e
+<span class="kw">JOIN</span>  NhanVien m <span class="kw">ON</span> e.mgr_id = m.id;</pre>
+    </div>
+  </div>
+
+  <div class="section-title">5 · Subquery & Set Operators</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>Subquery</h3>
+      <p>Truy vấn lồng trong truy vấn khác.</p>
+      <pre><span class="kw">SELECT</span> ten <span class="kw">FROM</span> NhanVien
+<span class="kw">WHERE</span>  luong = (
+  <span class="kw">SELECT MAX</span>(luong) <span class="kw">FROM</span> NhanVien
+);</pre>
+    </div>
+    <div class="card">
+      <h3>EXISTS / NOT EXISTS</h3>
+      <p>Kiểm tra sự tồn tại của kết quả subquery.</p>
+      <pre><span class="kw">SELECT</span> ten <span class="kw">FROM</span> PhongBan pb
+<span class="kw">WHERE EXISTS</span> (
+  <span class="kw">SELECT</span> <span class="val">1</span> <span class="kw">FROM</span> NhanVien nv
+  <span class="kw">WHERE</span> nv.phong_id = pb.id
+);</pre>
+    </div>
+    <div class="card">
+      <h3>UNION / INTERSECT / EXCEPT</h3>
+      <p>Gộp, giao, hiệu tập kết quả.</p>
+      <pre><span class="kw">SELECT</span> ten <span class="kw">FROM</span> A
+<span class="kw">UNION</span>          <span class="cm">-- loại trùng</span>
+<span class="kw">SELECT</span> ten <span class="kw">FROM</span> B;
+
+<span class="kw">UNION ALL</span>      <span class="cm">-- giữ trùng</span>
+<span class="kw">INTERSECT</span>      <span class="cm">-- giao</span>
+<span class="kw">EXCEPT</span>         <span class="cm">-- hiệu</span></pre>
+    </div>
+    <div class="card">
+      <h3>CTE (WITH)</h3>
+      <p>Common Table Expression — đặt tên cho subquery.</p>
+      <pre><span class="kw">WITH</span> HighEarner <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> * <span class="kw">FROM</span> NhanVien
+  <span class="kw">WHERE</span>  luong &gt; <span class="val">20e6</span>
+)
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> HighEarner
+<span class="kw">ORDER BY</span> luong;</pre>
+    </div>
+  </div>
+
+  <div class="section-title">6 · Window Functions</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>ROW_NUMBER / RANK</h3>
+      <p>Đánh số thứ tự trong nhóm.</p>
+      <pre><span class="kw">SELECT</span> ten, luong,
+  <span class="fn">ROW_NUMBER</span>() <span class="kw">OVER</span> (
+    <span class="kw">PARTITION BY</span> phong
+    <span class="kw">ORDER BY</span> luong <span class="kw">DESC</span>
+  ) <span class="kw">AS</span> hang
+<span class="kw">FROM</span> NhanVien;</pre>
+    </div>
+    <div class="card">
+      <h3>SUM / AVG OVER</h3>
+      <p>Tính tổng/trung bình tích lũy hoặc theo cửa sổ.</p>
+      <pre><span class="kw">SELECT</span> ten,
+  <span class="fn">SUM</span>(luong) <span class="kw">OVER</span> (
+    <span class="kw">ORDER BY</span> id
+    <span class="kw">ROWS UNBOUNDED PRECEDING</span>
+  ) <span class="kw">AS</span> luy_ke
+<span class="kw">FROM</span> NhanVien;</pre>
+    </div>
+    <div class="card">
+      <h3>LAG / LEAD</h3>
+      <p>Lấy giá trị hàng trước/sau.</p>
+      <pre><span class="kw">SELECT</span> ngay, doanh_thu,
+  <span class="fn">LAG</span>(doanh_thu, <span class="val">1</span>) <span class="kw">OVER</span> (
+    <span class="kw">ORDER BY</span> ngay
+  ) <span class="kw">AS</span> hom_truoc
+<span class="kw">FROM</span> DoanhThu;</pre>
+    </div>
+    <div class="card">
+      <h3>NTILE / DENSE_RANK</h3>
+      <p>NTILE chia đều thành N nhóm. DENSE_RANK không bỏ số khi trùng.</p>
+      <pre><span class="fn">RANK</span>()       <span class="cm">-- 1,2,2,4</span>
+<span class="fn">DENSE_RANK</span>() <span class="cm">-- 1,2,2,3</span>
+<span class="fn">NTILE</span>(<span class="val">4</span>)    <span class="cm">-- chia 4 tứ phân vị</span></pre>
+    </div>
+  </div>
+
+  <div class="section-title">7 · TCL — Điều khiển giao dịch</div>
+  <div class="card-grid">
+    <div class="card">
+      <h3>TRANSACTION</h3>
+      <p>Nhóm lệnh thành đơn vị nguyên tử (ACID).</p>
+      <pre><span class="kw">BEGIN TRANSACTION</span>;
+  <span class="kw">UPDATE</span> TaiKhoan <span class="kw">SET</span> so_du = so_du - <span class="val">100</span> <span class="kw">WHERE</span> id=<span class="val">1</span>;
+  <span class="kw">UPDATE</span> TaiKhoan <span class="kw">SET</span> so_du = so_du + <span class="val">100</span> <span class="kw">WHERE</span> id=<span class="val">2</span>;
+<span class="kw">COMMIT</span>;</pre>
+    </div>
+    <div class="card">
+      <h3>ROLLBACK & SAVEPOINT</h3>
+      <p>Hủy giao dịch hoặc quay về điểm lưu.</p>
+      <pre><span class="kw">SAVEPOINT</span> sp1;
+<span class="kw">UPDATE</span> ...;
+<span class="cm">-- lỗi xảy ra</span>
+<span class="kw">ROLLBACK TO</span> sp1;
+<span class="kw">COMMIT</span>;</pre>
+    </div>
+    <div class="card">
+      <h3>INDEX</h3>
+      <p>Tăng tốc truy vấn, chậm hơn khi ghi.</p>
+      <pre><span class="kw">CREATE INDEX</span> idx_ten
+  <span class="kw">ON</span> NhanVien(ten);
+
+<span class="kw">CREATE UNIQUE INDEX</span> idx_email
+  <span class="kw">ON</span> NhanVien(email);</pre>
+    </div>
+    <div class="card">
+      <h3>VIEW</h3>
+      <p>Bảng ảo lưu truy vấn SELECT.</p>
+      <pre><span class="kw">CREATE VIEW</span> v_luong_cao <span class="kw">AS</span>
+  <span class="kw">SELECT</span> ten, luong
+  <span class="kw">FROM</span>   NhanVien
+  <span class="kw">WHERE</span>  luong &gt; <span class="val">20e6</span>;
+
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> v_luong_cao;</pre>
+    </div>
+  </div>
+
+</div><!-- /ref -->
+
+<!-- ══════════════ TRẮC NGHIỆM ══════════════ -->
+<div id="quiz" class="panel">
+  <div class="quiz-controls">
+    <select id="filter">
+      <option value="all">Tất cả chủ đề</option>
+      <option value="DDL">DDL</option>
+      <option value="DML">DML</option>
+      <option value="SELECT">SELECT / DQL</option>
+      <option value="JOIN">JOIN</option>
+      <option value="Aggregate">Aggregate</option>
+      <option value="Subquery">Subquery / CTE</option>
+      <option value="Window">Window Function</option>
+      <option value="TCL">Transaction / TCL</option>
+    </select>
+    <button class="btn" onclick="startQuiz()">▶ Bắt đầu</button>
+    <button class="btn secondary" onclick="resetQuiz()">↺ Làm lại</button>
+  </div>
+
+  <div class="progress-bar"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+
+  <div id="quiz-body"></div>
+  <div id="score-panel" style="display:none">
+    <div class="score-ring">
+      <div class="score-num" id="sc-num">0</div>
+      <div class="score-sub" id="sc-sub">/ 0</div>
+    </div>
+    <div class="score-msg" id="sc-msg"></div>
+    <div class="score-detail" id="sc-detail"></div>
+    <button class="btn" onclick="resetQuiz()">↺ Làm lại</button>
+  </div>
+</div>
+
+</main>
+
+<script>
+const ALL_QUESTIONS = [
+  // ── DDL ──
+  { tag:'DDL', q:'Lệnh nào dùng để TẠO MỚI một bảng trong CSDL?',
+    opts:['INSERT INTO','CREATE TABLE','ALTER TABLE','MAKE TABLE'], ans:1,
+    exp:'<strong>CREATE TABLE</strong> tạo bảng mới. INSERT thêm dữ liệu, ALTER sửa cấu trúc bảng đã có.' },
+  { tag:'DDL', q:'Lệnh <code>TRUNCATE TABLE NhanVien</code> khác <code>DROP TABLE NhanVien</code> ở điểm gì?',
+    opts:['TRUNCATE xoá cả cấu trúc bảng','TRUNCATE xoá dữ liệu nhưng giữ cấu trúc','DROP giữ dữ liệu','Hai lệnh hoàn toàn giống nhau'], ans:1,
+    exp:'<strong>TRUNCATE</strong> xoá toàn bộ dữ liệu nhưng giữ lại định nghĩa bảng. <strong>DROP</strong> xoá cả bảng lẫn dữ liệu.' },
+  { tag:'DDL', q:'Ràng buộc nào đảm bảo mỗi giá trị trong cột là DUY NHẤT và KHÔNG NULL?',
+    opts:['UNIQUE','NOT NULL','PRIMARY KEY','CHECK'], ans:2,
+    exp:'<strong>PRIMARY KEY</strong> = UNIQUE + NOT NULL. Mỗi bảng chỉ có một PRIMARY KEY.' },
+  { tag:'DDL', q:'Câu lệnh nào thêm một cột mới vào bảng đã tồn tại?',
+    opts:['CREATE COLUMN','ALTER TABLE ... ADD','INSERT COLUMN','UPDATE TABLE'], ans:1,
+    exp:'<strong>ALTER TABLE ten_bang ADD ten_cot kieu_du_lieu;</strong> thêm cột mới.' },
+
+  // ── DML ──
+  { tag:'DML', q:'Lệnh nào XÓA dữ liệu nhưng có thể dùng WHERE để chọn lọc?',
+    opts:['TRUNCATE','DROP','DELETE','REMOVE'], ans:2,
+    exp:'<strong>DELETE FROM bang WHERE dieu_kien</strong> xoá chọn lọc. TRUNCATE xoá toàn bộ, không hỗ trợ WHERE.' },
+  { tag:'DML', q:'Điều gì xảy ra khi chạy <code>UPDATE NhanVien SET luong = 0</code> (không có WHERE)?',
+    opts:['Chỉ cập nhật hàng đầu tiên','Lỗi cú pháp','Cập nhật TẤT CẢ hàng','Không thay đổi gì'], ans:2,
+    exp:'Không có <strong>WHERE</strong> → UPDATE áp dụng cho toàn bộ hàng trong bảng. Đây là lỗi phổ biến!' },
+  { tag:'DML', q:'Cú pháp đúng để chèn nhiều hàng cùng lúc trong SQL chuẩn là gì?',
+    opts:['INSERT INTO T VALUES (1),(2),(3)','INSERT MULTIPLE INTO T VALUES...','ADD INTO T VALUES...','INSERT INTO T VALUES 1,2,3'], ans:0,
+    exp:'SQL chuẩn cho phép <strong>INSERT INTO T VALUES (r1),(r2),(r3)</strong> để chèn nhiều hàng một lần.' },
+
+  // ── SELECT ──
+  { tag:'SELECT', q:'Thứ tự thực thi logic của SQL là gì?',
+    opts:['SELECT → FROM → WHERE → GROUP BY → HAVING → ORDER BY',
+          'FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY',
+          'FROM → SELECT → WHERE → ORDER BY',
+          'WHERE → FROM → SELECT → GROUP BY'], ans:1,
+    exp:'Thứ tự thực thi: <strong>FROM → JOIN → WHERE → GROUP BY → HAVING → SELECT → DISTINCT → ORDER BY → LIMIT</strong>.' },
+  { tag:'SELECT', q:'Mệnh đề nào dùng để lọc kết quả SAU khi GROUP BY?',
+    opts:['WHERE','FILTER','HAVING','CONDITION'], ans:2,
+    exp:'<strong>HAVING</strong> lọc nhóm sau GROUP BY. <strong>WHERE</strong> lọc hàng trước khi nhóm.' },
+  { tag:'SELECT', q:'Toán tử nào kiểm tra xem giá trị có nằm trong khoảng không?',
+    opts:['IN','LIKE','BETWEEN ... AND ...','EXISTS'], ans:2,
+    exp:'<strong>BETWEEN a AND b</strong> tương đương <strong>x >= a AND x <= b</strong> (bao gồm cả hai đầu).' },
+  { tag:'SELECT', q:'Ký tự đại diện nào trong LIKE khớp với MỘT ký tự bất kỳ?',
+    opts:['%','*','_','?'], ans:2,
+    exp:'<strong>_</strong> khớp đúng 1 ký tự. <strong>%</strong> khớp 0 hoặc nhiều ký tự bất kỳ.' },
+  { tag:'SELECT', q:'Kết quả của <code>SELECT DISTINCT phong FROM NhanVien</code> là gì?',
+    opts:['Danh sách phòng ban có trùng lặp','Danh sách phòng ban không trùng lặp','Đếm số phòng ban','Lỗi cú pháp'], ans:1,
+    exp:'<strong>DISTINCT</strong> loại bỏ các hàng trùng nhau trong kết quả trả về.' },
+
+  // ── JOIN ──
+  { tag:'JOIN', q:'INNER JOIN trả về những hàng nào?',
+    opts:['Tất cả hàng từ bảng trái','Tất cả hàng từ cả hai bảng','Chỉ hàng KHỚP ở cả hai bảng','Hàng không khớp'], ans:2,
+    exp:'<strong>INNER JOIN</strong> chỉ giữ lại hàng có giá trị khớp ở CẢ HAI bảng.' },
+  { tag:'JOIN', q:'LEFT JOIN khác INNER JOIN ở chỗ nào?',
+    opts:['LEFT JOIN nhanh hơn','LEFT JOIN giữ TẤT CẢ hàng từ bảng TRÁI dù không khớp','LEFT JOIN chỉ dùng với 2 bảng','Không có sự khác biệt'], ans:1,
+    exp:'<strong>LEFT JOIN</strong> giữ toàn bộ bảng trái. Bảng phải không khớp sẽ trả về NULL.' },
+  { tag:'JOIN', q:'Khi dùng LEFT JOIN mà cột bảng phải trả về NULL, điều đó có nghĩa là gì?',
+    opts:['Dữ liệu bị lỗi','Hàng bên trái không có hàng tương ứng bên phải','JOIN sai điều kiện','Cột đó là NULL trong cả hai bảng'], ans:1,
+    exp:'NULL từ bảng phải trong LEFT JOIN nghĩa là hàng bên trái <strong>không có bản ghi tương ứng</strong> bên phải.' },
+  { tag:'JOIN', q:'CROSS JOIN tạo ra bao nhiêu hàng nếu bảng A có 4 hàng và bảng B có 3 hàng?',
+    opts:['7','12','1','4'], ans:1,
+    exp:'<strong>CROSS JOIN</strong> tạo tích Đề-các: 4 × 3 = <strong>12 hàng</strong>.' },
+
+  // ── Aggregate ──
+  { tag:'Aggregate', q:'Hàm nào đếm số hàng và BỎ QUA giá trị NULL?',
+    opts:['COUNT(*)','COUNT(ten_cot)','SUM(*)','TOTAL(ten_cot)'], ans:1,
+    exp:'<strong>COUNT(ten_cot)</strong> bỏ qua NULL. <strong>COUNT(*)</strong> đếm tất cả hàng kể cả NULL.' },
+  { tag:'Aggregate', q:'Kết quả của <code>AVG(luong)</code> khi một số hàng có luong = NULL là gì?',
+    opts:['AVG tính cả NULL như số 0','AVG bỏ qua NULL khi tính','Trả về lỗi','Trả về NULL'], ans:1,
+    exp:'Hàm <strong>AVG</strong> (và SUM, MIN, MAX) bỏ qua giá trị NULL khi tính toán.' },
+
+  // ── Subquery / CTE ──
+  { tag:'Subquery', q:'CTE (Common Table Expression) được viết bằng từ khóa nào?',
+    opts:['DEFINE','WITH','CREATE TEMP','SUBQUERY'], ans:1,
+    exp:'<strong>WITH ten_cte AS (SELECT ...)</strong> — CTE giúp code dễ đọc hơn và có thể tái sử dụng trong cùng câu lệnh.' },
+  { tag:'Subquery', q:'Mệnh đề EXISTS trả về giá trị gì?',
+    opts:['Số hàng khớp','TRUE / FALSE','Dữ liệu hàng đầu tiên','NULL nếu không có hàng'], ans:1,
+    exp:'<strong>EXISTS</strong> trả về TRUE nếu subquery có ít nhất 1 hàng kết quả, FALSE nếu không có.' },
+  { tag:'Subquery', q:'UNION và UNION ALL khác nhau như thế nào?',
+    opts:['UNION ALL loại bỏ hàng trùng, UNION giữ lại','UNION loại bỏ hàng trùng, UNION ALL giữ lại','Cả hai hoàn toàn giống nhau','UNION chỉ dùng được với 2 bảng'], ans:1,
+    exp:'<strong>UNION</strong> loại bỏ hàng trùng (chậm hơn). <strong>UNION ALL</strong> giữ tất cả (nhanh hơn).' },
+  { tag:'Subquery', q:'Subquery trong mệnh đề FROM được gọi là gì?',
+    opts:['Correlated Subquery','Inline View / Derived Table','CTE','Scalar Subquery'], ans:1,
+    exp:'Subquery trong FROM được gọi là <strong>Inline View</strong> hoặc <strong>Derived Table</strong>. Cần đặt alias cho nó.' },
+
+  // ── Window ──
+  { tag:'Window', q:'Điểm khác biệt quan trọng của Window Function so với GROUP BY là gì?',
+    opts:['Window Function không dùng được với aggregate','Window Function KHÔNG gộp hàng, từng hàng vẫn được giữ nguyên','Window Function chậm hơn GROUP BY','Window Function không hỗ trợ ORDER BY'], ans:1,
+    exp:'<strong>Window Function</strong> tính toán trên tập hàng nhưng KHÔNG gộp chúng — mỗi hàng vẫn xuất hiện trong kết quả.' },
+  { tag:'Window', q:'RANK() và DENSE_RANK() khác nhau thế nào khi có giá trị bằng nhau?',
+    opts:['RANK: 1,2,2,3 — DENSE_RANK: 1,2,2,4','RANK: 1,2,2,4 — DENSE_RANK: 1,2,2,3','Cả hai đều cho 1,2,3,4','DENSE_RANK luôn nhảy số'], ans:1,
+    exp:'<strong>RANK</strong> bỏ số sau khi trùng (1,2,2,<b>4</b>). <strong>DENSE_RANK</strong> không bỏ số (1,2,2,<b>3</b>).' },
+  { tag:'Window', q:'LAG(col, 1) OVER (ORDER BY ngay) trả về gì?',
+    opts:['Giá trị của hàng tiếp theo','Giá trị của hàng liền trước','Tổng tích lũy','Số thứ tự hàng'], ans:1,
+    exp:'<strong>LAG(col, n)</strong> lấy giá trị n hàng phía trước. <strong>LEAD(col, n)</strong> lấy n hàng phía sau.' },
+
+  // ── TCL ──
+  { tag:'TCL', q:'Tính chất ACID trong giao dịch, chữ "I" là viết tắt của?',
+    opts:['Integrity','Isolation','Immediacy','Independence'], ans:1,
+    exp:'ACID = <strong>Atomicity, Consistency, Isolation, Durability</strong>. Isolation đảm bảo giao dịch không ảnh hưởng lẫn nhau khi chạy song song.' },
+  { tag:'TCL', q:'ROLLBACK trong transaction có tác dụng gì?',
+    opts:['Lưu toàn bộ thay đổi','Hủy toàn bộ thay đổi chưa COMMIT','Chỉ hủy lệnh cuối cùng','Tạo bản sao dữ liệu'], ans:1,
+    exp:'<strong>ROLLBACK</strong> hủy toàn bộ thay đổi từ lúc BEGIN TRANSACTION hoặc đến SAVEPOINT gần nhất.' },
+  { tag:'TCL', q:'Index giúp ích gì cho hiệu năng truy vấn?',
+    opts:['Tăng tốc INSERT và UPDATE','Tăng tốc SELECT/WHERE, nhưng làm chậm ghi','Không ảnh hưởng đến hiệu năng','Chỉ hữu ích với PRIMARY KEY'], ans:1,
+    exp:'<strong>Index</strong> tăng tốc tìm kiếm (SELECT, WHERE, JOIN). Nhưng mỗi lần INSERT/UPDATE/DELETE phải cập nhật index, làm chậm thao tác ghi.' },
+  { tag:'TCL', q:'VIEW trong SQL là gì?',
+    opts:['Bảng lưu dữ liệu vật lý','Bảng ảo dựa trên kết quả của SELECT','Bản sao của bảng khác','Thủ tục lưu trữ'], ans:1,
+    exp:'<strong>VIEW</strong> là bảng ảo — nó lưu câu lệnh SELECT, không lưu dữ liệu thực. Truy vấn vào view sẽ thực thi SELECT đó mỗi lần.' },
+];
+
+let active = [], cur = 0, answered = [], score = 0;
+
+function switchTab(id) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+function startQuiz() {
+  const filter = document.getElementById('filter').value;
+  active = filter === 'all' ? [...ALL_QUESTIONS] : ALL_QUESTIONS.filter(q=>q.tag===filter);
+  // shuffle
+  for(let i=active.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[active[i],active[j]]=[active[j],active[i]];}
+  cur=0; score=0; answered=Array(active.length).fill(-1);
+  document.getElementById('score-panel').style.display='none';
+  renderQuestion();
+}
+
+function resetQuiz() {
+  cur=0; score=0; answered=[];
+  document.getElementById('quiz-body').innerHTML='';
+  document.getElementById('score-panel').style.display='none';
+  document.getElementById('prog').style.width='0%';
+}
+
+function renderQuestion() {
+  if(cur>=active.length){ showScore(); return; }
+  const q = active[cur];
+  const letters = ['A','B','C','D'];
+  const done = answered[cur] !== -1;
+  let opts = q.opts.map((o,i)=>{
+    let cls = 'opt' + (done?' disabled':'');
+    if(done && i===q.ans) cls+=' correct';
+    if(done && i===answered[cur] && answered[cur]!==q.ans) cls+=' wrong';
+    return `<div class="${cls}" onclick="pick(${i})">
+      <span class="opt-letter">${letters[i]}</span>
+      <span>${o}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('quiz-body').innerHTML = `
+    <div class="question-card">
+      <div class="q-meta">
+        <span class="q-num">Câu ${cur+1} / ${active.length}</span>
+        <span class="q-tag">${q.tag}</span>
+      </div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">${opts}</div>
+      <div class="explanation${done?' show':''}" id="exp">
+        💡 <strong>Giải thích:</strong> ${q.exp}
+      </div>
+    </div>
+    <div class="quiz-nav">
+      <button class="btn secondary" onclick="nav(-1)" ${cur===0?'disabled':''}>← Trước</button>
+      <button class="btn" onclick="nav(1)">${cur===active.length-1?'Kết quả ✓':'Tiếp →'}</button>
+    </div>`;
+  updateProg();
+}
+
+function pick(i) {
+  if(answered[cur]!==-1) return;
+  answered[cur]=i;
+  if(i===active[cur].ans) score++;
+  renderQuestion();
+}
+
+function nav(d) {
+  cur = Math.max(0, Math.min(active.length-1, cur+d));
+  if(d===1 && cur===active.length && answered[cur-1]===-1) { showScore(); return; }
+  if(d===1 && cur>=active.length){ showScore(); return; }
+  renderQuestion();
+}
+
+function updateProg() {
+  const done = answered.filter(x=>x!==-1).length;
+  document.getElementById('prog').style.width = (done/active.length*100)+'%';
+}
+
+function showScore() {
+  document.getElementById('quiz-body').innerHTML='';
+  const panel = document.getElementById('score-panel');
+  panel.style.display='block';
+  const pct = Math.round(score/active.length*100);
+  document.getElementById('sc-num').textContent=score;
+  document.getElementById('sc-sub').textContent='/ '+active.length;
+  const msgs = [[80,'🎉 Xuất sắc! Bạn nắm vững SQL.'],[60,'👍 Khá tốt! Ôn lại phần sai nhé.'],[0,'📚 Cần ôn thêm. Hãy xem lại lý thuyết!']];
+  document.getElementById('sc-msg').textContent = msgs.find(m=>pct>=m[0])[1];
+  document.getElementById('sc-detail').textContent = `Điểm: ${score}/${active.length} (${pct}%)`;
+  document.getElementById('prog').style.width='100%';
+}
+
+// Auto-start with all questions
+startQuiz();
+</script>
+</body>
+</html>

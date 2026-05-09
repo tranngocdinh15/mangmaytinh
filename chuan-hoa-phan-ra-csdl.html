@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chuẩn hóa & Phân rã CSDL</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0e1a;
+    --surface: #111527;
+    --surface2: #171d35;
+    --border: #242b4a;
+    --accent: #5b7fff;
+    --accent2: #ff6b9d;
+    --accent3: #36d9b0;
+    --accent4: #ffd166;
+    --text: #e8ecff;
+    --text-dim: #8892c0;
+    --text-muted: #4a5280;
+    --correct: #36d9b0;
+    --wrong: #ff5b7f;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Bricolage Grotesque', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(91,127,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(91,127,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .glow {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .glow-1 { width: 500px; height: 500px; background: rgba(91,127,255,0.12); top: -100px; left: -100px; }
+  .glow-2 { width: 400px; height: 400px; background: rgba(255,107,157,0.08); bottom: 100px; right: -100px; }
+  .glow-3 { width: 300px; height: 300px; background: rgba(54,217,176,0.07); top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 60px 20px 50px;
+    position: relative;
+  }
+
+  .badge {
+    display: inline-block;
+    background: rgba(91,127,255,0.15);
+    border: 1px solid rgba(91,127,255,0.3);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  h1 .line1 { display: block; color: var(--text); }
+  h1 .line2 {
+    display: block;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 1.05rem;
+    max-width: 500px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .stat-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 8px 20px;
+    font-size: 13px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .stat-chip .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  /* NAV TABS */
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .tab-btn:hover { color: var(--text); background: var(--surface2); }
+  .tab-btn.active {
+    background: linear-gradient(135deg, var(--accent), #7b9fff);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(91,127,255,0.3);
+  }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; animation: fadeUp 0.4s ease; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* THEORY CARDS */
+  .theory-block {
+    margin-bottom: 32px;
+  }
+
+  .block-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .block-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .block-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+  }
+
+  .block-subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+  }
+
+  .card.blue::before { background: var(--accent); }
+  .card.pink::before { background: var(--accent2); }
+  .card.green::before { background: var(--accent3); }
+  .card.yellow::before { background: var(--accent4); }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .nf-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.05em;
+  }
+
+  .nf-badge.blue { background: rgba(91,127,255,0.2); color: var(--accent); }
+  .nf-badge.pink { background: rgba(255,107,157,0.2); color: var(--accent2); }
+  .nf-badge.green { background: rgba(54,217,176,0.2); color: var(--accent3); }
+  .nf-badge.yellow { background: rgba(255,209,102,0.2); color: var(--accent4); }
+
+  .card p {
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1.75;
+    margin-bottom: 12px;
+  }
+
+  .card ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .card ul li {
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1.7;
+    padding: 4px 0 4px 20px;
+    position: relative;
+  }
+
+  .card ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .formula-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--accent3);
+    margin-top: 12px;
+    line-height: 1.8;
+    overflow-x: auto;
+  }
+
+  .def-box {
+    background: rgba(91,127,255,0.06);
+    border: 1px solid rgba(91,127,255,0.2);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--text);
+    font-style: italic;
+    margin-bottom: 12px;
+  }
+
+  .example-tag {
+    display: inline-block;
+    background: rgba(255,209,102,0.15);
+    color: var(--accent4);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+
+  /* TABLE */
+  .tbl-wrap { overflow-x: auto; margin-top: 12px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th {
+    background: var(--surface2);
+    color: var(--accent);
+    font-weight: 700;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(36,43,74,0.6);
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  tr:hover td { background: rgba(91,127,255,0.04); }
+
+  .td-key { color: var(--accent3); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .td-form { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent4); }
+
+  /* EXERCISES */
+  .exercise-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .ex-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .ex-problem {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+
+  .ex-relation {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--accent4);
+    margin-bottom: 14px;
+    line-height: 1.7;
+  }
+
+  .toggle-btn {
+    background: rgba(54,217,176,0.12);
+    border: 1px solid rgba(54,217,176,0.25);
+    color: var(--accent3);
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .toggle-btn:hover {
+    background: rgba(54,217,176,0.2);
+    transform: translateY(-1px);
+  }
+
+  .solution {
+    display: none;
+    margin-top: 16px;
+    background: rgba(54,217,176,0.06);
+    border: 1px solid rgba(54,217,176,0.2);
+    border-radius: 8px;
+    padding: 16px;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .solution.show { display: block; }
+
+  .solution h4 {
+    color: var(--accent3);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .solution p, .solution li {
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1.75;
+  }
+
+  .solution ul { list-style: none; padding: 0; }
+  .solution ul li { padding: 3px 0 3px 18px; position: relative; }
+  .solution ul li::before { content: '✓'; position: absolute; left: 0; color: var(--accent3); font-size: 12px; }
+
+  .sol-formula {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--accent3);
+    background: var(--bg);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 8px 0;
+    line-height: 1.8;
+  }
+
+  /* QUIZ */
+  .quiz-header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: gap;
+    gap: 16px;
+  }
+
+  .quiz-info h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
+  .quiz-info p { font-size: 13px; color: var(--text-dim); }
+
+  .quiz-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #7b9fff);
+    border: none;
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(91,127,255,0.3);
+  }
+
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(91,127,255,0.4); }
+
+  .btn-secondary {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover { color: var(--text); border-color: var(--accent); }
+
+  .score-bar {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    display: none;
+  }
+
+  .score-bar.show { display: block; }
+
+  .score-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .score-num {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent3), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .progress-track {
+    background: var(--bg);
+    height: 8px;
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 100px;
+    background: linear-gradient(90deg, var(--accent3), var(--accent));
+    transition: width 0.6s ease;
+  }
+
+  .quiz-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .quiz-item.correct { border-color: rgba(54,217,176,0.5); }
+  .quiz-item.wrong   { border-color: rgba(255,91,127,0.5); }
+
+  .q-num-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .q-num {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dim);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .quiz-item.correct .q-num { background: rgba(54,217,176,0.15); color: var(--accent3); border-color: rgba(54,217,176,0.3); }
+  .quiz-item.wrong   .q-num { background: rgba(255,91,127,0.15); color: var(--wrong); border-color: rgba(255,91,127,0.3); }
+
+  .q-text {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  @media (max-width: 600px) {
+    .options { grid-template-columns: 1fr; }
+  }
+
+  .opt {
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-dim);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    line-height: 1.5;
+  }
+
+  .opt:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--text);
+    background: rgba(91,127,255,0.06);
+  }
+
+  .opt.selected { border-color: var(--accent); color: var(--text); background: rgba(91,127,255,0.1); }
+  .opt.correct-ans { border-color: var(--correct); color: var(--correct); background: rgba(54,217,176,0.1); }
+  .opt.wrong-ans   { border-color: var(--wrong); color: var(--wrong); background: rgba(255,91,127,0.1); }
+  .opt:disabled { cursor: default; }
+
+  .explain {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-dim);
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: none;
+    line-height: 1.6;
+    border-left: 3px solid var(--accent3);
+  }
+
+  .explain.show { display: block; }
+  .explain strong { color: var(--accent3); }
+
+  /* PROGRESS TRACKER */
+  .progress-tracker {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    z-index: 100;
+    font-size: 13px;
+  }
+
+  .tracker-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+
+  /* SECTION DIVIDER */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 36px 0 24px;
+  }
+
+  .section-divider .line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .section-divider .label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+<div class="glow glow-3"></div>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="badge">Cơ sở dữ liệu quan hệ</div>
+    <h1>
+      <span class="line1">Chuẩn hóa</span>
+      <span class="line2">& Phân rã CSDL</span>
+    </h1>
+    <p class="subtitle">Lý thuyết chi tiết, bài tập mẫu có lời giải và 30 câu trắc nghiệm ôn tập</p>
+    <div class="stats-row">
+      <div class="stat-chip"><span class="dot" style="background:#5b7fff"></span> 4 Dạng chuẩn</div>
+      <div class="stat-chip"><span class="dot" style="background:#ff6b9d"></span> 5 Bài tập mẫu</div>
+      <div class="stat-chip"><span class="dot" style="background:#36d9b0"></span> 30 Câu trắc nghiệm</div>
+    </div>
+  </header>
+
+  <!-- NAV TABS -->
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('theory', this)">📖 Lý Thuyết</button>
+    <button class="tab-btn" onclick="switchTab('exercises', this)">✏️ Bài Tập</button>
+    <button class="tab-btn" onclick="switchTab('quiz', this)">🎯 Trắc Nghiệm</button>
+  </div>
+
+  <!-- ======================== THEORY ======================== -->
+  <div id="theory" class="section active">
+
+    <!-- PHỤ THUỘC HÀM -->
+    <div class="theory-block">
+      <div class="block-header">
+        <div class="block-icon" style="background:rgba(91,127,255,0.15)">🔗</div>
+        <div>
+          <div class="block-title">Phụ thuộc hàm (Functional Dependency)</div>
+          <div class="block-subtitle">Nền tảng của lý thuyết chuẩn hóa</div>
+        </div>
+      </div>
+
+      <div class="card blue">
+        <h3>Định nghĩa phụ thuộc hàm</h3>
+        <div class="def-box">Cho quan hệ R(U). X, Y ⊆ U. Ta nói X → Y (X xác định hàm Y) nếu với mọi hai bộ t₁, t₂ trong R: t₁[X] = t₂[X] ⟹ t₁[Y] = t₂[Y]</div>
+        <p>Nghĩa là: biết giá trị của X thì <strong style="color:var(--text)">xác định duy nhất</strong> giá trị của Y.</p>
+        <ul>
+          <li>X gọi là <strong style="color:var(--text)">vế trái (LHS)</strong> – thuộc tính xác định</li>
+          <li>Y gọi là <strong style="color:var(--text)">vế phải (RHS)</strong> – thuộc tính phụ thuộc</li>
+          <li>Nếu X là siêu khóa thì X → U (X xác định tất cả)</li>
+        </ul>
+        <div class="formula-box">
+Ví dụ: MaSV → HoTen, NgaySinh, Lop
+MaMon → TenMon, SoTiet
+(MaSV, MaMon) → Diem
+        </div>
+      </div>
+
+      <div class="card pink">
+        <h3>Các loại phụ thuộc hàm</h3>
+        <ul>
+          <li><strong style="color:var(--text)">PTH đầy đủ:</strong> X → Y và không tồn tại X' ⊂ X mà X' → Y</li>
+          <li><strong style="color:var(--text)">PTH bộ phận:</strong> X → Y nhưng tồn tại X' ⊂ X mà X' → Y</li>
+          <li><strong style="color:var(--text)">PTH bắc cầu:</strong> X → Y → Z (Z phụ thuộc gián tiếp qua Y)</li>
+          <li><strong style="color:var(--text)">PTH hiển nhiên:</strong> X → Y khi Y ⊆ X</li>
+        </ul>
+      </div>
+
+      <div class="card green">
+        <h3>Hệ tiên đề Armstrong</h3>
+        <ul>
+          <li><strong style="color:var(--text)">Phản xạ:</strong> Y ⊆ X ⟹ X → Y</li>
+          <li><strong style="color:var(--text)">Tăng trưởng:</strong> X → Y ⟹ XZ → YZ</li>
+          <li><strong style="color:var(--text)">Bắc cầu:</strong> X → Y, Y → Z ⟹ X → Z</li>
+          <li><strong style="color:var(--text)">Hợp:</strong> X → Y, X → Z ⟹ X → YZ</li>
+          <li><strong style="color:var(--text)">Tách:</strong> X → YZ ⟹ X → Y và X → Z</li>
+        </ul>
+        <div class="formula-box">Bao đóng của X dưới F: X⁺ = {A | X →_F A}</div>
+      </div>
+
+      <div class="card yellow">
+        <h3>Thuật toán tính bao đóng X⁺</h3>
+        <div class="formula-box">
+1. Khởi tạo: X⁺ = X
+2. Lặp: Với mỗi PTH Y → Z trong F:
+     Nếu Y ⊆ X⁺ thì X⁺ = X⁺ ∪ Z
+3. Dừng khi X⁺ không thay đổi
+4. Kết quả: X⁺ là bao đóng của X
+        </div>
+        <p style="margin-top:10px">X là siêu khóa ⟺ X⁺ = U (bao đóng bằng toàn bộ thuộc tính)</p>
+      </div>
+    </div>
+
+    <div class="section-divider"><div class="line"></div><div class="label">Các dạng chuẩn</div><div class="line"></div></div>
+
+    <!-- DẠNG CHUẨN -->
+    <div class="theory-block">
+      <div class="block-header">
+        <div class="block-icon" style="background:rgba(255,107,157,0.15)">📐</div>
+        <div>
+          <div class="block-title">Các Dạng Chuẩn (Normal Forms)</div>
+          <div class="block-subtitle">1NF → 2NF → 3NF → BCNF</div>
+        </div>
+      </div>
+
+      <div class="card blue">
+        <h3><span class="nf-badge blue">1NF</span> Dạng chuẩn 1</h3>
+        <div class="def-box">Một quan hệ ở 1NF nếu tất cả các thuộc tính chỉ chứa giá trị nguyên tử (không phân chia được)</div>
+        <ul>
+          <li>Không có thuộc tính đa trị</li>
+          <li>Không có thuộc tính phức hợp (lồng nhau)</li>
+          <li>Mỗi ô chứa đúng 1 giá trị</li>
+          <li>Tất cả quan hệ trong CSDL quan hệ đều phải ở 1NF</li>
+        </ul>
+        <div class="example-tag">Ví dụ vi phạm 1NF</div>
+        <div class="formula-box">SinhVien(MaSV, HoTen, SoDT{nhiều số})  ← VI PHẠM
+SinhVien(MaSV, HoTen, SDT1, SDT2)  ← Đúng 1NF</div>
+      </div>
+
+      <div class="card pink">
+        <h3><span class="nf-badge pink">2NF</span> Dạng chuẩn 2</h3>
+        <div class="def-box">Quan hệ R ở 2NF nếu: đạt 1NF và mọi thuộc tính không khóa phụ thuộc hàm ĐẦY ĐỦ vào khóa chính</div>
+        <ul>
+          <li>Chỉ áp dụng khi khóa chính là <strong style="color:var(--text)">khóa ghép</strong></li>
+          <li>Loại bỏ <strong style="color:var(--text)">phụ thuộc bộ phận</strong> vào khóa</li>
+          <li>Nếu khóa đơn: tự động đạt 2NF nếu đã ở 1NF</li>
+        </ul>
+        <div class="example-tag">Ví dụ vi phạm 2NF</div>
+        <div class="formula-box">DIEM(MaSV, MaMon, TenMon, Diem)
+Khóa: (MaSV, MaMon)
+Vi phạm: MaMon → TenMon (bộ phận!)
+
+Tách thành:
+DIEM(MaSV, MaMon, Diem)
+MONHOC(MaMon, TenMon)</div>
+      </div>
+
+      <div class="card green">
+        <h3><span class="nf-badge green">3NF</span> Dạng chuẩn 3</h3>
+        <div class="def-box">Quan hệ R ở 3NF nếu: đạt 2NF và không có thuộc tính không khóa nào phụ thuộc bắc cầu vào khóa chính</div>
+        <ul>
+          <li>Loại bỏ <strong style="color:var(--text)">phụ thuộc bắc cầu</strong></li>
+          <li>Định nghĩa chặt hơn: Với mọi X → A không hiển nhiên, hoặc X là siêu khóa, hoặc A là thuộc tính khóa</li>
+          <li>Bảo toàn phụ thuộc hàm khi phân rã</li>
+        </ul>
+        <div class="example-tag">Ví dụ vi phạm 3NF</div>
+        <div class="formula-box">NHANVIEN(MaNV, MaPhong, TenPhong)
+Khóa: MaNV
+Vi phạm: MaNV → MaPhong → TenPhong (bắc cầu!)
+
+Tách thành:
+NHANVIEN(MaNV, MaPhong)
+PHONGBAN(MaPhong, TenPhong)</div>
+      </div>
+
+      <div class="card yellow">
+        <h3><span class="nf-badge yellow">BCNF</span> Boyce-Codd Normal Form</h3>
+        <div class="def-box">Quan hệ R ở BCNF nếu: với mọi phụ thuộc hàm X → Y không hiển nhiên, X phải là siêu khóa của R</div>
+        <ul>
+          <li>Mạnh hơn 3NF – loại bỏ <strong style="color:var(--text)">mọi dư thừa từ PTH</strong></li>
+          <li>Phân rã BCNF <strong style="color:var(--text)">không luôn bảo toàn</strong> phụ thuộc hàm</li>
+          <li>Nhưng luôn đảm bảo <strong style="color:var(--text)">kết nối không mất mát</strong></li>
+          <li>Mọi quan hệ ở BCNF đều ở 3NF, ngược lại chưa chắc</li>
+        </ul>
+        <div class="example-tag">Ví dụ vi phạm BCNF</div>
+        <div class="formula-box">DKMON(SinhVien, MaMon, GiaoVien)
+Khóa: (SinhVien, MaMon) hoặc (SinhVien, GiaoVien)
+PTH: GiaoVien → MaMon
+Vi phạm: GiaoVien không là siêu khóa!
+
+Tách thành:
+GV_MON(GiaoVien, MaMon)
+SV_GV(SinhVien, GiaoVien)</div>
+      </div>
+    </div>
+
+    <!-- SO SÁNH -->
+    <div class="theory-block">
+      <div class="block-header">
+        <div class="block-icon" style="background:rgba(54,217,176,0.15)">📊</div>
+        <div>
+          <div class="block-title">Bảng so sánh các dạng chuẩn</div>
+        </div>
+      </div>
+      <div class="card green">
+        <div class="tbl-wrap">
+          <table>
+            <tr>
+              <th>Dạng chuẩn</th>
+              <th>Điều kiện</th>
+              <th>Loại bỏ</th>
+              <th>Bảo toàn PTH</th>
+              <th>Không mất mát</th>
+            </tr>
+            <tr>
+              <td class="td-key">1NF</td>
+              <td>Giá trị nguyên tử</td>
+              <td>Đa trị, phức hợp</td>
+              <td>✓</td><td>✓</td>
+            </tr>
+            <tr>
+              <td class="td-key">2NF</td>
+              <td>1NF + không PTH bộ phận</td>
+              <td>PTH bộ phận vào khóa</td>
+              <td>✓</td><td>✓</td>
+            </tr>
+            <tr>
+              <td class="td-key">3NF</td>
+              <td>2NF + không PTH bắc cầu</td>
+              <td>PTH bắc cầu</td>
+              <td>✓</td><td>✓</td>
+            </tr>
+            <tr>
+              <td class="td-key">BCNF</td>
+              <td>Vế trái PTH là siêu khóa</td>
+              <td>Mọi dư thừa PTH</td>
+              <td>Không luôn</td><td>✓</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"><div class="line"></div><div class="label">Phân rã quan hệ</div><div class="line"></div></div>
+
+    <!-- PHÂN RÃ -->
+    <div class="theory-block">
+      <div class="block-header">
+        <div class="block-icon" style="background:rgba(255,209,102,0.15)">✂️</div>
+        <div>
+          <div class="block-title">Phân rã quan hệ (Decomposition)</div>
+          <div class="block-subtitle">Tách quan hệ lớn thành các quan hệ nhỏ hơn</div>
+        </div>
+      </div>
+
+      <div class="card yellow">
+        <h3>Phân rã không mất mát (Lossless Join)</h3>
+        <div class="def-box">Phân rã R thành R₁, R₂ là không mất mát nếu: R = R₁ ⋈ R₂ (kết nối tự nhiên khôi phục lại R gốc)</div>
+        <p><strong style="color:var(--text)">Điều kiện (Định lý Heath):</strong></p>
+        <div class="formula-box">
+Phân rã R thành R₁(XY) và R₂(XZ) là không mất mát ⟺
+    X → Y  (∈ F⁺)   HOẶC   X → Z  (∈ F⁺)
+
+Tức là: thuộc tính chung X phải là siêu khóa
+của ít nhất một trong hai quan hệ con.
+        </div>
+      </div>
+
+      <div class="card blue">
+        <h3>Phân rã bảo toàn phụ thuộc hàm</h3>
+        <div class="def-box">Phân rã R(F) thành {R₁, R₂, ..., Rₙ} bảo toàn PTH nếu: F⁺ = (F₁ ∪ F₂ ∪ ... ∪ Fₙ)⁺ với Fᵢ = πRᵢ(F)</div>
+        <p>Kiểm tra bằng cách: tính lại bao đóng của các PTH trên từng quan hệ con và xem có suy dẫn lại được toàn bộ F không.</p>
+        <div class="formula-box">
+Thuật toán kiểm tra bảo toàn PTH:
+Với mỗi X → Y trong F:
+  1. Z = X
+  2. Với mỗi Rᵢ: Z = Z ∪ ((Z ∩ Rᵢ)⁺ ∩ Rᵢ)  [lặp]
+  3. Nếu Y ⊆ Z thì X → Y được bảo toàn
+        </div>
+      </div>
+
+      <div class="card pink">
+        <h3>Thuật toán phân rã về 3NF (Synthesis)</h3>
+        <div class="formula-box">
+Bước 1: Tìm phủ tối tiểu Fc của F
+  a) Đơn giản hóa vế phải: X → YZ thành X → Y, X → Z
+  b) Loại thuộc tính thừa ở vế trái
+  c) Loại PTH dư thừa
+
+Bước 2: Với mỗi X → Y trong Fc, tạo quan hệ Rᵢ(XY)
+
+Bước 3: Nếu không có Rᵢ chứa khóa của R, thêm Rk(K)
+
+Kết quả: đảm bảo 3NF + bảo toàn PTH + không mất mát
+        </div>
+      </div>
+
+      <div class="card green">
+        <h3>Thuật toán phân rã về BCNF</h3>
+        <div class="formula-box">
+Bước 1: Bắt đầu với ρ = {R}
+
+Bước 2: Với mỗi Rᵢ ∈ ρ chưa ở BCNF:
+  - Tìm X → A vi phạm BCNF (X không là siêu khóa)
+  - Tách: R₁ = X⁺ (bao đóng của X trong Rᵢ)
+          R₂ = Rᵢ - X⁺ + X (thuộc tính còn lại + X)
+  - Thay Rᵢ bằng {R₁, R₂}
+
+Bước 3: Lặp đến khi tất cả đều ở BCNF
+Lưu ý: Có thể không bảo toàn PTH!
+        </div>
+      </div>
+
+      <div class="card yellow">
+        <h3>Tìm phủ tối tiểu (Canonical Cover)</h3>
+        <div class="formula-box">
+Bước 1: Tách vế phải thành đơn
+  F = {X → A | A là thuộc tính đơn}
+
+Bước 2: Loại thuộc tính thừa vế trái
+  Với X → A, kiểm tra từng B ∈ X:
+  Nếu A ∈ (X-{B})⁺ thì loại B khỏi X
+
+Bước 3: Loại PTH dư thừa
+  Với X → A, kiểm tra:
+  Nếu A ∈ (F - {X→A})* suy dẫn được từ F còn lại
+  thì loại X → A
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /theory -->
+
+  <!-- ======================== EXERCISES ======================== -->
+  <div id="exercises" class="section">
+
+    <div class="theory-block">
+      <div class="block-header">
+        <div class="block-icon" style="background:rgba(255,107,157,0.15)">✏️</div>
+        <div>
+          <div class="block-title">Bài tập có lời giải</div>
+          <div class="block-subtitle">Click "Xem lời giải" để hiện đáp án</div>
+        </div>
+      </div>
+
+      <!-- BT1 -->
+      <div class="exercise-card">
+        <div class="ex-num">1</div>
+        <div class="ex-problem">Cho quan hệ R(A,B,C,D,E) với tập phụ thuộc hàm F sau. Tìm tất cả các khóa của R.</div>
+        <div class="ex-relation">
+F = { AB → C, B → D, CD → E, CE → A }
+        </div>
+        <button class="toggle-btn" onclick="toggleSol(this)">👁 Xem lời giải</button>
+        <div class="solution">
+          <h4>Lời giải</h4>
+          <p>Tìm khóa bằng cách kiểm tra bao đóng. Nhận xét: B và E không xuất hiện ở vế phải → B, E có thể có trong khóa.</p>
+          <div class="sol-formula">
+Kiểm tra (AB)⁺:
+  AB → C (dùng AB→C): {A,B,C}
+  B  → D (dùng B→D):  {A,B,C,D}
+  CD → E (dùng CD→E): {A,B,C,D,E} = U  ✓
+  
+→ AB là siêu khóa. Kiểm tra A⁺, B⁺:
+  A⁺ = {A} ≠ U
+  B⁺ = {B,D} ≠ U
+→ AB không giảm được → AB là khóa ✓
+
+Kiểm tra (BE)⁺:
+  CE → A: cần C trước → không dùng được
+  BE⁺ = {B,D,E} ≠ U  → không phải khóa
+
+Các tổ hợp khác: kiểm tra ABx: AB đã là khóa tối tiểu
+          </div>
+          <ul>
+            <li>Khóa duy nhất của R là: <strong style="color:var(--accent3)">AB</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- BT2 -->
+      <div class="exercise-card">
+        <div class="ex-num">2</div>
+        <div class="ex-problem">Cho quan hệ R(MaSV, MaMon, TenMon, GiaoVien, Diem) với F sau. Xác định R thuộc dạng chuẩn nào và phân rã về 3NF.</div>
+        <div class="ex-relation">
+F = { (MaSV, MaMon) → Diem, MaMon → TenMon, MaMon → GiaoVien }
+Khóa chính: (MaSV, MaMon)
+        </div>
+        <button class="toggle-btn" onclick="toggleSol(this)">👁 Xem lời giải</button>
+        <div class="solution">
+          <h4>Lời giải</h4>
+          <p><strong style="color:var(--text)">Kiểm tra dạng chuẩn:</strong></p>
+          <ul>
+            <li>1NF: ✓ (tất cả giá trị nguyên tử)</li>
+            <li>2NF: ✗ Vi phạm! MaMon → TenMon và MaMon → GiaoVien là PTH bộ phận vào khóa ghép</li>
+          </ul>
+          <p style="margin-top:8px"><strong style="color:var(--text)">Phân rã về 3NF:</strong></p>
+          <div class="sol-formula">
+R₁(MaSV, MaMon, Diem)
+   Khóa: (MaSV, MaMon)
+   PTH: (MaSV,MaMon) → Diem  ← đầy đủ ✓
+
+R₂(MaMon, TenMon, GiaoVien)
+   Khóa: MaMon
+   PTH: MaMon → TenMon, MaMon → GiaoVien ✓
+
+Kết quả: Cả R₁ và R₂ đều ở 3NF
+Phân rã bảo toàn PTH ✓
+Không mất mát (MaMon là thuộc tính chung, MaMon là khóa R₂) ✓
+          </div>
+        </div>
+      </div>
+
+      <!-- BT3 -->
+      <div class="exercise-card">
+        <div class="ex-num">3</div>
+        <div class="ex-problem">Tìm phủ tối tiểu của tập phụ thuộc hàm F sau.</div>
+        <div class="ex-relation">
+F = { A → BC, B → C, A → B, AB → C }
+        </div>
+        <button class="toggle-btn" onclick="toggleSol(this)">👁 Xem lời giải</button>
+        <div class="solution">
+          <h4>Lời giải</h4>
+          <p><strong style="color:var(--text)">Bước 1: Tách vế phải đơn:</strong></p>
+          <div class="sol-formula">
+F = { A→B, A→C, B→C, AB→C }
+          </div>
+          <p><strong style="color:var(--text)">Bước 2: Loại thuộc tính thừa vế trái:</strong></p>
+          <div class="sol-formula">
+Xét AB→C: Thử bỏ A: B→C đã có trong F → C ∈ {B}⁺
+→ Bỏ A, giữ B→C (đã có sẵn) → AB→C dư thừa
+          </div>
+          <p><strong style="color:var(--text)">Bước 3: Loại PTH dư thừa:</strong></p>
+          <div class="sol-formula">
+F = { A→B, A→C, B→C, AB→C(đã thành B→C) }
+Xét A→C: Từ A→B, B→C suy ra A→C bằng bắc cầu
+→ A→C dư thừa, loại bỏ!
+Xét AB→C: đã xử lý ở bước 2
+
+Phủ tối tiểu Fc = { A→B, B→C }
+          </div>
+          <ul>
+            <li>Kiểm tra: A⁺ = {A,B,C} = cùng kết quả với F gốc ✓</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- BT4 -->
+      <div class="exercise-card">
+        <div class="ex-num">4</div>
+        <div class="ex-problem">Cho R(A,B,C,D) với F = {A→B, B→C, C→D}. Kiểm tra phân rã sau có không mất mát không?</div>
+        <div class="ex-relation">
+ρ = { R₁(A,B), R₂(B,C), R₃(C,D) }
+        </div>
+        <button class="toggle-btn" onclick="toggleSol(this)">👁 Xem lời giải</button>
+        <div class="solution">
+          <h4>Lời giải – Dùng thuật toán bảng (Chase Algorithm)</h4>
+          <div class="sol-formula">
+Lập bảng ban đầu:
+       A    B    C    D
+R₁:   a    b    c₁   d₁
+R₂:   a₂   b    c    d₂
+R₃:   a₃   b₃   c    d
+
+Áp dụng A→B: R₁ có a ở A → R₂ cũng phải có b ở B
+→ R₂: (a₂, b, c, d₂)
+Áp dụng B→C: R₁(a,b,c₁), R₂(a₂,b,c,d₂) cùng b → đồng nhất C
+→ R₁: (a, b, c, d₁) [c₁ = c]
+Áp dụng C→D: R₁(a,b,c,d₁), R₂(a₂,b,c,d₂), R₃(a₃,b₃,c,d) cùng c → đồng nhất D
+→ R₁: (a, b, c, d) ← Hàng có toàn biến không có chỉ số!
+
+Kết luận: Xuất hiện hàng (a,b,c,d) → Phân rã KHÔNG MẤT MÁT ✓
+          </div>
+        </div>
+      </div>
+
+      <!-- BT5 -->
+      <div class="exercise-card">
+        <div class="ex-num">5</div>
+        <div class="ex-problem">Cho R(A,B,C,D) với F = {AB→C, C→D, D→A}. Phân rã R về BCNF.</div>
+        <div class="ex-relation">
+F = { AB→C, C→D, D→A }
+Tìm khóa, kiểm tra BCNF, và phân rã nếu vi phạm.
+        </div>
+        <button class="toggle-btn" onclick="toggleSol(this)">👁 Xem lời giải</button>
+        <div class="solution">
+          <h4>Lời giải</h4>
+          <p><strong style="color:var(--text)">Bước 1 – Tìm khóa:</strong></p>
+          <div class="sol-formula">
+B không xuất hiện ở vế phải → B chắc chắn trong khóa
+(AB)⁺: AB→C: {A,B,C}; C→D: {A,B,C,D} = U ✓
+→ Khóa là AB (kiểm tra A⁺={A,D} ≠ U, B⁺={B} ≠ U → AB tối tiểu)
+          </div>
+          <p><strong style="color:var(--text)">Bước 2 – Kiểm tra BCNF:</strong></p>
+          <div class="sol-formula">
+C→D: C⁺ = {C,D,A} ≠ U → C không là siêu khóa → Vi phạm BCNF!
+D→A: D⁺ = {D,A} ≠ U → D không là siêu khóa → Vi phạm BCNF!
+          </div>
+          <p><strong style="color:var(--text)">Bước 3 – Phân rã:</strong></p>
+          <div class="sol-formula">
+Xét C→D vi phạm:
+  R₁ = C⁺ = {C,D,A}  → R₁(A,C,D)
+  R₂ = {C,D,A} - C⁺ + C = {B,C} → R₂(B,C)
+  (vì R - {D,A} + C = {B,C})
+
+Kiểm tra R₁(A,C,D) với F₁ = {C→D, D→A}:
+  C⁺ = {C,D,A} = R₁ → C là siêu khóa ✓ BCNF
+  
+Kiểm tra R₂(B,C) với F₂ = {AB→C (chiếu xuống BC = B→C?)}
+  Không có PTH vi phạm → BCNF ✓
+
+Kết quả: ρ = { R₁(A,C,D), R₂(B,C) }
+Lưu ý: AB→C bị mất (không bảo toàn PTH)
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /exercises -->
+
+  <!-- ======================== QUIZ ======================== -->
+  <div id="quiz" class="section">
+
+    <div class="quiz-header">
+      <div class="quiz-info">
+        <h2>🎯 Trắc nghiệm Chuẩn hóa & Phân rã</h2>
+        <p>30 câu hỏi • Chọn đáp án để kiểm tra ngay</p>
+      </div>
+      <div class="quiz-actions">
+        <button class="btn-primary" onclick="submitQuiz()">📊 Xem kết quả</button>
+        <button class="btn-secondary" onclick="resetQuiz()">🔄 Làm lại</button>
+      </div>
+    </div>
+
+    <div class="score-bar" id="scorebar">
+      <div class="score-row">
+        <div>
+          <div style="font-size:13px;color:var(--text-dim);margin-bottom:4px">Điểm của bạn</div>
+          <div class="score-num" id="scorenum">0/30</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:13px;color:var(--text-dim);margin-bottom:4px">Tỉ lệ đúng</div>
+          <div style="font-size:1.5rem;font-weight:700;color:var(--accent)" id="scorepct">0%</div>
+        </div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="scorefill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div id="quiz-container"></div>
+
+  </div><!-- /quiz -->
+
+</div><!-- /wrapper -->
+
+<div class="progress-tracker" id="tracker">
+  <div class="tracker-dot"></div>
+  <span id="tracker-text" style="color:var(--text-dim)">0 / 30 đã trả lời</span>
+</div>
+
+<script>
+// ===== TAB SWITCH =====
+function switchTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ===== TOGGLE SOLUTION =====
+function toggleSol(btn) {
+  const sol = btn.nextElementSibling;
+  sol.classList.toggle('show');
+  btn.textContent = sol.classList.contains('show') ? '🙈 Ẩn lời giải' : '👁 Xem lời giải';
+}
+
+// ===== QUIZ DATA =====
+const questions = [
+  {
+    q: "Phụ thuộc hàm X → Y có nghĩa là gì?",
+    opts: ["Y xác định duy nhất X","Biết X thì xác định duy nhất Y","X và Y luôn bằng nhau","Y là tập con của X"],
+    ans: 1, exp: "X → Y nghĩa là với mọi hai bộ có cùng giá trị X thì phải có cùng giá trị Y. X xác định hàm Y."
+  },
+  {
+    q: "Bao đóng X⁺ dưới tập PTH F là gì?",
+    opts: ["Tập tất cả các PTH suy ra từ X","Tập tất cả thuộc tính được xác định bởi X","Tập khóa của quan hệ","Tập siêu khóa của quan hệ"],
+    ans: 1, exp: "X⁺ là tập tất cả thuộc tính A mà X →_F A có thể suy dẫn được từ F."
+  },
+  {
+    q: "X là siêu khóa của R(U) khi và chỉ khi:",
+    opts: ["X → một thuộc tính nào đó","X⁺ ⊆ U","X⁺ = U","X là tập con nhỏ nhất"],
+    ans: 2, exp: "X là siêu khóa khi bao đóng X⁺ = U, tức là X xác định tất cả các thuộc tính trong quan hệ."
+  },
+  {
+    q: "Điều kiện để quan hệ đạt dạng chuẩn 1NF là:",
+    opts: ["Không có PTH bộ phận","Không có PTH bắc cầu","Tất cả thuộc tính có giá trị nguyên tử","Vế trái mọi PTH là siêu khóa"],
+    ans: 2, exp: "1NF yêu cầu tất cả thuộc tính chỉ chứa giá trị nguyên tử, không phân chia được, không đa trị."
+  },
+  {
+    q: "Phụ thuộc hàm bộ phận là gì?",
+    opts: ["X → Y trong đó Y ⊆ X","X → Y trong đó tồn tại X' ⊂ X mà X' → Y","X → Y → Z","X → Y và Y không là siêu khóa"],
+    ans: 1, exp: "PTH bộ phận: X → Y nhưng có tập con thực sự X' của X cũng xác định Y. Chỉ xảy ra khi X là khóa ghép."
+  },
+  {
+    q: "Quan hệ R vi phạm 2NF khi:",
+    opts: ["Tồn tại giá trị đa trị","Có thuộc tính không khóa phụ thuộc bộ phận vào khóa","Có PTH bắc cầu","Vế trái PTH không là siêu khóa"],
+    ans: 1, exp: "2NF vi phạm khi có thuộc tính không khóa phụ thuộc hàm bộ phận (không đầy đủ) vào khóa chính ghép."
+  },
+  {
+    q: "Nếu quan hệ có khóa đơn và đạt 1NF thì:",
+    opts: ["Chắc chắn đạt 2NF","Chắc chắn đạt 3NF","Chắc chắn đạt BCNF","Không thể kết luận gì"],
+    ans: 0, exp: "Nếu khóa là thuộc tính đơn thì không thể có PTH bộ phận vào khóa → tự động đạt 2NF (nếu đã ở 1NF)."
+  },
+  {
+    q: "Phụ thuộc hàm bắc cầu A → B → C có nghĩa là:",
+    opts: ["A trực tiếp xác định C","C phụ thuộc vào A gián tiếp qua B","B và C là thuộc tính khóa","A là siêu khóa"],
+    ans: 1, exp: "Bắc cầu: A → B và B → C thì A → C. C phụ thuộc gián tiếp vào A qua B."
+  },
+  {
+    q: "Quan hệ R vi phạm 3NF khi:",
+    opts: ["Tồn tại PTH bộ phận vào khóa","Tồn tại PTH bắc cầu từ khóa","Có thuộc tính đa trị","Không có khóa xác định được"],
+    ans: 1, exp: "3NF vi phạm khi có thuộc tính không khóa phụ thuộc bắc cầu vào khóa (ví dụ: Khóa → B → C với C không phải thuộc tính khóa)."
+  },
+  {
+    q: "Điều kiện của BCNF là:",
+    opts: ["Mọi PTH không hiển nhiên X → Y, Y là siêu khóa","Mọi PTH không hiển nhiên X → Y, X là siêu khóa","Không có PTH bắc cầu","Không có PTH bộ phận"],
+    ans: 1, exp: "BCNF: với mọi PTH không hiển nhiên X → A, X phải là siêu khóa của R."
+  },
+  {
+    q: "Quan hệ ở BCNF thì:",
+    opts: ["Không nhất thiết ở 3NF","Chắc chắn ở 3NF","Chỉ ở 2NF","Không ở dạng chuẩn nào"],
+    ans: 1, exp: "BCNF mạnh hơn 3NF. Mọi quan hệ ở BCNF đều thỏa mãn 3NF. Ngược lại không đúng."
+  },
+  {
+    q: "Phân rã R thành R₁, R₂ không mất mát khi nào?",
+    opts: ["R₁ ∩ R₂ = ∅","(R₁ ∩ R₂) → R₁ hoặc (R₁ ∩ R₂) → R₂","R₁ ∪ R₂ = R","Mỗi Rᵢ ở BCNF"],
+    ans: 1, exp: "Theo định lý Heath: phân rã không mất mát khi các thuộc tính chung (R₁∩R₂) là siêu khóa của ít nhất một trong hai quan hệ con."
+  },
+  {
+    q: "Phủ tối tiểu Fc của F thỏa mãn điều kiện nào?",
+    opts: ["Fc ⊆ F","F⁺ = Fc⁺ và Fc tối tiểu","Fc chứa ít PTH nhất","Mọi PTH trong Fc có vế phải đơn"],
+    ans: 1, exp: "Phủ tối tiểu phải tương đương với F (cùng bao đóng F⁺ = Fc⁺), vế phải đơn, không có thuộc tính thừa, không có PTH dư thừa."
+  },
+  {
+    q: "Hệ tiên đề Armstrong bao gồm những quy tắc cơ bản nào?",
+    opts: ["Phản xạ, Bắc cầu, Hợp","Phản xạ, Tăng trưởng, Bắc cầu","Tăng trưởng, Tách, Bao gộp","Bắc cầu, Tách, Hợp"],
+    ans: 1, exp: "Ba tiên đề cơ bản của Armstrong: Phản xạ (Reflexivity), Tăng trưởng (Augmentation), Bắc cầu (Transitivity). Các quy tắc khác dẫn xuất từ đây."
+  },
+  {
+    q: "R(A,B,C,D) với F={A→B, B→C, C→D}. Khóa của R là:",
+    opts: ["A","AB","ABCD","Không có khóa"],
+    ans: 0, exp: "A⁺ = {A}→B→C→D = {A,B,C,D} = U. A là siêu khóa và tối tiểu (không thể bỏ gì). Khóa là A."
+  },
+  {
+    q: "Cho R(X,Y,Z) với F={XY→Z, Z→X}. Các khóa của R là:",
+    opts: ["Chỉ XY","Chỉ YZ","XY và YZ","Chỉ Z"],
+    ans: 2, exp: "XY⁺ = {X,Y,Z}=U ✓ → XY là khóa. YZ⁺: Z→X → {X,Y,Z}=U ✓ → YZ là khóa. Cả hai đều là khóa."
+  },
+  {
+    q: "Bước đầu tiên trong thuật toán tìm phủ tối tiểu là:",
+    opts: ["Loại PTH dư thừa","Tách vế phải thành thuộc tính đơn","Tìm bao đóng của tất cả thuộc tính","Kiểm tra dạng chuẩn"],
+    ans: 1, exp: "Bước 1: Tách vế phải đơn (X→YZ thành X→Y và X→Z). Sau đó mới loại thuộc tính thừa vế trái, rồi loại PTH dư thừa."
+  },
+  {
+    q: "Phân rã về BCNF so với 3NF có ưu và nhược điểm như thế nào?",
+    opts: ["BCNF không mất mát nhưng có thể mất PTH; 3NF bảo toàn PTH","3NF mạnh hơn BCNF","Cả hai đều bảo toàn PTH","BCNF luôn bảo toàn PTH"],
+    ans: 0, exp: "Phân rã BCNF đảm bảo không mất mát nhưng có thể không bảo toàn PTH. Phân rã 3NF (tổng hợp) đảm bảo cả không mất mát VÀ bảo toàn PTH."
+  },
+  {
+    q: "Cho F={A→BC, B→C, A→B, AB→C}. Phủ tối tiểu Fc là:",
+    opts: ["{A→B, B→C}","{A→BC, B→C}","{A→B, A→C}","{AB→C, B→C}"],
+    ans: 0, exp: "Sau khi tách vế phải: {A→B, A→C, B→C, AB→C}. Loại AB→C (B→C đã có). Loại A→C (suy từ A→B, B→C). Fc = {A→B, B→C}."
+  },
+  {
+    q: "Thuộc tính nguyên tố (prime attribute) là:",
+    opts: ["Thuộc tính không thuộc khóa nào","Thuộc tính xuất hiện trong ít nhất một khóa","Thuộc tính là khóa chính","Thuộc tính có giá trị duy nhất"],
+    ans: 1, exp: "Thuộc tính nguyên tố (prime attribute) là thuộc tính xuất hiện trong ít nhất một khóa ứng viên của quan hệ."
+  },
+  {
+    q: "R(A,B,C) vi phạm BCNF với PTH A→B, B→C. Phân rã BCNF cho kết quả:",
+    opts: ["R₁(A,B), R₂(A,C)","R₁(B,C), R₂(A,B)","R₁(A,C), R₂(B,C)","R₁(A,B,C) giữ nguyên"],
+    ans: 1, exp: "Xét B→C vi phạm (B không là siêu khóa). B⁺={B,C}. R₁(B,C) và R₂=R-{B⁺}+B=R-{C}+B=A,B → R₂(A,B)."
+  },
+  {
+    q: "Khi nào phụ thuộc hàm X → Y được gọi là hiển nhiên (trivial)?",
+    opts: ["Khi X là siêu khóa","Khi Y ⊆ X","Khi X ⊆ Y","Khi X và Y không liên quan"],
+    ans: 1, exp: "PTH X→Y là hiển nhiên khi Y là tập con của X (Y ⊆ X). Ví dụ: AB→A là hiển nhiên vì A ⊆ {A,B}."
+  },
+  {
+    q: "Thuật toán Chase (bảng) được dùng để:",
+    opts: ["Tìm phủ tối tiểu","Kiểm tra phân rã không mất mát","Tìm tất cả khóa","Chuẩn hóa về BCNF"],
+    ans: 1, exp: "Thuật toán Chase (phương pháp bảng) dùng để kiểm tra xem một phân rã có đảm bảo tính không mất mát (lossless join) hay không."
+  },
+  {
+    q: "Cho R(A,B,C,D) với F={AB→C, AB→D, C→A}. Dạng chuẩn cao nhất R đạt được là gì?",
+    opts: ["1NF","2NF","3NF","BCNF"],
+    ans: 2, exp: "Khóa: AB và BC (kiểm tra BC⁺: C→A → {A,B,C}→D → U). Xét C→A: C không là siêu khóa nhưng A là thuộc tính nguyên tố → đạt 3NF. Nhưng C không là siêu khóa → vi phạm BCNF."
+  },
+  {
+    q: "Điều kiện để kiểm tra X → Y được bảo toàn sau phân rã ρ = {R₁,...,Rₙ}:",
+    opts: ["Y ⊆ X⁺ tính trên toàn bộ F","Y ⊆ Z sau khi áp dụng thuật toán trên từng Rᵢ","X thuộc một Rᵢ nào đó","Y thuộc một Rᵢ nào đó"],
+    ans: 1, exp: "Thuật toán kiểm tra: bắt đầu Z=X, lặp Z=Z∪((Z∩Rᵢ)⁺∩Rᵢ) cho từng Rᵢ. Nếu Y⊆Z thì PTH X→Y được bảo toàn."
+  },
+  {
+    q: "Cho R(SV, Môn, GV) với {SV,Môn}→GV và GV→Môn. Số khóa của R là:",
+    opts: ["1","2","3","0"],
+    ans: 1, exp: "{SV,Môn}⁺=U → khóa 1. {SV,GV}⁺: GV→Môn → {SV,GV,Môn}=U → khóa 2. Vậy có 2 khóa ứng viên."
+  },
+  {
+    q: "Dư thừa dữ liệu trong CSDL gây ra vấn đề gì?",
+    opts: ["Chỉ tốn dung lượng","Dị thường cập nhật, chèn, xóa","Làm chậm truy vấn SELECT","Làm mất dữ liệu"],
+    ans: 1, exp: "Dư thừa dữ liệu gây các dị thường (anomaly): update anomaly (cập nhật không nhất quán), insert anomaly (không thể chèn), delete anomaly (mất thông tin khi xóa)."
+  },
+  {
+    q: "Cho R(A,B,C) với F={A→B, B→A, B→C}. Phủ tối tiểu là:",
+    opts: ["{A→B, B→A, B→C}","{A→B, B→C}","{A→BC}","{B→A, A→C}"],
+    ans: 0, exp: "Không thể loại A→B hay B→A vì chúng phụ thuộc lẫn nhau. Không thể loại B→C. Vế trái đều đơn, không có thừa. Fc = {A→B, B→A, B→C}."
+  },
+  {
+    q: "Quy tắc Tách (Decomposition) trong hệ tiên đề Armstrong phát biểu:",
+    opts: ["X→Y, X→Z ⟹ X→YZ","X→YZ ⟹ X→Y và X→Z","X→Y ⟹ XZ→YZ","Y⊆X ⟹ X→Y"],
+    ans: 1, exp: "Quy tắc Tách: nếu X→YZ thì X→Y và X→Z (có thể tách vế phải). Ngược lại là quy tắc Hợp."
+  },
+  {
+    q: "Phân rã tổng hợp (synthesis) về 3NF đảm bảo:",
+    opts: ["Chỉ không mất mát","Chỉ bảo toàn PTH","Cả không mất mát VÀ bảo toàn PTH","BCNF và bảo toàn PTH"],
+    ans: 2, exp: "Thuật toán tổng hợp 3NF (dựa trên phủ tối tiểu) đảm bảo đồng thời: (1) không mất mát thông tin và (2) bảo toàn tất cả phụ thuộc hàm."
+  }
+];
+
+// ===== RENDER QUIZ =====
+const container = document.getElementById('quiz-container');
+const userAnswers = new Array(questions.length).fill(-1);
+
+function renderQuiz() {
+  container.innerHTML = '';
+  questions.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-item';
+    div.id = `qi-${i}`;
+    div.innerHTML = `
+      <div class="q-num-row">
+        <div class="q-num">${i+1}</div>
+        <div class="q-text">${q.q}</div>
+      </div>
+      <div class="options" id="opts-${i}">
+        ${q.opts.map((o, j) => `
+          <button class="opt" onclick="selectOpt(${i}, ${j}, this)">${String.fromCharCode(65+j)}. ${o}</button>
+        `).join('')}
+      </div>
+      <div class="explain" id="exp-${i}"><strong>💡 Giải thích:</strong> ${q.exp}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function selectOpt(qi, oi, btn) {
+  const opts = document.querySelectorAll(`#opts-${qi} .opt`);
+  opts.forEach(o => o.classList.remove('selected'));
+  btn.classList.add('selected');
+  userAnswers[qi] = oi;
+  updateTracker();
+}
+
+function updateTracker() {
+  const answered = userAnswers.filter(a => a !== -1).length;
+  document.getElementById('tracker-text').textContent = `${answered} / 30 đã trả lời`;
+}
+
+function submitQuiz() {
+  let score = 0;
+  questions.forEach((q, i) => {
+    const item = document.getElementById(`qi-${i}`);
+    const opts = document.querySelectorAll(`#opts-${i} .opt`);
+    const exp = document.getElementById(`exp-${i}`);
+
+    opts.forEach((o, j) => {
+      o.disabled = true;
+      o.classList.remove('selected');
+      if (j === q.ans) o.classList.add('correct-ans');
+      if (j === userAnswers[i] && j !== q.ans) o.classList.add('wrong-ans');
+    });
+
+    exp.classList.add('show');
+
+    if (userAnswers[i] === q.ans) {
+      score++;
+      item.classList.add('correct');
+    } else {
+      item.classList.add('wrong');
+    }
+  });
+
+  const pct = Math.round(score / questions.length * 100);
+  document.getElementById('scorenum').textContent = `${score}/30`;
+  document.getElementById('scorepct').textContent = `${pct}%`;
+  document.getElementById('scorefill').style.width = pct + '%';
+  document.getElementById('scorebar').classList.add('show');
+  document.getElementById('scorebar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetQuiz() {
+  userAnswers.fill(-1);
+  document.getElementById('scorebar').classList.remove('show');
+  renderQuiz();
+  updateTracker();
+}
+
+renderQuiz();
+</script>
+</body>
+</html>

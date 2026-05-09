@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Liên Kết Kép - Flashcards Ôn Thi</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Mono:wght@400;700&family=Bitter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #0f3460;
+            --highlight: #e94560;
+            --light: #f1f1f1;
+            --success: #06d6a0;
+            --warning: #ffd60a;
+            --code-bg: #282c34;
+        }
+
+        body {
+            font-family: 'Bitter', serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+            min-height: 100vh;
+            color: var(--light);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--highlight), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(233, 69, 96, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--warning);
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--highlight);
+            color: var(--light);
+            padding: 0.8rem 2rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn:hover {
+            background: var(--highlight);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+        }
+
+        .tab-btn.active {
+            background: var(--highlight);
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
+        }
+
+        .flashcard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            animation: fadeIn 1s ease;
+        }
+
+        .flashcard {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(233, 69, 96, 0.3);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            min-height: 300px;
+        }
+
+        .flashcard:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: var(--highlight);
+            box-shadow: 0 10px 40px rgba(233, 69, 96, 0.3);
+        }
+
+        .flashcard::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--highlight), var(--success));
+        }
+
+        .flashcard-number {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--highlight);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .flashcard-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--warning);
+            font-weight: 700;
+        }
+
+        .flashcard-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .tip-box {
+            background: rgba(6, 214, 160, 0.1);
+            border-left: 4px solid var(--success);
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 8px;
+        }
+
+        .tip-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tip-label::before {
+            content: '💡';
+            font-size: 1.2rem;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid rgba(233, 69, 96, 0.3);
+        }
+
+        .code-block code {
+            color: #61dafb;
+        }
+
+        .keyword { color: #c678dd; }
+        .type { color: #e5c07b; }
+        .variable { color: #61dafb; }
+        .comment { color: #5c6370; font-style: italic; }
+
+        .visual-demo {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .node {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 1rem;
+        }
+
+        .node-box {
+            background: var(--accent);
+            border: 3px solid var(--highlight);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1.2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+            min-width: 120px;
+        }
+
+        .node-field {
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .arrow {
+            display: inline-block;
+            color: var(--success);
+            font-size: 2rem;
+            margin: 0 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .quiz-box {
+            background: rgba(255, 214, 10, 0.1);
+            border: 2px solid var(--warning);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .quiz-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: var(--warning);
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+
+        .quiz-label::before {
+            content: '❓';
+            margin-right: 0.5rem;
+        }
+
+        .answer-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .answer-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .answer-list li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--warning);
+        }
+
+        .highlight-text {
+            color: var(--highlight);
+            font-weight: 700;
+        }
+
+        .success-text {
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .flashcard-grid {
+                grid-template-columns: 1fr;
+            }
+            .node-box {
+                min-width: 80px;
+                font-size: 0.9rem;
+                padding: 0.8rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ DANH SÁCH LIÊN KẾT KÉP ⚡</h1>
+            <p class="subtitle">FLASHCARDS ÔN THI TRẮC NGHIỆM - LẬP TRÌNH C</p>
+        </header>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="showSection('concepts')">📚 Khái Niệm</button>
+            <button class="tab-btn" onclick="showSection('operations')">⚙️ Thao Tác</button>
+            <button class="tab-btn" onclick="showSection('code')">💻 Code Mẫu</button>
+            <button class="tab-btn" onclick="showSection('tricks')">🎯 Mẹo Thi</button>
+        </div>
+
+        <!-- SECTION 1: KHÁI NIỆM -->
+        <div id="concepts" class="section active">
+            <div class="flashcard-grid">
+                <div class="flashcard">
+                    <div class="flashcard-number">1</div>
+                    <h3 class="flashcard-title">Định Nghĩa DSLK Kép</h3>
+                    <div class="flashcard-content">
+                        <p><strong>Doubly Linked List (DLL)</strong> là danh sách liên kết mà mỗi node có <span class="highlight-text">2 con trỏ</span>:</p>
+                        <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                            <li><code>pNext</code>: trỏ đến node KẾ TIẾP</li>
+                            <li><code>pPrev</code>: trỏ đến node TRƯỚC ĐÓ</li>
+                        </ul>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Mẹo Nhớ</div>
+                        <p><strong>"Hai chiều, hai con trỏ!"</strong> - Khác với DSLK đơn chỉ có 1 chiều, DSLK kép đi được CẢ 2 CHIỀU như đường 2 chiều!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">2</div>
+                    <h3 class="flashcard-title">Cấu Trúc NODE</h3>
+                    <div class="code-block">
+<code><span class="keyword">typedef struct</span> <span class="type">NODE</span> {
+    <span class="type">int</span> <span class="variable">info</span>;        <span class="comment">// Dữ liệu</span>
+    <span class="type">NODE*</span> <span class="variable">pNext</span>;     <span class="comment">// Con trỏ NEXT</span>
+    <span class="type">NODE*</span> <span class="variable">pPrev</span>;     <span class="comment">// Con trỏ PREV</span>
+} <span class="type">NODE</span>;</code>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Điểm Quan Trọng</div>
+                        <p>Luôn có <span class="success-text">3 thành phần</span>: info + pNext + pPrev. Đây là câu hỏi trắc nghiệm PHỔ BIẾN!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">3</div>
+                    <h3 class="flashcard-title">Node Đầu & Node Cuối</h3>
+                    <div class="flashcard-content">
+                        <p><strong>Node Đầu (Head):</strong></p>
+                        <ul style="margin-left: 1.5rem;">
+                            <li><code>pPrev = NULL</code> ✅</li>
+                        </ul>
+                        <p style="margin-top: 1rem;"><strong>Node Cuối (Tail):</strong></p>
+                        <ul style="margin-left: 1.5rem;">
+                            <li><code>pNext = NULL</code> ✅</li>
+                        </ul>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Mẹo Nhớ</div>
+                        <p><strong>"Đầu không có PREV, Cuối không có NEXT"</strong> - Giống như tàu hỏa: đầu tàu không có toa trước, cuối tàu không có toa sau!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">4</div>
+                    <h3 class="flashcard-title">So Sánh DSLK Đơn vs Kép</h3>
+                    <div class="flashcard-content">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr style="background: rgba(233, 69, 96, 0.2);">
+                                <th style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">Tiêu chí</th>
+                                <th style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">DSLK Đơn</th>
+                                <th style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">DSLK Kép</th>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">Con trỏ/node</td>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">1 (Next)</td>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">2 (Next, Prev)</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">Bộ nhớ</td>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">Ít hơn</td>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">Nhiều hơn</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">Duyệt ngược</td>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">❌ Không</td>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">✅ Được</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Câu Hỏi Hay Gặp</div>
+                        <p>"DSLK kép tốn bộ nhớ hơn nhưng linh hoạt hơn" - Đây là trade-off cần nhớ!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">5</div>
+                    <h3 class="flashcard-title">Biểu Diễn Trực Quan</h3>
+                    <div class="visual-demo">
+                        <div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap;">
+                            <div class="node">
+                                <div class="node-box">
+                                    <div class="node-field">←</div>
+                                    <div class="node-field" style="color: var(--warning);">5</div>
+                                    <div class="node-field">→</div>
+                                </div>
+                                <small style="margin-top: 0.5rem;">Head</small>
+                            </div>
+                            <span class="arrow">⇄</span>
+                            <div class="node">
+                                <div class="node-box">
+                                    <div class="node-field">←</div>
+                                    <div class="node-field" style="color: var(--warning);">10</div>
+                                    <div class="node-field">→</div>
+                                </div>
+                            </div>
+                            <span class="arrow">⇄</span>
+                            <div class="node">
+                                <div class="node-box">
+                                    <div class="node-field">←</div>
+                                    <div class="node-field" style="color: var(--warning);">15</div>
+                                    <div class="node-field">→</div>
+                                </div>
+                                <small style="margin-top: 0.5rem;">Tail</small>
+                            </div>
+                        </div>
+                        <p style="margin-top: 1rem; font-family: 'JetBrains Mono', monospace;">NULL ← 5 ⇄ 10 ⇄ 15 → NULL</p>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Chú Ý</div>
+                        <p>Mũi tên 2 chiều (⇄) thể hiện mối liên kết QUA LẠI giữa các node!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: THAO TÁC -->
+        <div id="operations" class="section">
+            <div class="flashcard-grid">
+                <div class="flashcard">
+                    <div class="flashcard-number">6</div>
+                    <h3 class="flashcard-title">Thêm Vào Đầu (Insert Head)</h3>
+                    <div class="flashcard-content">
+                        <p><strong>Các bước:</strong></p>
+                        <ol style="margin-left: 1.5rem; line-height: 2;">
+                            <li>Tạo node mới <code>p</code></li>
+                            <li><code>p→pNext = list.pHead</code></li>
+                            <li><code>p→pPrev = NULL</code></li>
+                            <li>Nếu <code>pHead ≠ NULL</code>: <code>pHead→pPrev = p</code></li>
+                            <li><code>list.pHead = p</code></li>
+                        </ol>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Mẹo Nhớ</div>
+                        <p><strong>"Next rồi Prev, đừng quên Head cũ!"</strong> - Phải cập nhật pPrev của Head CŨ trước khi gán Head MỚI!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">7</div>
+                    <h3 class="flashcard-title">Thêm Vào Cuối (Insert Last)</h3>
+                    <div class="flashcard-content">
+                        <p><strong>Các bước:</strong></p>
+                        <ol style="margin-left: 1.5rem; line-height: 2;">
+                            <li>Tạo node mới <code>p</code></li>
+                            <li>Nếu danh sách rỗng: <code>pHead = p</code></li>
+                            <li>Ngược lại: duyệt đến node cuối <code>last</code></li>
+                            <li><code>last→pNext = p</code></li>
+                            <li><code>p→pPrev = last</code></li>
+                            <li><code>p→pNext = NULL</code></li>
+                        </ol>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Dễ Nhầm</div>
+                        <p>Nhớ kiểm tra <span class="highlight-text">danh sách rỗng</span> trước! Nếu rỗng thì node mới CHÍNH LÀ head luôn.</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">8</div>
+                    <h3 class="flashcard-title">Thêm Sau Node X (Insert After)</h3>
+                    <div class="flashcard-content">
+                        <p><strong>Cho trước:</strong> <code>prev_node</code> và <code>new_data</code></p>
+                        <p><strong>Các bước:</strong></p>
+                        <ol style="margin-left: 1.5rem; line-height: 2;">
+                            <li>Kiểm tra <code>prev_node ≠ NULL</code></li>
+                            <li>Tạo node mới <code>p</code></li>
+                            <li><code>p→pNext = prev_node→pNext</code></li>
+                            <li><code>p→pPrev = prev_node</code></li>
+                            <li><code>prev_node→pNext = p</code></li>
+                            <li>Nếu <code>p→pNext ≠ NULL</code>: <code>p→pNext→pPrev = p</code></li>
+                        </ol>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Thứ Tự Quan Trọng</div>
+                        <p><strong>Luôn gán Next trước, Prev sau!</strong> Tránh mất liên kết!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">9</div>
+                    <h3 class="flashcard-title">Thêm Trước Node X (Insert Before)</h3>
+                    <div class="flashcard-content">
+                        <p><strong>Các bước:</strong></p>
+                        <ol style="margin-left: 1.5rem; line-height: 2;">
+                            <li>Kiểm tra <code>next_node ≠ NULL</code></li>
+                            <li>Tạo node mới <code>p</code></li>
+                            <li><code>p→pPrev = next_node→pPrev</code></li>
+                            <li><code>p→pNext = next_node</code></li>
+                            <li><code>next_node→pPrev = p</code></li>
+                            <li>Nếu <code>p→pPrev ≠ NULL</code>: <code>p→pPrev→pNext = p</code></li>
+                            <li>Ngược lại: <code>pHead = p</code> (node mới là head)</li>
+                        </ol>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Trường Hợp Đặc Biệt</div>
+                        <p>Nếu thêm trước HEAD → node mới TRỞ THÀNH head mới!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">10</div>
+                    <h3 class="flashcard-title">Xóa Node</h3>
+                    <div class="flashcard-content">
+                        <p><strong>Xóa node <code>p</code>:</strong></p>
+                        <ol style="margin-left: 1.5rem; line-height: 2;">
+                            <li>Nếu <code>p→pPrev ≠ NULL</code>: <code>p→pPrev→pNext = p→pNext</code></li>
+                            <li>Ngược lại: <code>pHead = p→pNext</code></li>
+                            <li>Nếu <code>p→pNext ≠ NULL</code>: <code>p→pNext→pPrev = p→pPrev</code></li>
+                            <li><code>delete p;</code></li>
+                        </ol>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Mẹo Nhớ</div>
+                        <p><strong>"2 hướng, 2 cập nhật!"</strong> - Phải cập nhật CẢ 2 con trỏ của 2 node láng giềng!</p>
+                    </div>
+                    <div class="quiz-box">
+                        <div class="quiz-label">Câu Hỏi Thi</div>
+                        <p>Xóa node ở giữa danh sách, cần cập nhật mấy con trỏ?</p>
+                        <p style="margin-top: 0.5rem;"><strong>Đáp án: <span class="success-text">4 con trỏ</span></strong> (pNext của node trước, pPrev của node sau, và 2 con trỏ của node bị xóa)</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">11</div>
+                    <h3 class="flashcard-title">Duyệt Danh Sách</h3>
+                    <div class="flashcard-content">
+                        <p><strong>Duyệt Xuôi (từ Head):</strong></p>
+                        <div class="code-block" style="font-size: 0.85rem;">
+<code><span class="type">NODE*</span> <span class="variable">p</span> = list.pHead;
+<span class="keyword">while</span> (p != <span class="keyword">NULL</span>) {
+    <span class="comment">// Xử lý p</span>
+    p = p-&gt;pNext;
+}</code>
+                        </div>
+                        <p style="margin-top: 1rem;"><strong>Duyệt Ngược (từ Tail):</strong></p>
+                        <div class="code-block" style="font-size: 0.85rem;">
+<code><span class="type">NODE*</span> <span class="variable">p</span> = tail;
+<span class="keyword">while</span> (p != <span class="keyword">NULL</span>) {
+    <span class="comment">// Xử lý p</span>
+    p = p-&gt;pPrev;  <span class="comment">// Dùng pPrev!</span>
+}</code>
+                        </div>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Ưu Điểm DSLK Kép</div>
+                        <p>Có thể duyệt <span class="success-text">2 CHIỀU</span> - điều mà DSLK đơn KHÔNG làm được!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: CODE MẪU -->
+        <div id="code" class="section">
+            <div class="flashcard-grid">
+                <div class="flashcard">
+                    <div class="flashcard-number">12</div>
+                    <h3 class="flashcard-title">Khởi Tạo Node</h3>
+                    <div class="code-block">
+<code><span class="type">NODE*</span> <span class="keyword">CreateNode</span>(<span class="type">int</span> x) {
+    <span class="type">NODE*</span> p = <span class="keyword">new</span> <span class="type">NODE</span>;
+    <span class="keyword">if</span> (p != <span class="keyword">NULL</span>) {
+        p-&gt;<span class="variable">info</span> = x;
+        p-&gt;<span class="variable">pNext</span> = <span class="keyword">NULL</span>;
+        p-&gt;<span class="variable">pPrev</span> = <span class="keyword">NULL</span>;
+    }
+    <span class="keyword">return</span> p;
+}</code>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Chú Ý</div>
+                        <p>Luôn khởi tạo <span class="highlight-text">CẢ 2 con trỏ = NULL</span> để tránh lỗi!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">13</div>
+                    <h3 class="flashcard-title">Khởi Tạo Danh Sách</h3>
+                    <div class="code-block">
+<code><span class="keyword">typedef struct</span> <span class="type">LIST</span> {
+    <span class="type">NODE*</span> <span class="variable">pHead</span>;
+} <span class="type">LIST</span>;
+
+<span class="type">void</span> <span class="keyword">Initialize</span>(<span class="type">LIST&</span> list) {
+    list.<span class="variable">pHead</span> = <span class="keyword">NULL</span>;
+}
+
+<span class="type">bool</span> <span class="keyword">IsEmpty</span>(<span class="type">LIST</span> list) {
+    <span class="keyword">return</span> (list.pHead == <span class="keyword">NULL</span>);
+}</code>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">14</div>
+                    <h3 class="flashcard-title">Tìm Kiếm Node</h3>
+                    <div class="code-block">
+<code><span class="type">NODE*</span> <span class="keyword">Search</span>(<span class="type">LIST</span> list, <span class="type">int</span> x) {
+    <span class="type">NODE*</span> p = list.pHead;
+    <span class="keyword">while</span> (p != <span class="keyword">NULL</span>) {
+        <span class="keyword">if</span> (p-&gt;info == x)
+            <span class="keyword">break</span>;
+        p = p-&gt;pNext;
+    }
+    <span class="keyword">return</span> p;  <span class="comment">// NULL nếu không tìm thấy</span>
+}</code>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Lưu Ý</div>
+                        <p>Duyệt bằng <code>pNext</code>, không dùng <code>pPrev</code> khi tìm từ đầu!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">15</div>
+                    <h3 class="flashcard-title">Insert Head - Code Đầy Đủ</h3>
+                    <div class="code-block">
+<code><span class="type">void</span> <span class="keyword">insertHead</span>(<span class="type">LIST&</span> list, <span class="type">int</span> new_data) {
+    <span class="type">NODE*</span> p = CreateNode(new_data);
+    
+    p-&gt;<span class="variable">pNext</span> = list.pHead;
+    
+    <span class="keyword">if</span> (list.pHead != <span class="keyword">NULL</span>)
+        list.pHead-&gt;<span class="variable">pPrev</span> = p;
+    
+    list.<span class="variable">pHead</span> = p;
+}</code>
+                    </div>
+                    <div class="quiz-box">
+                        <div class="quiz-label">Câu Hỏi Thi</div>
+                        <p>Nếu quên dòng <code>if (list.pHead != NULL)</code> thì sao?</p>
+                        <p style="margin-top: 0.5rem;"><strong>Đáp án:</strong> Lỗi khi danh sách RỖNG (NULL pointer dereference)!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">16</div>
+                    <h3 class="flashcard-title">Insert After - Code Đầy Đủ</h3>
+                    <div class="code-block">
+<code><span class="type">void</span> <span class="keyword">insertAfter</span>(<span class="type">NODE*</span> prev_node, <span class="type">int</span> new_data) {
+    <span class="keyword">if</span> (prev_node == <span class="keyword">NULL</span>) {
+        printf(<span class="variable">"Cannot insert after NULL"</span>);
+        <span class="keyword">return</span>;
+    }
+    
+    <span class="type">NODE*</span> p = CreateNode(new_data);
+    
+    p-&gt;<span class="variable">pNext</span> = prev_node-&gt;pNext;
+    p-&gt;<span class="variable">pPrev</span> = prev_node;
+    prev_node-&gt;<span class="variable">pNext</span> = p;
+    
+    <span class="keyword">if</span> (p-&gt;pNext != <span class="keyword">NULL</span>)
+        p-&gt;pNext-&gt;<span class="variable">pPrev</span> = p;
+}</code>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Mẹo Ghi Nhớ Thứ Tự</div>
+                        <p><strong>"Next của mới → Next của cũ"</strong> rồi mới cập nhật ngược lại!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">17</div>
+                    <h3 class="flashcard-title">Insert Last - Code Đầy Đủ</h3>
+                    <div class="code-block">
+<code><span class="type">void</span> <span class="keyword">insertLast</span>(<span class="type">LIST&</span> list, <span class="type">int</span> new_data) {
+    <span class="type">NODE*</span> p = CreateNode(new_data);
+    
+    <span class="keyword">if</span> (list.pHead == <span class="keyword">NULL</span>) {
+        list.<span class="variable">pHead</span> = p;
+        <span class="keyword">return</span>;
+    }
+    
+    <span class="type">NODE*</span> last = list.pHead;
+    <span class="keyword">while</span> (last-&gt;pNext != <span class="keyword">NULL</span>)
+        last = last-&gt;pNext;
+    
+    last-&gt;<span class="variable">pNext</span> = p;
+    p-&gt;<span class="variable">pPrev</span> = last;
+}</code>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Độ Phức Tạp</div>
+                        <p><strong>O(n)</strong> - Phải duyệt hết danh sách để tìm node cuối!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: MẸO THI -->
+        <div id="tricks" class="section">
+            <div class="flashcard-grid">
+                <div class="flashcard">
+                    <div class="flashcard-number">18</div>
+                    <h3 class="flashcard-title">⭐ Câu Hỏi Hay Gặp #1</h3>
+                    <div class="quiz-box">
+                        <div class="quiz-label">Câu Hỏi</div>
+                        <p>DSLK kép khác DSLK đơn ở điểm nào?</p>
+                        <ul class="answer-list">
+                            <li>A. Có 2 con trỏ pNext</li>
+                            <li>B. Có thể duyệt 2 chiều</li>
+                            <li>C. Nhanh hơn DSLK đơn</li>
+                            <li>D. Tốn ít bộ nhớ hơn</li>
+                        </ul>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Đáp Án Đúng</div>
+                        <p><strong>B. Có thể duyệt 2 chiều</strong></p>
+                        <p style="margin-top: 0.5rem;">Giải thích: DSLK kép có pNext VÀ pPrev nên duyệt được cả xuôi lẫn ngược!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">19</div>
+                    <h3 class="flashcard-title">⭐ Câu Hỏi Hay Gặp #2</h3>
+                    <div class="quiz-box">
+                        <div class="quiz-label">Câu Hỏi</div>
+                        <p>Khi xóa node ở giữa DSLK kép, cần cập nhật mấy liên kết?</p>
+                        <ul class="answer-list">
+                            <li>A. 1 liên kết</li>
+                            <li>B. 2 liên kết</li>
+                            <li>C. 3 liên kết</li>
+                            <li>D. 4 liên kết</li>
+                        </ul>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Đáp Án Đúng</div>
+                        <p><strong>B. 2 liên kết</strong></p>
+                        <p style="margin-top: 0.5rem;">Cập nhật: <code>pNext</code> của node trước + <code>pPrev</code> của node sau!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">20</div>
+                    <h3 class="flashcard-title">⭐ Câu Hỏi Hay Gặp #3</h3>
+                    <div class="quiz-box">
+                        <div class="quiz-label">Câu Hỏi</div>
+                        <p>Thêm node vào đầu DSLK kép, phải làm gì TRƯỚC TIÊN?</p>
+                        <ul class="answer-list">
+                            <li>A. Cập nhật pHead</li>
+                            <li>B. Gán pNext của node mới</li>
+                            <li>C. Gán pPrev của node mới = NULL</li>
+                            <li>D. Kiểm tra danh sách rỗng</li>
+                        </ul>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Đáp Án Đúng</div>
+                        <p><strong>B. Gán pNext của node mới</strong></p>
+                        <p style="margin-top: 0.5rem;">Thứ tự: pNext của mới → pPrev của cũ → cập nhật Head!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">21</div>
+                    <h3 class="flashcard-title">💡 Mẹo Nhớ Tổng Hợp</h3>
+                    <div class="flashcard-content">
+                        <h4 style="color: var(--warning); margin-bottom: 1rem;">5 ĐIỂM VÀNG CẦN NHỚ:</h4>
+                        <ol style="line-height: 2; margin-left: 1.5rem;">
+                            <li><strong>2 chiều = 2 con trỏ</strong> (pNext + pPrev)</li>
+                            <li><strong>Head.pPrev = NULL, Tail.pNext = NULL</strong></li>
+                            <li><strong>Thêm/Xóa: cập nhật CẢ 2 CHIỀU!</strong></li>
+                            <li><strong>Kiểm tra NULL trước khi truy xuất!</strong></li>
+                            <li><strong>Tốn bộ nhớ NHƯNG linh hoạt hơn DSLK đơn!</strong></li>
+                        </ol>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Khẩu Quyết Thi</div>
+                        <p><strong>"Next - Prev - NULL - Check - Update!"</strong></p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">22</div>
+                    <h3 class="flashcard-title">🎯 Độ Phức Tạp Các Thao Tác</h3>
+                    <div class="flashcard-content">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr style="background: rgba(233, 69, 96, 0.2);">
+                                <th style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">Thao tác</th>
+                                <th style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">Độ phức tạp</th>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">Thêm đầu</td>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);"><span class="success-text">O(1)</span></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">Thêm cuối</td>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);"><span class="highlight-text">O(n)</span></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">Thêm sau node X</td>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);"><span class="success-text">O(1)</span></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">Xóa node</td>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);"><span class="success-text">O(1)</span></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">Tìm kiếm</td>
+                                <td style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2);"><span class="highlight-text">O(n)</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Lưu Ý Quan Trọng</div>
+                        <p>Xóa node trong DSLK kép <span class="success-text">nhanh hơn</span> DSLK đơn vì không cần tìm node trước đó!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">23</div>
+                    <h3 class="flashcard-title">🚨 Lỗi Thường Gặp</h3>
+                    <div class="flashcard-content">
+                        <h4 style="color: var(--highlight); margin-bottom: 1rem;">TOP 5 LỖI KHI LÀM BÀI THI:</h4>
+                        <ol style="line-height: 2.2; margin-left: 1.5rem;">
+                            <li>❌ <strong>Quên cập nhật pPrev</strong> khi thêm/xóa</li>
+                            <li>❌ <strong>Không kiểm tra NULL</strong> trước khi truy xuất</li>
+                            <li>❌ <strong>Nhầm thứ tự</strong> gán Next và Prev</li>
+                            <li>❌ <strong>Quên case danh sách rỗng</strong></li>
+                            <li>❌ <strong>Nhầm giữa pNext và pPrev</strong> khi duyệt</li>
+                        </ol>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Cách Tránh</div>
+                        <p>Vẽ sơ đồ trên giấy nháp TRƯỚC KHI code! Kiểm tra từng bước một!</p>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-number">24</div>
+                    <h3 class="flashcard-title">🏆 Checklist Trước Khi Nộp Bài</h3>
+                    <div class="flashcard-content">
+                        <div style="background: rgba(6, 214, 160, 0.1); padding: 1rem; border-radius: 8px; margin-top: 0.5rem;">
+                            <p style="margin-bottom: 0.5rem;">✅ Đã khởi tạo pNext VÀ pPrev = NULL?</p>
+                            <p style="margin-bottom: 0.5rem;">✅ Đã kiểm tra NULL trước khi dereference?</p>
+                            <p style="margin-bottom: 0.5rem;">✅ Cập nhật đúng thứ tự: Next → Prev?</p>
+                            <p style="margin-bottom: 0.5rem;">✅ Xử lý case danh sách rỗng?</p>
+                            <p style="margin-bottom: 0.5rem;">✅ Xử lý case thêm/xóa ở đầu/cuối?</p>
+                            <p>✅ Đã giải phóng bộ nhớ (delete) khi xóa?</p>
+                        </div>
+                    </div>
+                    <div class="tip-box">
+                        <div class="tip-label">Pro Tip</div>
+                        <p>Test với danh sách có <strong>1 phần tử, 2 phần tử</strong> và <strong>rỗng</strong> để bắt lỗi!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            // Ẩn tất cả sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Hiện section được chọn
+            const selectedSection = document.getElementById(sectionId);
+            selectedSection.classList.add('active');
+
+            // Cập nhật active button
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Thêm hiệu ứng flip cho flashcards
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashcards = document.querySelectorAll('.flashcard');
+            flashcards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ôn Tập ERD – Entity Relationship Diagram</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f1a;
+    --panel: #131629;
+    --border: #1e2340;
+    --accent: #5effa0;
+    --accent2: #ff6b6b;
+    --accent3: #7eb8ff;
+    --accent4: #ffd166;
+    --text: #e8ecff;
+    --muted: #7a80a0;
+    --card: #181c30;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid noise texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(94,255,160,0.03) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(94,255,160,0.03) 40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    padding: 3rem 0 2rem;
+    position: relative;
+  }
+  header .tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    border: 1px solid var(--accent);
+    display: inline-block;
+    padding: 0.3rem 0.9rem;
+    border-radius: 2px;
+    margin-bottom: 1rem;
+    animation: fadeDown 0.5s ease both;
+  }
+  header h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    animation: fadeDown 0.6s 0.1s ease both;
+  }
+  header h1 span { color: var(--accent); }
+  header p {
+    margin-top: 0.8rem;
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 300;
+    animation: fadeDown 0.6s 0.2s ease both;
+  }
+
+  /* Nav tabs */
+  .tabs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin: 2rem 0 1.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+    animation: fadeDown 0.5s 0.3s ease both;
+  }
+  .tab-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    padding: 0.55rem 1.1rem;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Sections */
+  .section { display: none; animation: fadeIn 0.4s ease; }
+  .section.active { display: block; }
+
+  @keyframes fadeIn { from { opacity:0; transform: translateY(10px);} to { opacity:1; transform:none;} }
+  @keyframes fadeDown { from { opacity:0; transform: translateY(-16px);} to { opacity:1; transform:none;} }
+
+  /* Section title */
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .section-title .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* Symbol grid */
+  .symbol-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .symbol-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem 1.2rem 1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+  }
+  .symbol-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .symbol-card .sym {
+    flex-shrink: 0;
+    width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .symbol-card svg { display: block; }
+  .symbol-card .info h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent3);
+    margin-bottom: 0.3rem;
+  }
+  .symbol-card .info p {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* Attribute types legend */
+  .attr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .attr-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem;
+    transition: border-color 0.2s;
+  }
+  .attr-card:hover { border-color: var(--accent4); }
+  .attr-card .sym { margin-bottom: 0.7rem; }
+  .attr-card h3 { font-size: 0.88rem; font-weight: 600; color: var(--accent4); margin-bottom: 0.3rem; }
+  .attr-card p { font-size: 0.76rem; color: var(--muted); line-height: 1.5; }
+
+  /* Relationship constraints */
+  .constraint-list { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
+  .constraint-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+    display: flex;
+    gap: 1.2rem;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .constraint-card:hover { border-color: var(--accent2); }
+  .constraint-card .diagram { flex-shrink: 0; }
+  .constraint-card .info h3 { font-size: 0.9rem; font-weight: 600; color: var(--accent2); margin-bottom: 0.4rem; }
+  .constraint-card .info p { font-size: 0.78rem; color: var(--muted); line-height: 1.6; }
+  .constraint-card .info code {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    background: rgba(255,107,107,0.1);
+    color: var(--accent2);
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+  }
+
+  /* Quiz section */
+  .quiz-wrap { max-width: 700px; }
+  .quiz-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.2rem;
+  }
+  .quiz-q {
+    font-size: 0.92rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+  .quiz-opt {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 0.6rem 1rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    color: var(--text);
+    text-align: left;
+  }
+  .quiz-opt:hover:not(:disabled) { border-color: var(--accent3); background: rgba(126,184,255,0.07); }
+  .quiz-opt.correct { border-color: var(--accent); background: rgba(94,255,160,0.1); color: var(--accent); }
+  .quiz-opt.wrong { border-color: var(--accent2); background: rgba(255,107,107,0.1); color: var(--accent2); }
+  .quiz-opt:disabled { cursor: default; }
+  .quiz-feedback {
+    margin-top: 0.8rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+    display: none;
+    line-height: 1.5;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-score {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+  .quiz-score span { color: var(--accent); }
+  .btn-reset {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    background: none;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 0.5rem 1.2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-reset:hover { background: var(--accent); color: var(--bg); }
+
+  /* Summary table */
+  .sum-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin-bottom: 2rem;
+  }
+  .sum-table th {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    padding: 0.7rem 1rem;
+    text-align: left;
+  }
+  .sum-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .sum-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .sum-table .name-col { color: var(--accent3); font-weight: 600; }
+  .sum-table .shape-col { color: var(--accent4); font-family: 'Space Mono', monospace; font-size: 0.72rem; }
+
+  /* Tip box */
+  .tip {
+    background: rgba(94,255,160,0.06);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 0.9rem 1.2rem;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 1.2rem;
+  }
+  .tip strong { color: var(--accent); }
+
+  /* Mapping steps */
+  .steps-timeline { display: flex; flex-direction: column; gap: 0; margin-bottom: 2rem; }
+  .step-item {
+    display: flex;
+    gap: 1.2rem;
+    position: relative;
+  }
+  .step-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 44px;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-top: 0.9rem;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+    z-index: 1;
+  }
+  .step-item.open .step-num {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+  .step-body {
+    flex: 1;
+    padding: 0.9rem 0 0.9rem;
+  }
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: border-color 0.2s;
+    margin-bottom: 0;
+  }
+  .step-header:hover { border-color: var(--accent3); }
+  .step-item.open .step-header { border-color: var(--accent); border-radius: 8px 8px 0 0; margin-bottom: 0; }
+  .step-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+  }
+  .step-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    background: rgba(126,184,255,0.1);
+    color: var(--accent3);
+    letter-spacing: 0.05em;
+  }
+  .step-chevron {
+    color: var(--muted);
+    font-size: 0.7rem;
+    transition: transform 0.25s;
+  }
+  .step-item.open .step-chevron { transform: rotate(90deg); color: var(--accent); }
+  .step-content {
+    display: none;
+    background: rgba(13,15,26,0.6);
+    border: 1px solid var(--accent);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 1.1rem 1.2rem;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .step-item.open .step-content { display: block; }
+
+  /* Code-like rule blocks */
+  .rule-block {
+    background: #0a0c18;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.8rem 1rem;
+    margin: 0.7rem 0;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.74rem;
+    line-height: 1.8;
+    color: var(--accent3);
+  }
+  .rule-block .kw { color: var(--accent); }
+  .rule-block .cmt { color: var(--muted); font-style: italic; }
+  .rule-block .val { color: var(--accent4); }
+  .rule-block .err { color: var(--accent2); }
+
+  .rule-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0.8rem 0 0.3rem;
+  }
+
+  .example-pill {
+    display: inline-block;
+    background: rgba(94,255,160,0.08);
+    border: 1px solid rgba(94,255,160,0.25);
+    border-radius: 4px;
+    padding: 0.15rem 0.6rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    margin: 0.2rem 0.2rem 0.2rem 0;
+  }
+
+  .inherit-diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin: 0.8rem 0;
+  }
+  .inh-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.4rem 1.2rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent3);
+    text-align: center;
+  }
+  .inh-arrow { color: var(--muted); font-size: 1rem; line-height: 1.2; }
+  .inh-row { display: flex; gap: 1rem; align-items: flex-start; justify-content: center; }
+  .inh-child { display: flex; flex-direction: column; align-items: center; }
+
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="tag">Cơ sở dữ liệu · HCMC</div>
+    <h1>Ôn Tập <span>ERD</span></h1>
+    <p>Entity Relationship Diagram — Sơ đồ thực thể quan hệ</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('symbols')">Ký hiệu ERD</button>
+    <button class="tab-btn" onclick="switchTab('attributes')">Loại thuộc tính</button>
+    <button class="tab-btn" onclick="switchTab('constraints')">Ràng buộc quan hệ</button>
+    <button class="tab-btn" onclick="switchTab('summary')">Bảng tóm tắt</button>
+    <button class="tab-btn" onclick="switchTab('mapping')">8 Bước Mapping</button>
+    <button class="tab-btn" onclick="switchTab('quiz')">Kiểm tra nhanh</button>
+  </div>
+
+  <!-- TAB 1: SYMBOLS -->
+  <div id="tab-symbols" class="section active">
+    <div class="section-title"><span class="dot"></span>Các ký hiệu cơ bản trong ERD</div>
+
+    <div class="tip">
+      <strong>Mẹo nhớ:</strong> ERD dùng 3 hình cơ bản — <strong>hình chữ nhật</strong> (thực thể), <strong>hình thoi</strong> (quan hệ), <strong>hình ellipse</strong> (thuộc tính). Thực thể yếu và quan hệ xác định thêm một lớp viền kép bên ngoài.
+    </div>
+
+    <div class="symbol-grid">
+
+      <div class="symbol-card">
+        <div class="sym">
+          <svg width="60" height="36" viewBox="0 0 60 36">
+            <rect x="3" y="4" width="54" height="28" rx="2" fill="none" stroke="#7eb8ff" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="info">
+          <h3>Entity (Thực thể)</h3>
+          <p>Hình chữ nhật đơn. Đại diện cho đối tượng thực tế cần lưu trữ dữ liệu (VD: Sinh viên, Môn học).</p>
+        </div>
+      </div>
+
+      <div class="symbol-card">
+        <div class="sym">
+          <svg width="60" height="42" viewBox="0 0 60 42">
+            <rect x="5" y="6" width="50" height="30" rx="2" fill="none" stroke="#7eb8ff" stroke-width="2"/>
+            <rect x="1" y="2" width="58" height="38" rx="3" fill="none" stroke="#7eb8ff" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="info">
+          <h3>Weak Entity (Thực thể yếu)</h3>
+          <p>Hình chữ nhật kép. Không có key riêng, phụ thuộc vào thực thể mạnh (VD: Đơn hàng chi tiết).</p>
+        </div>
+      </div>
+
+      <div class="symbol-card">
+        <div class="sym">
+          <svg width="60" height="52" viewBox="0 0 60 52">
+            <polygon points="30,3 57,26 30,49 3,26" fill="none" stroke="#5effa0" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="info">
+          <h3>Relationship (Quan hệ)</h3>
+          <p>Hình thoi đơn. Biểu diễn mối quan hệ giữa hai hay nhiều thực thể (VD: Đăng ký, Quản lý).</p>
+        </div>
+      </div>
+
+      <div class="symbol-card">
+        <div class="sym">
+          <svg width="60" height="58" viewBox="0 0 60 58">
+            <polygon points="30,5 55,29 30,53 5,29" fill="none" stroke="#5effa0" stroke-width="2"/>
+            <polygon points="30,11 49,29 30,47 11,29" fill="none" stroke="#5effa0" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="info">
+          <h3>Identifying Relationship (Quan hệ xác định)</h3>
+          <p>Hình thoi kép. Kết nối thực thể yếu với thực thể mạnh, giúp xác định khóa cho thực thể yếu.</p>
+        </div>
+      </div>
+
+      <div class="symbol-card">
+        <div class="sym">
+          <svg width="60" height="36" viewBox="0 0 60 36">
+            <line x1="3" y1="18" x2="18" y2="18" stroke="#ffd166" stroke-width="1.5"/>
+            <ellipse cx="38" cy="18" rx="20" ry="12" fill="none" stroke="#ffd166" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="info">
+          <h3>Attribute (Thuộc tính)</h3>
+          <p>Hình ellipse. Mô tả tính chất/đặc điểm của thực thể (VD: Tên, Tuổi, Địa chỉ).</p>
+        </div>
+      </div>
+
+      <div class="symbol-card">
+        <div class="sym">
+          <svg width="60" height="36" viewBox="0 0 60 36">
+            <line x1="3" y1="18" x2="18" y2="18" stroke="#ffd166" stroke-width="1.5"/>
+            <ellipse cx="38" cy="18" rx="20" ry="12" fill="none" stroke="#ffd166" stroke-width="2"/>
+            <ellipse cx="38" cy="18" rx="16" ry="8" fill="none" stroke="#ffd166" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="info">
+          <h3>Key Attribute (Thuộc tính khóa)</h3>
+          <p>Ellipse với chữ gạch chân. Định danh duy nhất cho mỗi thực thể (VD: MaSV, MSSV).</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TAB 2: ATTRIBUTES -->
+  <div id="tab-attributes" class="section">
+    <div class="section-title"><span class="dot" style="background:var(--accent4)"></span>Các loại thuộc tính</div>
+
+    <div class="tip">
+      <strong>Mẹo nhớ:</strong> Nhớ qua từ khóa <strong>"ĐKPT"</strong> — <strong>Đ</strong>ơn trị, <strong>K</strong>hóa, <strong>P</strong>hức hợp, <strong>T</strong>ính toán (derived). Đa trị thêm vòng ngoài, Phức hợp có nhánh con.
+    </div>
+
+    <div class="attr-grid">
+
+      <div class="attr-card">
+        <div class="sym">
+          <svg width="80" height="38" viewBox="0 0 80 38">
+            <line x1="4" y1="19" x2="20" y2="19" stroke="#ffd166" stroke-width="1.5"/>
+            <ellipse cx="50" cy="19" rx="28" ry="14" fill="none" stroke="#ffd166" stroke-width="2"/>
+          </svg>
+        </div>
+        <h3>Simple / Single-valued</h3>
+        <p>Thuộc tính đơn trị — chỉ có một giá trị duy nhất. VD: Ngày sinh, Giới tính.</p>
+      </div>
+
+      <div class="attr-card">
+        <div class="sym">
+          <svg width="80" height="38" viewBox="0 0 80 38">
+            <line x1="4" y1="19" x2="20" y2="19" stroke="#ffd166" stroke-width="1.5"/>
+            <ellipse cx="50" cy="19" rx="28" ry="14" fill="none" stroke="#ffd166" stroke-width="2"/>
+            <text x="50" y="23" text-anchor="middle" font-size="10" fill="#ffd166" font-style="italic" text-decoration="underline" font-family="Sora,sans-serif">MaSV</text>
+          </svg>
+        </div>
+        <h3>Key Attribute (Khóa)</h3>
+        <p>Gạch chân tên thuộc tính. Giá trị duy nhất và không null, xác định từng bản ghi. VD: MaSV.</p>
+      </div>
+
+      <div class="attr-card">
+        <div class="sym">
+          <svg width="80" height="44" viewBox="0 0 80 44">
+            <line x1="4" y1="22" x2="18" y2="22" stroke="#ffd166" stroke-width="1.5"/>
+            <ellipse cx="50" cy="22" rx="28" ry="14" fill="none" stroke="#ffd166" stroke-width="2"/>
+            <ellipse cx="50" cy="22" rx="22" ry="9" fill="none" stroke="#ffd166" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <h3>Multivalued (Đa trị)</h3>
+        <p>Ellipse kép (hai đường viền). Có thể có nhiều giá trị. VD: Số điện thoại, Email.</p>
+      </div>
+
+      <div class="attr-card">
+        <div class="sym">
+          <svg width="80" height="60" viewBox="0 0 80 60">
+            <line x1="4" y1="30" x2="22" y2="30" stroke="#ffd166" stroke-width="1.5"/>
+            <ellipse cx="50" cy="30" rx="26" ry="13" fill="none" stroke="#ffd166" stroke-width="2"/>
+            <line x1="30" y1="43" x2="20" y2="56" stroke="#ffd166" stroke-width="1"/>
+            <ellipse cx="14" cy="57" rx="12" ry="6" fill="none" stroke="#ffd166" stroke-width="1.2"/>
+            <line x1="50" y1="43" x2="50" y2="52" stroke="#ffd166" stroke-width="1"/>
+            <ellipse cx="50" cy="56" rx="12" ry="6" fill="none" stroke="#ffd166" stroke-width="1.2"/>
+            <line x1="65" y1="40" x2="74" y2="52" stroke="#ffd166" stroke-width="1"/>
+            <ellipse cx="76" cy="56" rx="10" ry="5" fill="none" stroke="#ffd166" stroke-width="1.2"/>
+          </svg>
+        </div>
+        <h3>Composite (Phức hợp)</h3>
+        <p>Có các thuộc tính con. VD: Họ tên → {Họ, Đệm, Tên}; Địa chỉ → {Số nhà, Đường, Quận}.</p>
+      </div>
+
+      <div class="attr-card">
+        <div class="sym">
+          <svg width="80" height="38" viewBox="0 0 80 38">
+            <line x1="4" y1="19" x2="20" y2="19" stroke="#ffd166" stroke-width="1.5"/>
+            <ellipse cx="50" cy="19" rx="28" ry="14" fill="none" stroke="#ffd166" stroke-width="2" stroke-dasharray="5,3"/>
+          </svg>
+        </div>
+        <h3>Derived (Dẫn xuất)</h3>
+        <p>Ellipse nét đứt. Tính được từ thuộc tính khác, không lưu trực tiếp. VD: Tuổi (từ Ngày sinh), Tổng lương.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TAB 3: CONSTRAINTS -->
+  <div id="tab-constraints" class="section">
+    <div class="section-title"><span class="dot" style="background:var(--accent2)"></span>Ràng buộc quan hệ</div>
+
+    <div class="tip">
+      <strong>Mẹo nhớ:</strong> Có 3 loại ràng buộc chính: <strong>Cardinality</strong> (tỉ lệ), <strong>Participation</strong> (tham gia), <strong>Structural</strong> (min, max). Đường đôi = tham gia toàn phần. Con số trên đường nối = cardinality.
+    </div>
+
+    <div class="constraint-list">
+
+      <div class="constraint-card">
+        <div class="diagram">
+          <svg width="200" height="50" viewBox="0 0 200 50">
+            <rect x="2" y="14" width="44" height="22" rx="2" fill="none" stroke="#7eb8ff" stroke-width="1.8"/>
+            <text x="24" y="28" text-anchor="middle" font-size="10" fill="#7eb8ff" font-family="Sora">E₁</text>
+            <line x1="46" y1="25" x2="74" y2="25" stroke="#e8ecff" stroke-width="1.5"/>
+            <polygon points="100,8 126,25 100,42 74,25" fill="none" stroke="#5effa0" stroke-width="1.8"/>
+            <text x="100" y="28" text-anchor="middle" font-size="10" fill="#5effa0" font-family="Sora">R</text>
+            <line x1="126" y1="25" x2="154" y2="25" stroke="#e8ecff" stroke-width="1.5"/>
+            <line x1="126" y1="21" x2="154" y2="21" stroke="#e8ecff" stroke-width="1.5"/>
+            <rect x="154" y="14" width="44" height="22" rx="2" fill="none" stroke="#7eb8ff" stroke-width="1.8"/>
+            <text x="176" y="28" text-anchor="middle" font-size="10" fill="#7eb8ff" font-family="Sora">E₂</text>
+          </svg>
+        </div>
+        <div class="info">
+          <h3>Total Participation (Tham gia toàn phần)</h3>
+          <p>Đường đôi nối thực thể với quan hệ. Mọi thực thể E₂ <em>đều phải</em> tham gia vào quan hệ R. VD: Mọi Đơn hàng đều phải thuộc một Khách hàng.</p>
+        </div>
+      </div>
+
+      <div class="constraint-card">
+        <div class="diagram">
+          <svg width="200" height="50" viewBox="0 0 200 50">
+            <rect x="2" y="14" width="44" height="22" rx="2" fill="none" stroke="#7eb8ff" stroke-width="1.8"/>
+            <text x="24" y="28" text-anchor="middle" font-size="10" fill="#7eb8ff" font-family="Sora">E₁</text>
+            <line x1="46" y1="25" x2="74" y2="25" stroke="#e8ecff" stroke-width="1.5"/>
+            <text x="66" y="21" font-size="9" fill="#ff6b6b" font-family="Space Mono">1</text>
+            <polygon points="100,8 126,25 100,42 74,25" fill="none" stroke="#5effa0" stroke-width="1.8"/>
+            <text x="100" y="28" text-anchor="middle" font-size="10" fill="#5effa0" font-family="Sora">R</text>
+            <line x1="126" y1="25" x2="154" y2="25" stroke="#e8ecff" stroke-width="1.5"/>
+            <text x="130" y="21" font-size="9" fill="#ff6b6b" font-family="Space Mono">N</text>
+            <rect x="154" y="14" width="44" height="22" rx="2" fill="none" stroke="#7eb8ff" stroke-width="1.8"/>
+            <text x="176" y="28" text-anchor="middle" font-size="10" fill="#7eb8ff" font-family="Sora">E₂</text>
+          </svg>
+        </div>
+        <div class="info">
+          <h3>Cardinality Ratio (Tỉ số bản số)</h3>
+          <p>Con số trên đường nối. <code>1:N</code> — một E₁ có thể liên kết N E₂, nhưng mỗi E₂ chỉ liên kết 1 E₁. Các dạng: <code>1:1</code>, <code>1:N</code>, <code>M:N</code>.</p>
+        </div>
+      </div>
+
+      <div class="constraint-card">
+        <div class="diagram">
+          <svg width="160" height="56" viewBox="0 0 160 56">
+            <polygon points="52,8 78,28 52,48 26,28" fill="none" stroke="#5effa0" stroke-width="1.8"/>
+            <text x="52" y="31" text-anchor="middle" font-size="10" fill="#5effa0" font-family="Sora">R</text>
+            <line x1="78" y1="28" x2="116" y2="28" stroke="#e8ecff" stroke-width="1.5"/>
+            <text x="90" y="22" font-size="8" fill="#ffd166" font-family="Space Mono">(min,max)</text>
+            <line x1="108" y1="22" x2="108" y2="34" stroke="#ffd166" stroke-width="1.5"/>
+            <rect x="116" y="17" width="40" height="22" rx="2" fill="none" stroke="#7eb8ff" stroke-width="1.8"/>
+            <text x="136" y="30" text-anchor="middle" font-size="10" fill="#7eb8ff" font-family="Sora">E</text>
+          </svg>
+        </div>
+        <div class="info">
+          <h3>Structural Constraint (min, max)</h3>
+          <p>Ghi cặp <code>(min, max)</code> lên đường nối. Đặc tả số lần tối thiểu và tối đa thực thể E tham gia quan hệ R. VD: <code>(1, N)</code>, <code>(0, 1)</code>.</p>
+        </div>
+      </div>
+
+      <div class="constraint-card">
+        <div class="diagram">
+          <svg width="160" height="50" viewBox="0 0 160 50">
+            <rect x="2" y="14" width="44" height="22" rx="2" fill="none" stroke="#7eb8ff" stroke-width="1.8"/>
+            <text x="24" y="28" text-anchor="middle" font-size="10" fill="#7eb8ff" font-family="Sora">E₁</text>
+            <line x1="46" y1="25" x2="74" y2="25" stroke="#e8ecff" stroke-width="1.5"/>
+            <polygon points="100,8 126,25 100,42 74,25" fill="none" stroke="#5effa0" stroke-width="1.8"/>
+            <text x="100" y="28" text-anchor="middle" font-size="10" fill="#5effa0" font-family="Sora">R</text>
+            <line x1="126" y1="25" x2="154" y2="25" stroke="#e8ecff" stroke-width="1.5"/>
+            <rect x="110" y="14" width="44" height="22" rx="2" fill="none" stroke="#7eb8ff" stroke-width="1.8"/>
+            <text x="132" y="28" text-anchor="middle" font-size="10" fill="#7eb8ff" font-family="Sora">E₂</text>
+          </svg>
+        </div>
+        <div class="info">
+          <h3>Partial Participation (Tham gia bộ phận)</h3>
+          <p>Đường đơn nối thực thể với quan hệ. Thực thể <em>có thể</em> không tham gia quan hệ. VD: Không phải nhân viên nào cũng quản lý phòng ban.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TAB 4: SUMMARY TABLE -->
+  <div id="tab-summary" class="section">
+    <div class="section-title"><span class="dot" style="background:var(--accent3)"></span>Bảng tóm tắt toàn bộ ký hiệu ERD</div>
+    <table class="sum-table">
+      <thead>
+        <tr>
+          <th>Ký hiệu</th>
+          <th>Tên</th>
+          <th>Hình dạng</th>
+          <th>Mô tả / Ví dụ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <svg width="48" height="24" viewBox="0 0 48 24"><rect x="1" y="2" width="46" height="20" rx="2" fill="none" stroke="#7eb8ff" stroke-width="1.8"/></svg>
+          </td>
+          <td class="name-col">Entity</td>
+          <td class="shape-col">Chữ nhật đơn</td>
+          <td>Đối tượng cần lưu trữ. VD: SinhVien, MonHoc</td>
+        </tr>
+        <tr>
+          <td>
+            <svg width="48" height="26" viewBox="0 0 48 26"><rect x="4" y="4" width="40" height="18" rx="2" fill="none" stroke="#7eb8ff" stroke-width="1.8"/><rect x="1" y="1" width="46" height="24" rx="2" fill="none" stroke="#7eb8ff" stroke-width="1.2"/></svg>
+          </td>
+          <td class="name-col">Weak Entity</td>
+          <td class="shape-col">Chữ nhật kép</td>
+          <td>Phụ thuộc thực thể mạnh. VD: ChiTietDonHang</td>
+        </tr>
+        <tr>
+          <td>
+            <svg width="36" height="36" viewBox="0 0 36 36"><polygon points="18,2 34,18 18,34 2,18" fill="none" stroke="#5effa0" stroke-width="1.8"/></svg>
+          </td>
+          <td class="name-col">Relationship</td>
+          <td class="shape-col">Thoi đơn</td>
+          <td>Mối liên kết giữa thực thể. VD: DangKy, QuanLy</td>
+        </tr>
+        <tr>
+          <td>
+            <svg width="36" height="36" viewBox="0 0 36 36"><polygon points="18,2 34,18 18,34 2,18" fill="none" stroke="#5effa0" stroke-width="1.8"/><polygon points="18,7 29,18 18,29 7,18" fill="none" stroke="#5effa0" stroke-width="1.3"/></svg>
+          </td>
+          <td class="name-col">Identifying Rel.</td>
+          <td class="shape-col">Thoi kép</td>
+          <td>Liên kết thực thể yếu với mạnh</td>
+        </tr>
+        <tr>
+          <td>
+            <svg width="52" height="28" viewBox="0 0 52 28"><line x1="2" y1="14" x2="14" y2="14" stroke="#ffd166" stroke-width="1.5"/><ellipse cx="33" cy="14" rx="18" ry="10" fill="none" stroke="#ffd166" stroke-width="1.8"/></svg>
+          </td>
+          <td class="name-col">Attribute</td>
+          <td class="shape-col">Ellipse đơn</td>
+          <td>Tính chất của thực thể. VD: Ten, Tuoi</td>
+        </tr>
+        <tr>
+          <td>
+            <svg width="52" height="28" viewBox="0 0 52 28"><line x1="2" y1="14" x2="14" y2="14" stroke="#ffd166" stroke-width="1.5"/><ellipse cx="33" cy="14" rx="18" ry="10" fill="none" stroke="#ffd166" stroke-width="1.8"/><text x="33" y="18" text-anchor="middle" font-size="8" fill="#ffd166" text-decoration="underline" font-family="Sora">MaSV</text></svg>
+          </td>
+          <td class="name-col">Key Attribute</td>
+          <td class="shape-col">Ellipse + gạch chân</td>
+          <td>Định danh duy nhất. VD: MaSV, MSSV</td>
+        </tr>
+        <tr>
+          <td>
+            <svg width="52" height="30" viewBox="0 0 52 30"><line x1="2" y1="15" x2="14" y2="15" stroke="#ffd166" stroke-width="1.5"/><ellipse cx="33" cy="15" rx="18" ry="10" fill="none" stroke="#ffd166" stroke-width="1.8"/><ellipse cx="33" cy="15" rx="13" ry="6" fill="none" stroke="#ffd166" stroke-width="1.3"/></svg>
+          </td>
+          <td class="name-col">Multivalued Attr.</td>
+          <td class="shape-col">Ellipse kép</td>
+          <td>Nhiều giá trị. VD: SoDienThoai, Email</td>
+        </tr>
+        <tr>
+          <td>
+            <svg width="52" height="28" viewBox="0 0 52 28"><line x1="2" y1="14" x2="14" y2="14" stroke="#ffd166" stroke-width="1.5"/><ellipse cx="33" cy="14" rx="18" ry="10" fill="none" stroke="#ffd166" stroke-width="1.8" stroke-dasharray="4,2.5"/></svg>
+          </td>
+          <td class="name-col">Derived Attr.</td>
+          <td class="shape-col">Ellipse nét đứt</td>
+          <td>Tính từ attr. khác. VD: Tuoi, TongLuong</td>
+        </tr>
+        <tr>
+          <td>
+            <svg width="52" height="28" viewBox="0 0 52 28"><ellipse cx="26" cy="14" rx="22" ry="10" fill="none" stroke="#ffd166" stroke-width="1.8"/><line x1="10" y1="24" x2="4" y2="28" stroke="#ffd166" stroke-width="1"/><line x1="26" y1="24" x2="26" y2="28" stroke="#ffd166" stroke-width="1"/><line x1="40" y1="22" x2="46" y2="27" stroke="#ffd166" stroke-width="1"/></svg>
+          </td>
+          <td class="name-col">Composite Attr.</td>
+          <td class="shape-col">Ellipse có nhánh con</td>
+          <td>Gồm nhiều phần. VD: HoTen → Họ, Đệm, Tên</td>
+        </tr>
+        <tr>
+          <td><span style="font-family:Space Mono;font-size:0.8rem;color:#ff6b6b">──</span></td>
+          <td class="name-col">Partial Participation</td>
+          <td class="shape-col">Đường đơn</td>
+          <td>Có thể không tham gia quan hệ</td>
+        </tr>
+        <tr>
+          <td><span style="font-family:Space Mono;font-size:0.8rem;color:#ff6b6b">═══</span></td>
+          <td class="name-col">Total Participation</td>
+          <td class="shape-col">Đường đôi</td>
+          <td>Bắt buộc phải tham gia quan hệ</td>
+        </tr>
+        <tr>
+          <td><span style="font-family:Space Mono;font-size:0.75rem;color:#ff6b6b">1 / N / M</span></td>
+          <td class="name-col">Cardinality</td>
+          <td class="shape-col">Số trên đường nối</td>
+          <td>Tỉ số quan hệ: 1:1, 1:N, M:N</td>
+        </tr>
+        <tr>
+          <td><span style="font-family:Space Mono;font-size:0.7rem;color:#ffd166">(min,max)</span></td>
+          <td class="name-col">Structural Constraint</td>
+          <td class="shape-col">Cặp số (min,max)</td>
+          <td>Số lần tham gia tối thiểu/tối đa</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TAB 5: MAPPING -->
+  <div id="tab-mapping" class="section">
+    <div class="section-title"><span class="dot" style="background:var(--accent3)"></span>8 Bước Mapping ERD → Relational Schema</div>
+
+    <div class="tip">
+      <strong>Mẹo nhớ thứ tự:</strong> <strong>S</strong>trong → <strong>W</strong>eak → <strong>1:1</strong> → <strong>1:N</strong> → <strong>N:N</strong> → <strong>Multi</strong>valued → <strong>N</strong>-ary → <strong>I</strong>nheritance &nbsp;|&nbsp; Nhớ từ khóa: <em>"SW 11 1N NN M N I"</em>
+    </div>
+
+    <div class="steps-timeline">
+
+      <!-- STEP 1 -->
+      <div class="step-item open" id="step1">
+        <div class="step-num" onclick="toggleStep('step1')">01</div>
+        <div class="step-body">
+          <div class="step-header" onclick="toggleStep('step1')">
+            <span class="step-label">Strong Entity Type (Thực thể mạnh)</span>
+            <span class="step-tag">BƯỚC 1</span>
+            <span class="step-chevron">▶</span>
+          </div>
+          <div class="step-content">
+            <p>Mỗi strong entity type <strong>E</strong> trong ERD → tạo một <strong>relation R</strong> chứa tất cả simple attributes của E.</p>
+            <div class="rule-title">Quy tắc</div>
+            <div class="rule-block">
+<span class="kw">FOR EACH</span> strong entity E:<br>
+  <span class="kw">CREATE</span> relation <span class="val">R</span><br>
+  <span class="kw">INCLUDE</span> all simple attributes<br>
+  <span class="kw">CHOOSE</span> one key attribute → <span class="val">PRIMARY KEY</span><br>
+  <span class="cmt">-- Composite attr → flatten thành các attr thành phần</span><br>
+  <span class="cmt">-- Multivalued attr → xử lý ở Bước 6</span>
+            </div>
+            <div class="rule-title">Ví dụ</div>
+            <span class="example-pill">NhanVien(<u>MaNV</u>, HoTen, NgaySinh, DiaChi)</span>
+            <span class="example-pill">SinhVien(<u>MaSV</u>, HoTen, GPA)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-item" id="step2">
+        <div class="step-num" onclick="toggleStep('step2')">02</div>
+        <div class="step-body">
+          <div class="step-header" onclick="toggleStep('step2')">
+            <span class="step-label">Weak Entity Type (Thực thể yếu)</span>
+            <span class="step-tag">BƯỚC 2</span>
+            <span class="step-chevron">▶</span>
+          </div>
+          <div class="step-content">
+            <p>Mỗi weak entity type <strong>W</strong> → tạo relation <strong>R</strong> chứa tất cả attributes của W, <em>cộng thêm</em> khóa chính của owner entity làm <strong>foreign key</strong>.</p>
+            <div class="rule-title">Quy tắc</div>
+            <div class="rule-block">
+<span class="kw">FOR EACH</span> weak entity W (owner = E):<br>
+  <span class="kw">CREATE</span> relation <span class="val">R</span><br>
+  <span class="kw">INCLUDE</span> all simple attrs of W<br>
+  <span class="kw">ADD</span> PK of E → <span class="val">FOREIGN KEY</span><br>
+  <span class="kw">PRIMARY KEY</span> = partial key of W <span class="err">+</span> PK of E
+            </div>
+            <div class="rule-title">Ví dụ</div>
+            <span class="example-pill">ChiTiet(<u>MaDonHang, SoThuTu</u>, SoLuong, DonGia)</span><br>
+            <p style="font-size:0.76rem;color:var(--muted);margin-top:0.4rem">MaDonHang là FK → DonHang(<u>MaDonHang</u>,...)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step-item" id="step3">
+        <div class="step-num" onclick="toggleStep('step3')">03</div>
+        <div class="step-body">
+          <div class="step-header" onclick="toggleStep('step3')">
+            <span class="step-label">Binary 1:1 Relationship</span>
+            <span class="step-tag">BƯỚC 3</span>
+            <span class="step-chevron">▶</span>
+          </div>
+          <div class="step-content">
+            <p>Quan hệ 1:1 giữa S và T → có <strong>3 cách</strong> xử lý, chọn dựa trên participation:</p>
+            <div class="rule-title">Cách A — Foreign Key (phổ biến nhất)</div>
+            <div class="rule-block">
+<span class="kw">CHOOSE</span> one side (ưu tiên bên Total Participation)<br>
+<span class="kw">ADD</span> PK of other entity → <span class="val">FOREIGN KEY</span><br>
+<span class="kw">ADD</span> attributes of relationship (nếu có)
+            </div>
+            <div class="rule-title">Cách B — Merged Relation</div>
+            <div class="rule-block">
+<span class="cmt">-- Nếu cả hai đều Total Participation</span><br>
+<span class="kw">MERGE</span> S và T thành 1 relation duy nhất
+            </div>
+            <div class="rule-title">Cách C — Cross-reference / Relation</div>
+            <div class="rule-block">
+<span class="cmt">-- Tạo relation riêng cho mối quan hệ</span><br>
+<span class="kw">CREATE</span> relation R(<span class="val">PK_S, PK_T</span>, attrs of R)<br>
+<span class="kw">FOREIGN KEY</span> PK_S → S, PK_T → T
+            </div>
+            <div class="rule-title">Ví dụ (Cách A)</div>
+            <span class="example-pill">NhanVien(<u>MaNV</u>, ..., MaPhong)</span>
+            <span class="example-pill">PhongBan(<u>MaPhong</u>, TenPhong, ...)</span>
+            <p style="font-size:0.76rem;color:var(--muted);margin-top:0.4rem">MaPhong trong NhanVien là FK → PhongBan</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step-item" id="step4">
+        <div class="step-num" onclick="toggleStep('step4')">04</div>
+        <div class="step-body">
+          <div class="step-header" onclick="toggleStep('step4')">
+            <span class="step-label">Binary 1:N Relationship</span>
+            <span class="step-tag">BƯỚC 4</span>
+            <span class="step-chevron">▶</span>
+          </div>
+          <div class="step-content">
+            <p>Quan hệ 1:N giữa S (bên 1) và T (bên N) → đưa <strong>khóa của S vào bảng T</strong> làm foreign key.</p>
+            <div class="rule-title">Quy tắc</div>
+            <div class="rule-block">
+<span class="kw">IDENTIFY</span> side-1 (S) và side-N (T)<br>
+<span class="kw">ADD</span> PK of S → <span class="val">FOREIGN KEY</span> in T<br>
+<span class="kw">ADD</span> attributes of relationship vào T (nếu có)<br>
+<span class="cmt">-- Khóa ngoại luôn đặt ở bảng bên N</span>
+            </div>
+            <div class="rule-title">Ví dụ</div>
+            <span class="example-pill">Khoa(<u>MaKhoa</u>, TenKhoa)</span>
+            <span class="example-pill">SinhVien(<u>MaSV</u>, HoTen, <em>MaKhoa</em>)</span>
+            <p style="font-size:0.76rem;color:var(--muted);margin-top:0.4rem">MaKhoa trong SinhVien là FK → Khoa. 1 Khoa có N SinhVien.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="step-item" id="step5">
+        <div class="step-num" onclick="toggleStep('step5')">05</div>
+        <div class="step-body">
+          <div class="step-header" onclick="toggleStep('step5')">
+            <span class="step-label">Binary M:N Relationship</span>
+            <span class="step-tag">BƯỚC 5</span>
+            <span class="step-chevron">▶</span>
+          </div>
+          <div class="step-content">
+            <p>Quan hệ M:N → <strong>bắt buộc</strong> tạo một <strong>bảng trung gian</strong> (junction table) mới chứa 2 foreign key.</p>
+            <div class="rule-title">Quy tắc</div>
+            <div class="rule-block">
+<span class="kw">CREATE</span> new relation <span class="val">R</span><br>
+<span class="kw">ADD</span> PK of S → <span class="val">FK₁</span><br>
+<span class="kw">ADD</span> PK of T → <span class="val">FK₂</span><br>
+<span class="kw">ADD</span> attributes of relationship (nếu có)<br>
+<span class="kw">PRIMARY KEY</span> = (FK₁, FK₂)<br>
+<span class="cmt">-- Hoặc tạo surrogate key riêng nếu cần</span>
+            </div>
+            <div class="rule-title">Ví dụ</div>
+            <span class="example-pill">SinhVien(<u>MaSV</u>, HoTen)</span>
+            <span class="example-pill">MonHoc(<u>MaMH</u>, TenMH)</span>
+            <span class="example-pill">DangKy(<u>MaSV, MaMH</u>, DiemSo)</span>
+            <p style="font-size:0.76rem;color:var(--muted);margin-top:0.4rem">DangKy là bảng trung gian. DiemSo là thuộc tính của quan hệ.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 6 -->
+      <div class="step-item" id="step6">
+        <div class="step-num" onclick="toggleStep('step6')">06</div>
+        <div class="step-body">
+          <div class="step-header" onclick="toggleStep('step6')">
+            <span class="step-label">Multivalued Attribute (Thuộc tính đa trị)</span>
+            <span class="step-tag">BƯỚC 6</span>
+            <span class="step-chevron">▶</span>
+          </div>
+          <div class="step-content">
+            <p>Mỗi multivalued attribute <strong>A</strong> của entity <strong>E</strong> → tạo <strong>bảng mới</strong> riêng chứa A và FK trỏ về E.</p>
+            <div class="rule-title">Quy tắc</div>
+            <div class="rule-block">
+<span class="kw">FOR EACH</span> multivalued attr A of entity E:<br>
+  <span class="kw">CREATE</span> new relation <span class="val">R</span>(A, PK_E)<br>
+  <span class="kw">PRIMARY KEY</span> = (A, PK_E)<br>
+  <span class="kw">FOREIGN KEY</span> PK_E → E<br>
+  <span class="cmt">-- Không lưu A trong bảng E nữa</span>
+            </div>
+            <div class="rule-title">Ví dụ</div>
+            <span class="example-pill">NhanVien(<u>MaNV</u>, HoTen)</span>
+            <span class="example-pill">SDT_NhanVien(<u>MaNV, SoDienThoai</u>)</span>
+            <p style="font-size:0.76rem;color:var(--muted);margin-top:0.4rem">Một nhân viên có thể có nhiều SoDienThoai → tách thành bảng riêng.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 7 -->
+      <div class="step-item" id="step7">
+        <div class="step-num" onclick="toggleStep('step7')">07</div>
+        <div class="step-body">
+          <div class="step-header" onclick="toggleStep('step7')">
+            <span class="step-label">N-ary Relationship (Quan hệ n-ngôi)</span>
+            <span class="step-tag">BƯỚC 7</span>
+            <span class="step-chevron">▶</span>
+          </div>
+          <div class="step-content">
+            <p>Quan hệ có <strong>3 hoặc nhiều hơn</strong> thực thể tham gia → tạo bảng mới chứa FK của <em>tất cả</em> thực thể tham gia.</p>
+            <div class="rule-title">Quy tắc</div>
+            <div class="rule-block">
+<span class="kw">FOR EACH</span> n-ary relationship R (E₁, E₂, ..., Eₙ):<br>
+  <span class="kw">CREATE</span> new relation <span class="val">S</span><br>
+  <span class="kw">ADD</span> PK(E₁) → FK₁, PK(E₂) → FK₂, ..., PK(Eₙ) → FKₙ<br>
+  <span class="kw">ADD</span> attributes of R<br>
+  <span class="kw">PRIMARY KEY</span> = (FK₁, FK₂, ..., FKₙ)<br>
+  <span class="cmt">-- Trừ khi cardinality cho phép bỏ bớt 1 FK</span>
+            </div>
+            <div class="rule-title">Ví dụ (Ternary — 3 ngôi)</div>
+            <span class="example-pill">NhaCungCap(<u>MaNC</u>)</span>
+            <span class="example-pill">DuAn(<u>MaDA</u>)</span>
+            <span class="example-pill">LinhKien(<u>MaLK</u>)</span>
+            <span class="example-pill">CungCap(<u>MaNC, MaDA, MaLK</u>, SoLuong)</span>
+            <p style="font-size:0.76rem;color:var(--muted);margin-top:0.4rem">Quan hệ "Nhà cung cấp cung cấp linh kiện cho dự án" — 3 thực thể tham gia.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 8 -->
+      <div class="step-item" id="step8">
+        <div class="step-num" onclick="toggleStep('step8')">08</div>
+        <div class="step-body">
+          <div class="step-header" onclick="toggleStep('step8')">
+            <span class="step-label">Mối quan hệ thừa kế (Specialization / Generalization)</span>
+            <span class="step-tag">BƯỚC 8</span>
+            <span class="step-chevron">▶</span>
+          </div>
+          <div class="step-content">
+            <p>Quan hệ IS-A / thừa kế giữa superclass <strong>C</strong> và subclass <strong>S₁, S₂...</strong> → có <strong>3 phương án</strong>:</p>
+
+            <div class="rule-title">Phương án A — Nhiều bảng (Phổ biến)</div>
+            <div class="rule-block">
+<span class="cmt">-- Tạo bảng cho superclass + mỗi subclass</span><br>
+<span class="kw">CREATE</span> <span class="val">C</span>(PK_C, attrs_C) <span class="cmt">-- superclass</span><br>
+<span class="kw">CREATE</span> <span class="val">S₁</span>(PK_C, attrs_S₁) <span class="cmt">-- subclass 1</span><br>
+<span class="kw">CREATE</span> <span class="val">S₂</span>(PK_C, attrs_S₂) <span class="cmt">-- subclass 2</span><br>
+<span class="cmt">-- PK của subclass = PK_C (FK trỏ về C)</span>
+            </div>
+
+            <div class="rule-title">Phương án B — Gộp vào subclass</div>
+            <div class="rule-block">
+<span class="cmt">-- Áp dụng khi disjoint + total specialization</span><br>
+<span class="kw">CREATE</span> <span class="val">S₁</span>(PK_C, attrs_C, attrs_S₁)<br>
+<span class="kw">CREATE</span> <span class="val">S₂</span>(PK_C, attrs_C, attrs_S₂)<br>
+<span class="cmt">-- Không tạo bảng riêng cho superclass</span><br>
+<span class="err">-- Nhược điểm: lặp attrs của C</span>
+            </div>
+
+            <div class="rule-title">Phương án C — Một bảng duy nhất</div>
+            <div class="rule-block">
+<span class="cmt">-- Áp dụng khi subclass ít attr riêng</span><br>
+<span class="kw">CREATE</span> <span class="val">C</span>(PK_C, attrs_C, attrs_S₁, attrs_S₂, <span class="val">Type</span>)<br>
+<span class="cmt">-- Type: cột phân biệt subclass</span><br>
+<span class="err">-- Nhược điểm: nhiều giá trị NULL</span>
+            </div>
+
+            <div class="rule-title">Ví dụ (Phương án A)</div>
+            <div class="inherit-diagram">
+              <div class="inh-box">NguoiDung(<u>MaND</u>, HoTen, Email)</div>
+              <div class="inh-arrow">△</div>
+              <div class="inh-row">
+                <div class="inh-child">
+                  <div class="inh-arrow">│</div>
+                  <div class="inh-box">SinhVien(<u>MaND</u>, MaSV, Khoa)</div>
+                </div>
+                <div class="inh-child">
+                  <div class="inh-arrow">│</div>
+                  <div class="inh-box">GiangVien(<u>MaND</u>, MaGV, BoMon)</div>
+                </div>
+              </div>
+            </div>
+            <p style="font-size:0.76rem;color:var(--muted);margin-top:0.4rem">MaND trong SinhVien và GiangVien đều là FK → NguoiDung và cũng là PK của chúng.</p>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end steps-timeline -->
+
+    <!-- Quick comparison table -->
+    <div class="section-title" style="margin-top:1rem"><span class="dot" style="background:var(--accent4)"></span>Bảng so sánh nhanh 8 bước</div>
+    <table class="sum-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Loại</th>
+          <th>Số bảng tạo thêm</th>
+          <th>FK đặt ở đâu</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="shape-col">1</td><td class="name-col">Strong Entity</td><td>1 bảng mới</td><td>Không có FK mới</td></tr>
+        <tr><td class="shape-col">2</td><td class="name-col">Weak Entity</td><td>1 bảng mới</td><td>FK = PK của owner entity</td></tr>
+        <tr><td class="shape-col">3</td><td class="name-col">1:1 Relationship</td><td>0 (cách A, B) / 1 (cách C)</td><td>Ưu tiên bên Total Participation</td></tr>
+        <tr><td class="shape-col">4</td><td class="name-col">1:N Relationship</td><td>0 bảng mới</td><td>FK đặt ở bảng bên <strong>N</strong></td></tr>
+        <tr><td class="shape-col">5</td><td class="name-col">M:N Relationship</td><td>1 bảng trung gian</td><td>FK₁ + FK₂ trong bảng mới</td></tr>
+        <tr><td class="shape-col">6</td><td class="name-col">Multivalued Attr</td><td>1 bảng mới / attr</td><td>FK = PK của entity chứa attr</td></tr>
+        <tr><td class="shape-col">7</td><td class="name-col">N-ary Relationship</td><td>1 bảng mới</td><td>n FK trong bảng mới</td></tr>
+        <tr><td class="shape-col">8</td><td class="name-col">Inheritance (IS-A)</td><td>1–n bảng (tuỳ phương án)</td><td>PK subclass = FK → superclass</td></tr>
+      </tbody>
+    </table>
+
+  </div>
+
+  <div id="tab-quiz" class="section">
+    <div class="section-title"><span class="dot" style="background:var(--accent2)"></span>Kiểm tra nhanh</div>
+    <div class="quiz-wrap">
+      <div class="quiz-score">Đúng: <span id="score">0</span> / <span id="total">0</span></div>
+      <div id="quiz-container"></div>
+      <button class="btn-reset" onclick="resetQuiz()">↺ Làm lại</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function switchTab(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+    if (name === 'quiz' && !quizBuilt) buildQuiz();
+  }
+
+  const questions = [
+    {
+      q: "Ký hiệu nào dùng để biểu diễn một Thực thể yếu (Weak Entity)?",
+      opts: ["Hình chữ nhật đơn", "Hình chữ nhật kép", "Hình thoi đơn", "Hình ellipse kép"],
+      ans: 1,
+      explain: "Weak Entity dùng hình chữ nhật kép (double rectangle). Nó không có khóa chính riêng và phụ thuộc vào một thực thể mạnh."
+    },
+    {
+      q: "Thuộc tính dẫn xuất (Derived Attribute) được ký hiệu bằng hình gì?",
+      opts: ["Ellipse đơn nét liền", "Ellipse kép", "Ellipse nét đứt (dashed)", "Hình thoi"],
+      ans: 2,
+      explain: "Derived Attribute dùng ellipse với đường viền nét đứt. Ví dụ: Tuổi (tính từ Ngày sinh)."
+    },
+    {
+      q: "Đường nối đôi (double line) giữa thực thể và quan hệ biểu thị điều gì?",
+      opts: ["Partial Participation", "Total Participation", "Cardinality 1:N", "Quan hệ xác định"],
+      ans: 1,
+      explain: "Đường đôi = Total Participation (tham gia toàn phần). Mọi instance của thực thể đó bắt buộc phải tham gia quan hệ."
+    },
+    {
+      q: "Quan hệ xác định (Identifying Relationship) được ký hiệu bằng hình gì?",
+      opts: ["Hình thoi đơn", "Hình thoi kép", "Hình chữ nhật kép", "Ellipse kép"],
+      ans: 1,
+      explain: "Identifying Relationship = hình thoi kép (double diamond). Nó kết nối Weak Entity với thực thể mạnh tương ứng."
+    },
+    {
+      q: "Thuộc tính đa trị (Multivalued Attribute) được ký hiệu bằng hình gì?",
+      opts: ["Ellipse nét đứt", "Ellipse kép (hai đường viền)", "Ellipse đơn có gạch chân", "Ellipse có nhánh con"],
+      ans: 1,
+      explain: "Multivalued Attribute dùng ellipse kép. VD: Số điện thoại — một người có thể có nhiều số điện thoại."
+    },
+    {
+      q: "Trong ký hiệu Cardinality Ratio, '1:N' có nghĩa là?",
+      opts: [
+        "Một E₁ quan hệ với đúng 1 E₂",
+        "Một E₁ quan hệ với nhiều E₂, mỗi E₂ chỉ quan hệ với 1 E₁",
+        "Nhiều E₁ quan hệ với nhiều E₂",
+        "Mọi E₁ đều phải tham gia quan hệ"
+      ],
+      ans: 1,
+      explain: "1:N — một thực thể E₁ có thể liên kết với nhiều E₂, nhưng mỗi E₂ chỉ liên kết với duy nhất 1 E₁. VD: 1 Khoa có N Sinh viên."
+    },
+    {
+      q: "Structural Constraint (min, max) trên một thực thể E trong quan hệ R nghĩa là gì?",
+      opts: [
+        "E tham gia tối đa max lần tổng cộng",
+        "E tham gia tối thiểu min lần và tối đa max lần vào quan hệ R",
+        "Quan hệ R có min đến max thực thể tham gia",
+        "E có min thuộc tính và max thuộc tính"
+      ],
+      ans: 1,
+      explain: "Cặp (min, max) cho biết số lần tối thiểu và tối đa một instance của E phải tham gia vào quan hệ R. VD: (1, N) — tham gia ít nhất 1, nhiều nhất N lần."
+    },
+    {
+      q: "Thuộc tính khóa (Key Attribute) được phân biệt với thuộc tính thường bằng cách nào?",
+      opts: ["Đường viền nét đứt", "Hình thoi", "Gạch chân tên thuộc tính", "Ellipse kép"],
+      ans: 2,
+      explain: "Key Attribute có tên gạch chân trong ellipse. Nó định danh duy nhất từng bản ghi. VD: MaSV, MSSV."
+    },
+    // MAPPING QUESTIONS
+    {
+      q: "[Mapping] Khi ánh xạ Strong Entity, thuộc tính đa trị (multivalued) được xử lý thế nào?",
+      opts: [
+        "Giữ nguyên trong bảng chính như một cột",
+        "Bỏ qua, không ánh xạ",
+        "Xử lý ở Bước 6 — tạo bảng riêng",
+        "Thêm vào bảng quan hệ"
+      ],
+      ans: 2,
+      explain: "Ở Bước 1 (Strong Entity), multivalued attribute chưa được xử lý — chúng được để lại và xử lý riêng ở Bước 6 bằng cách tạo bảng mới."
+    },
+    {
+      q: "[Mapping] Khi ánh xạ Weak Entity W (owner là E), primary key của bảng W là gì?",
+      opts: [
+        "Chỉ là partial key của W",
+        "Chỉ là PK của E",
+        "Partial key của W + PK của E (kết hợp)",
+        "Tạo surrogate key mới"
+      ],
+      ans: 2,
+      explain: "PK của bảng Weak Entity = partial key của W kết hợp với PK của owner entity E. Vì W không có đủ key tự định danh."
+    },
+    {
+      q: "[Mapping] Trong quan hệ 1:N, foreign key được đặt ở bảng nào?",
+      opts: [
+        "Bảng bên 1",
+        "Bảng bên N",
+        "Tạo bảng trung gian mới",
+        "Cả hai bảng"
+      ],
+      ans: 1,
+      explain: "FK luôn đặt ở bảng bên N. VD: 1 Khoa - N SinhVien → MaKhoa (FK) đặt trong bảng SinhVien."
+    },
+    {
+      q: "[Mapping] Quan hệ M:N bắt buộc tạo cái gì?",
+      opts: [
+        "Thêm FK vào một trong hai bảng",
+        "Xóa một bảng và gộp vào bảng kia",
+        "Bảng trung gian mới chứa FK của cả hai thực thể",
+        "Không cần thay đổi gì"
+      ],
+      ans: 2,
+      explain: "M:N bắt buộc tạo bảng trung gian (junction table) mới. Bảng này chứa FK₁ (→ bảng A) và FK₂ (→ bảng B), PK = (FK₁, FK₂). Các thuộc tính của quan hệ cũng được thêm vào đây."
+    },
+    {
+      q: "[Mapping] Bước 6 (Multivalued Attribute) tạo bảng mới với primary key là gì?",
+      opts: [
+        "Chỉ là giá trị của attribute",
+        "Chỉ là PK của entity chứa attribute đó",
+        "Tổ hợp (giá trị attribute + PK của entity)",
+        "Tạo ID tự động mới"
+      ],
+      ans: 2,
+      explain: "Bảng mới cho multivalued attr có PK = (giá trị của attr, PK của entity). VD: SDT_NhanVien(<u>MaNV, SoDienThoai</u>) — cả hai cột tạo thành PK."
+    },
+    {
+      q: "[Mapping] Trong Bước 8 (Inheritance), Phương án nào gộp tất cả subclass vào 1 bảng duy nhất?",
+      opts: [
+        "Phương án A — nhiều bảng riêng",
+        "Phương án B — gộp vào subclass",
+        "Phương án C — một bảng duy nhất với cột Type",
+        "Phương án D — tạo bảng trung gian"
+      ],
+      ans: 2,
+      explain: "Phương án C gộp tất cả vào 1 bảng với cột Type để phân biệt subclass. Nhược điểm: nhiều giá trị NULL vì mỗi subclass chỉ dùng một phần các cột."
+    }
+  ];
+
+  let score = 0, answered = 0, quizBuilt = false;
+
+  function buildQuiz() {
+    quizBuilt = true;
+    score = 0; answered = 0;
+    document.getElementById('score').textContent = 0;
+    document.getElementById('total').textContent = 0;
+    const container = document.getElementById('quiz-container');
+    container.innerHTML = '';
+    questions.forEach((q, qi) => {
+      const card = document.createElement('div');
+      card.className = 'quiz-card';
+      card.id = 'qcard-' + qi;
+      card.innerHTML = `
+        <div class="quiz-q">${qi + 1}. ${q.q}</div>
+        <div class="quiz-options">
+          ${q.opts.map((o, oi) => `<button class="quiz-opt" onclick="answer(${qi},${oi})">${String.fromCharCode(65+oi)}. ${o}</button>`).join('')}
+        </div>
+        <div class="quiz-feedback" id="fb-${qi}">💡 ${q.explain}</div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  function answer(qi, chosen) {
+    const card = document.getElementById('qcard-' + qi);
+    const btns = card.querySelectorAll('.quiz-opt');
+    btns.forEach(b => b.disabled = true);
+    const q = questions[qi];
+    btns[chosen].classList.add(chosen === q.ans ? 'correct' : 'wrong');
+    if (chosen !== q.ans) btns[q.ans].classList.add('correct');
+    document.getElementById('fb-' + qi).classList.add('show');
+    if (chosen === q.ans) score++;
+    answered++;
+    document.getElementById('score').textContent = score;
+    document.getElementById('total').textContent = answered;
+  }
+
+  function resetQuiz() {
+    quizBuilt = false;
+    buildQuiz();
+  }
+
+  // Build quiz when tab is first visited
+  document.querySelector('[onclick="switchTab(\'quiz\')"]').addEventListener('click', () => {
+    if (!quizBuilt) buildQuiz();
+  });
+
+  function toggleStep(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('open');
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dạng Chuẩn CSDL — Ôn Tập</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #141720;
+    --card: #1a1e2b;
+    --border: #252a3a;
+    --accent1: #4f8ef7;
+    --accent2: #7c5cfc;
+    --accent3: #f7c948;
+    --accent4: #3dd68c;
+    --accent5: #f76b6b;
+    --text: #e8eaf0;
+    --muted: #8a90a8;
+    --tag-bg: #1e2438;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13,15,20,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+  }
+
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    height: 56px;
+  }
+
+  .header-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent1);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
+  .header-nav {
+    display: flex;
+    gap: 0.3rem;
+    overflow-x: auto;
+    flex: 1;
+    scrollbar-width: none;
+  }
+  .header-nav::-webkit-scrollbar { display: none; }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 0.3rem 0.75rem;
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover, .nav-btn.active {
+    background: var(--tag-bg);
+    color: var(--text);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 3.5rem 2rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(79,142,247,0.1);
+    border: 1px solid rgba(79,142,247,0.25);
+    color: var(--accent1);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    width: fit-content;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.15;
+    background: linear-gradient(135deg, #e8eaf0 0%, #8a90a8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    max-width: 560px;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar-wrap {
+    max-width: 1100px;
+    margin: 0 auto 0.5rem;
+    padding: 0 2rem;
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+  }
+  .progress-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+
+  /* ── LAYOUT ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1rem 2rem 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .section-badge {
+    margin-left: auto;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+    border: 1px solid;
+  }
+
+  /* ── CARDS GRID ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+  }
+  .card-full { grid-column: 1 / -1; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.25s, transform 0.2s;
+  }
+  .card:hover {
+    border-color: #353a52;
+    transform: translateY(-2px);
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 1.1rem 0.7rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .card-icon {
+    font-size: 1rem;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  .card-head-text { flex: 1; }
+  .card-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  .card-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .card-toggle {
+    font-size: 0.8rem;
+    color: var(--muted);
+    transition: transform 0.25s;
+    flex-shrink: 0;
+  }
+  .card.open .card-toggle { transform: rotate(180deg); }
+
+  .card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+  .card.open .card-body { max-height: 2000px; }
+
+  .card-content {
+    padding: 0 1.1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  /* ── TIP BOX ── */
+  .tip {
+    display: flex;
+    gap: 0.7rem;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-size: 0.84rem;
+    line-height: 1.6;
+  }
+  .tip-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .tip.blue { background: rgba(79,142,247,0.08); border-left: 3px solid var(--accent1); }
+  .tip.purple { background: rgba(124,92,252,0.08); border-left: 3px solid var(--accent2); }
+  .tip.yellow { background: rgba(247,201,72,0.08); border-left: 3px solid var(--accent3); }
+  .tip.green { background: rgba(61,214,140,0.08); border-left: 3px solid var(--accent4); }
+  .tip.red { background: rgba(247,107,107,0.08); border-left: 3px solid var(--accent5); }
+
+  /* ── DEFINITION ── */
+  .def {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    font-size: 0.85rem;
+  }
+  .def strong { color: var(--accent1); font-weight: 600; }
+
+  /* ── CODE BLOCK ── */
+  .code {
+    background: #0a0c12;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: #c9d1e8;
+    overflow-x: auto;
+    line-height: 1.8;
+  }
+  .code .kw { color: var(--accent2); font-weight: 600; }
+  .code .cm { color: var(--muted); font-style: italic; }
+  .code .hl { color: var(--accent3); }
+  .code .ok { color: var(--accent4); }
+  .code .err { color: var(--accent5); }
+  .code .tbl { color: var(--accent1); font-weight: 600; }
+
+  /* ── STEPS LIST ── */
+  .steps { display: flex; flex-direction: column; gap: 0.5rem; }
+  .step {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    font-size: 0.84rem;
+  }
+  .step-num {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  th {
+    background: var(--surface);
+    padding: 0.6rem 0.9rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.73rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  tr:last-child td { border-bottom: none; }
+  td.ok-cell { color: var(--accent4); font-weight: 600; }
+  td.err-cell { color: var(--accent5); font-weight: 600; }
+  td.kw-cell { color: var(--accent3); font-weight: 600; }
+
+  /* ── QUIZ ── */
+  .quiz-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+  }
+  .quiz-q { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.7rem; }
+  .quiz-opts { display: flex; flex-direction: column; gap: 0.4rem; }
+  .quiz-opt {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    font-family: inherit;
+    color: var(--text);
+  }
+  .quiz-opt:hover { border-color: var(--accent1); color: var(--accent1); }
+  .quiz-opt.correct { background: rgba(61,214,140,0.12); border-color: var(--accent4); color: var(--accent4); }
+  .quiz-opt.wrong { background: rgba(247,107,107,0.12); border-color: var(--accent5); color: var(--accent5); }
+  .quiz-feedback { font-size: 0.8rem; margin-top: 0.6rem; padding: 0.5rem 0.7rem; border-radius: 7px; display: none; }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.ok { background: rgba(61,214,140,0.1); color: var(--accent4); }
+  .quiz-feedback.no { background: rgba(247,107,107,0.1); color: var(--accent5); }
+
+  /* ── SCROLLSPY ── */
+  /* ── EXERCISE ── */
+  .ex-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .ex-head {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem 1.1rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .ex-head:hover { background: rgba(255,255,255,0.02); }
+  .ex-num {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .ex-meta { flex: 1; }
+  .ex-tag {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  .ex-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-top: 1px;
+  }
+  .ex-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .ex-toggle { font-size: 0.8rem; color: var(--muted); transition: transform 0.25s; flex-shrink: 0; }
+  .ex-card.open .ex-toggle { transform: rotate(180deg); }
+
+  .ex-body { max-height: 0; overflow: hidden; transition: max-height 0.45s ease; }
+  .ex-card.open .ex-body { max-height: 3000px; }
+
+  .ex-content { padding: 0 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.85rem; }
+
+  .ex-problem {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    font-size: 0.85rem;
+  }
+  .ex-problem p { margin-bottom: 0.3rem; }
+  .ex-problem strong { color: var(--accent3); }
+
+  .ex-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .ex-divider::before, .ex-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .sol-btn {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: fit-content;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .sol-btn:hover { border-color: var(--accent1); color: var(--accent1); }
+  .sol-btn.revealed { border-color: var(--accent4); color: var(--accent4); }
+
+  .solution {
+    display: none;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .solution.show { display: flex; }
+
+  .sol-step {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    font-size: 0.83rem;
+  }
+  .sol-num {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+    background: rgba(61,214,140,0.15);
+    color: var(--accent4);
+  }
+
+  .answer-box {
+    background: rgba(61,214,140,0.06);
+    border: 1px solid rgba(61,214,140,0.25);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 0.83rem;
+  }
+  .answer-box strong { color: var(--accent4); }
+
+  .difficulty-easy { color: var(--accent4); border-color: rgba(61,214,140,0.4); }
+  .difficulty-medium { color: var(--accent3); border-color: rgba(247,201,72,0.4); }
+  .difficulty-hard { color: var(--accent5); border-color: rgba(247,107,107,0.4); }
+
+  @media (max-width: 600px) {
+    .hero { padding: 2rem 1rem 1.5rem; }
+    main { padding: 0.5rem 1rem 4rem; }
+    .cards-grid { grid-template-columns: 1fr; }
+    header { padding: 0 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-title">🗄 Dạng Chuẩn CSDL</div>
+    <nav class="header-nav">
+      <button class="nav-btn active" onclick="scrollTo('s1f')">1NF</button>
+      <button class="nav-btn" onclick="scrollTo('s2f')">2NF</button>
+      <button class="nav-btn" onclick="scrollTo('s3f')">3NF</button>
+      <button class="nav-btn" onclick="scrollTo('sbcnf')">BCNF</button>
+      <button class="nav-btn" onclick="scrollTo('spha')">Phân rã</button>
+      <button class="nav-btn" onclick="scrollTo('squiz')">Quiz</button>
+      <button class="nav-btn" onclick="scrollTo('sbt')">Bài tập</button>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-badge">📚 Ôn tập lý thuyết + Mẹo học</div>
+  <h1>Chuẩn hóa<br>Cơ sở dữ liệu</h1>
+  <p>Tổng hợp định nghĩa, cách kiểm tra, phân rã và mẹo ghi nhớ cho 1NF → 2NF → 3NF → BCNF.</p>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-label"><span>Tiến trình học</span><span id="prog-text">0 / 20</span></div>
+  <div class="progress-track"><div class="progress-fill" id="prog-bar"></div></div>
+</div>
+
+<main>
+
+<!-- ═══════════════════════════════════════════════ 1NF ═══ -->
+<div class="section" id="s1f">
+  <div class="section-header">
+    <div class="section-dot" style="background:var(--accent1)"></div>
+    <div class="section-title" style="color:var(--accent1)">Dạng Chuẩn 1 (1NF)</div>
+    <div class="section-badge" style="border-color:var(--accent1);color:var(--accent1)">Mức cơ bản</div>
+  </div>
+  <div class="cards-grid">
+
+    <!-- Định nghĩa -->
+    <div class="card" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(79,142,247,0.12)">📋</div>
+        <div class="card-head-text">
+          <div class="card-label">1NF — Định nghĩa</div>
+          <div class="card-title">Điều kiện đạt 1NF là gì?</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="def">
+            Quan hệ <strong>R đạt 1NF</strong> khi và chỉ khi mọi thuộc tính trong R đều có <strong>miền giá trị nguyên tử</strong> (atomic) — không có tập hợp, không có nhóm lặp.
+          </div>
+          <div class="tip blue">
+            <span class="tip-icon">💡</span>
+            <div><strong>Mẹo nhớ:</strong> "1NF = mỗi ô chỉ chứa 1 giá trị duy nhất". Nếu một ô chứa nhiều giá trị phân cách bởi dấu phẩy → chưa đạt 1NF.</div>
+          </div>
+          <div class="tip yellow">
+            <span class="tip-icon">⚠️</span>
+            <div><strong>Chú ý:</strong> 1NF không yêu cầu về phụ thuộc hàm, chỉ yêu cầu giá trị nguyên tử và có khóa chính.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kiểm tra -->
+    <div class="card" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(79,142,247,0.12)">🔍</div>
+        <div class="card-head-text">
+          <div class="card-label">1NF — Kiểm tra</div>
+          <div class="card-title">Cách kiểm tra đạt 1NF</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" style="background:rgba(79,142,247,0.15);color:var(--accent1)">1</div>
+              <div>Kiểm tra mỗi thuộc tính: giá trị có thể chia nhỏ thêm không? (tên đầy đủ → họ + tên?)</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(79,142,247,0.15);color:var(--accent1)">2</div>
+              <div>Có thuộc tính đa trị không? (VD: {Toán, Lý, Hóa} trong 1 ô)</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(79,142,247,0.15);color:var(--accent1)">3</div>
+              <div>Có nhóm lặp (repeating group) không? (VD: Mon1, Diem1, Mon2, Diem2…)</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(79,142,247,0.15);color:var(--accent1)">4</div>
+              <div>Có khóa chính xác định duy nhất mỗi bộ không?</div>
+            </div>
+          </div>
+          <div class="tip green">
+            <span class="tip-icon">✅</span>
+            <div>Nếu <strong>tất cả</strong> điều kiện trên đều thỏa → Đạt 1NF.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phân rã -->
+    <div class="card card-full" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(79,142,247,0.12)">⚙️</div>
+        <div class="card-head-text">
+          <div class="card-label">1NF — Phân rã</div>
+          <div class="card-title">Cách đưa về 1NF</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" style="background:rgba(79,142,247,0.15);color:var(--accent1)">1</div>
+              <div><strong>Loại bỏ nhóm lặp:</strong> Tách mỗi nhóm thành bảng riêng.</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(79,142,247,0.15);color:var(--accent1)">2</div>
+              <div><strong>Loại bỏ đa trị:</strong> Mỗi giá trị thành 1 hàng riêng.</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(79,142,247,0.15);color:var(--accent1)">3</div>
+              <div><strong>Xác định khóa chính</strong> cho bảng mới.</div>
+            </div>
+          </div>
+          <div class="code">
+<span class="cm">-- Trước: chưa đạt 1NF (đa trị)</span>
+<span class="tbl">SinhVien</span>(<span class="hl">MaSV</span>, HoTen, <span class="err">MonHoc={Toan,Ly,Hoa}</span>)
+
+<span class="cm">-- Sau: đạt 1NF</span>
+<span class="tbl">SinhVien</span>(<span class="hl">MaSV</span>, HoTen)
+<span class="tbl">SV_MonHoc</span>(<span class="hl">MaSV, MonHoc</span>)
+          </div>
+          <div class="tip purple">
+            <span class="tip-icon">🎯</span>
+            <div><strong>Mẹo:</strong> Khi phân rã nhóm lặp, luôn đưa khóa chính của bảng gốc sang bảng mới để đảm bảo liên kết.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ 2NF ═══ -->
+<div class="section" id="s2f">
+  <div class="section-header">
+    <div class="section-dot" style="background:var(--accent2)"></div>
+    <div class="section-title" style="color:var(--accent2)">Dạng Chuẩn 2 (2NF)</div>
+    <div class="section-badge" style="border-color:var(--accent2);color:var(--accent2)">Phụ thuộc đầy đủ</div>
+  </div>
+  <div class="cards-grid">
+
+    <div class="card" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(124,92,252,0.12)">📋</div>
+        <div class="card-head-text">
+          <div class="card-label">2NF — Định nghĩa</div>
+          <div class="card-title">Điều kiện đạt 2NF</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="def">
+            R đạt <strong>2NF</strong> khi:<br>
+            1. R đạt <strong>1NF</strong><br>
+            2. Mọi thuộc tính <strong>không khóa</strong> đều <strong>phụ thuộc hàm đầy đủ</strong> vào khóa chính (không phụ thuộc vào bộ phận của khóa).
+          </div>
+          <div class="tip yellow">
+            <span class="tip-icon">⚠️</span>
+            <div><strong>Lưu ý:</strong> 2NF chỉ có ý nghĩa khi khóa chính là <strong>khóa kết hợp</strong> (composite key). Nếu khóa đơn → tự nhiên đạt 2NF (nếu đã đạt 1NF).</div>
+          </div>
+          <div class="tip blue">
+            <span class="tip-icon">💡</span>
+            <div><strong>Mẹo nhớ:</strong> "2NF = Không có phụ thuộc hàm <em>từng phần</em>". Mọi thuộc tính không khóa phải phụ thuộc vào <em>toàn bộ</em> khóa.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(124,92,252,0.12)">🔍</div>
+        <div class="card-head-text">
+          <div class="card-label">2NF — Kiểm tra</div>
+          <div class="card-title">Cách kiểm tra đạt 2NF</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" style="background:rgba(124,92,252,0.15);color:var(--accent2)">1</div>
+              <div>Xác định <strong>tất cả các khóa</strong> của quan hệ.</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(124,92,252,0.15);color:var(--accent2)">2</div>
+              <div>Liệt kê các thuộc tính <strong>không khóa</strong> (non-prime).</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(124,92,252,0.15);color:var(--accent2)">3</div>
+              <div>Với mỗi thuộc tính không khóa, kiểm tra: có phụ thuộc vào <strong>bộ phận</strong> nào của khóa không?</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(124,92,252,0.15);color:var(--accent2)">4</div>
+              <div>Nếu <strong>có</strong> phụ thuộc từng phần → <span style="color:var(--accent5)">Chưa đạt 2NF</span>. Ngược lại → Đạt 2NF.</div>
+            </div>
+          </div>
+          <div class="code">
+<span class="cm">-- Ví dụ: R(A,B,C,D) với khóa = {A,B}</span>
+<span class="cm">-- PTH: AB→C, AB→D, A→D ← phụ thuộc từng phần!</span>
+
+<span class="kw">Kiểm tra A→D:</span>
+  A là bộ phận của khóa {A,B}
+  D là thuộc tính không khóa
+  → A→D là phụ thuộc <span class="err">từng phần</span> → Chưa đạt 2NF
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-full" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(124,92,252,0.12)">⚙️</div>
+        <div class="card-head-text">
+          <div class="card-label">2NF — Phân rã</div>
+          <div class="card-title">Cách đưa về 2NF</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" style="background:rgba(124,92,252,0.15);color:var(--accent2)">1</div>
+              <div>Tìm tất cả các <strong>phụ thuộc từng phần</strong>: <code>X → A</code> với X là tập con thực sự của khóa.</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(124,92,252,0.15);color:var(--accent2)">2</div>
+              <div>Với mỗi phụ thuộc từng phần, tạo bảng mới <code>R'(X, A)</code>.</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(124,92,252,0.15);color:var(--accent2)">3</div>
+              <div>Bảng gốc giữ lại <strong>khóa đầy đủ</strong> và các thuộc tính phụ thuộc đầy đủ.</div>
+            </div>
+          </div>
+          <div class="code">
+<span class="cm">-- Trước: R(A,B,C,D), khóa={A,B}, PTH: AB→C, A→D</span>
+
+<span class="cm">-- Sau phân rã:</span>
+<span class="tbl">R1</span>(<span class="hl">A,B</span>, C)   <span class="cm">← AB→C (đầy đủ)</span>
+<span class="tbl">R2</span>(<span class="hl">A</span>, D)     <span class="cm">← A→D  (tách ra)</span>
+          </div>
+          <div class="tip purple">
+            <span class="tip-icon">🎯</span>
+            <div><strong>Mẹo:</strong> Bảng tách ra có khóa là vế trái của phụ thuộc từng phần. Bảng gốc loại bỏ các thuộc tính đã tách, giữ nguyên khóa kết hợp.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ 3NF ═══ -->
+<div class="section" id="s3f">
+  <div class="section-header">
+    <div class="section-dot" style="background:var(--accent3)"></div>
+    <div class="section-title" style="color:var(--accent3)">Dạng Chuẩn 3 (3NF)</div>
+    <div class="section-badge" style="border-color:var(--accent3);color:var(--accent3)">Không phụ thuộc bắc cầu</div>
+  </div>
+  <div class="cards-grid">
+
+    <div class="card" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(247,201,72,0.1)">📋</div>
+        <div class="card-head-text">
+          <div class="card-label">3NF — Định nghĩa</div>
+          <div class="card-title">Điều kiện đạt 3NF</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="def">
+            R đạt <strong>3NF</strong> khi mọi phụ thuộc hàm không tầm thường <strong>X → A</strong> thỏa ÍT NHẤT một:<br>
+            <strong>(1)</strong> X là siêu khóa của R, <span style="color:var(--muted)">HOẶC</span><br>
+            <strong>(2)</strong> A là thuộc tính nguyên tố (thuộc một khóa nào đó).
+          </div>
+          <div class="tip yellow">
+            <span class="tip-icon">💡</span>
+            <div><strong>Mẹo nhớ:</strong> "3NF = loại bỏ phụ thuộc <em>bắc cầu</em>". Không được có <code>KhóaChính → B → C</code> với B không phải siêu khóa.</div>
+          </div>
+          <div class="tip blue">
+            <span class="tip-icon">🔑</span>
+            <div><strong>Thuộc tính nguyên tố</strong> (prime attribute) = thuộc tính <em>xuất hiện trong ít nhất một khóa</em> của R.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(247,201,72,0.1)">🔍</div>
+        <div class="card-head-text">
+          <div class="card-label">3NF — Kiểm tra</div>
+          <div class="card-title">Cách kiểm tra đạt 3NF</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,201,72,0.15);color:var(--accent3)">1</div>
+              <div>Tìm tất cả <strong>khóa</strong> của R → xác định thuộc tính nguyên tố / không nguyên tố.</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,201,72,0.15);color:var(--accent3)">2</div>
+              <div>Với mỗi PTH <code>X → A</code> trong F⁺ (không tầm thường):</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,201,72,0.15);color:var(--accent3)">3</div>
+              <div>Kiểm tra: X có phải siêu khóa không? <strong>HOẶC</strong> A có phải thuộc tính nguyên tố không?</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,201,72,0.15);color:var(--accent3)">4</div>
+              <div>Nếu <strong>một PTH</strong> không thỏa cả hai → <span style="color:var(--accent5)">Chưa đạt 3NF</span>.</div>
+            </div>
+          </div>
+          <div class="code">
+<span class="cm">-- R(A,B,C), khóa={A}, PTH: A→B, B→C</span>
+
+<span class="kw">Kiểm tra B→C:</span>
+  - B có phải siêu khóa? <span class="err">Không</span> (B⁺={B,C} ≠ {A,B,C})
+  - C có phải thuộc tính nguyên tố? <span class="err">Không</span> (C không thuộc khóa nào)
+  → <span class="err">Vi phạm 3NF</span> (phụ thuộc bắc cầu A→B→C)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-full" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(247,201,72,0.1)">⚙️</div>
+        <div class="card-head-text">
+          <div class="card-label">3NF — Phân rã</div>
+          <div class="card-title">Cách đưa về 3NF</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,201,72,0.15);color:var(--accent3)">1</div>
+              <div>Tìm phụ thuộc bắc cầu vi phạm: <code>A → B → C</code> với B không phải siêu khóa, C không nguyên tố.</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,201,72,0.15);color:var(--accent3)">2</div>
+              <div>Tách bảng mới <code>R'(B, C)</code> (B làm khóa).</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,201,72,0.15);color:var(--accent3)">3</div>
+              <div>Bảng gốc bỏ C, giữ B như foreign key.</div>
+            </div>
+          </div>
+          <div class="code">
+<span class="cm">-- Trước: R(A,B,C), khóa={A}, PTH: A→B, B→C</span>
+
+<span class="tbl">R1</span>(<span class="hl">A</span>, B)    <span class="cm">← giữ A→B</span>
+<span class="tbl">R2</span>(<span class="hl">B</span>, C)    <span class="cm">← B→C tách ra</span>
+          </div>
+          <div class="tip yellow">
+            <span class="tip-icon">🎯</span>
+            <div><strong>Mẹo:</strong> Phân rã 3NF giống 2NF — bảng tách có khóa là "trung gian" (B). Đây là phụ thuộc bắc cầu, không phải từng phần.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ BCNF ═══ -->
+<div class="section" id="sbcnf">
+  <div class="section-header">
+    <div class="section-dot" style="background:var(--accent4)"></div>
+    <div class="section-title" style="color:var(--accent4)">Dạng Chuẩn BCNF</div>
+    <div class="section-badge" style="border-color:var(--accent4);color:var(--accent4)">Mạnh hơn 3NF</div>
+  </div>
+  <div class="cards-grid">
+
+    <div class="card" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(61,214,140,0.1)">📋</div>
+        <div class="card-head-text">
+          <div class="card-label">BCNF — Định nghĩa</div>
+          <div class="card-title">Điều kiện đạt BCNF</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="def">
+            R đạt <strong>BCNF</strong> khi mọi PTH không tầm thường <strong>X → A</strong>: <strong>X phải là siêu khóa</strong> của R.
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <tr><th>Dạng chuẩn</th><th>Điều kiện X → A</th></tr>
+              <tr><td>3NF</td><td>X là siêu khóa <strong>HOẶC</strong> A là thuộc tính nguyên tố</td></tr>
+              <tr><td class="ok-cell">BCNF</td><td>X <strong>phải là siêu khóa</strong> (không có ngoại lệ)</td></tr>
+            </table>
+          </div>
+          <div class="tip green">
+            <span class="tip-icon">💡</span>
+            <div><strong>Mẹo nhớ:</strong> "BCNF = 3NF nhưng bỏ đi ngoại lệ (2)". BCNF chặt hơn 3NF. BCNF ⊂ 3NF.</div>
+          </div>
+          <div class="tip red">
+            <span class="tip-icon">⚠️</span>
+            <div><strong>Cảnh báo:</strong> BCNF không phải lúc nào cũng bảo toàn phụ thuộc hàm! Đây là điểm khác biệt quan trọng với 3NF.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(61,214,140,0.1)">🔍</div>
+        <div class="card-head-text">
+          <div class="card-label">BCNF — Kiểm tra</div>
+          <div class="card-title">Cách kiểm tra đạt BCNF</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" style="background:rgba(61,214,140,0.15);color:var(--accent4)">1</div>
+              <div>Với mỗi PTH <code>X → Y</code> (Y ⊄ X, không tầm thường):</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(61,214,140,0.15);color:var(--accent4)">2</div>
+              <div>Tính <strong>X⁺</strong> — bao đóng của X theo F.</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(61,214,140,0.15);color:var(--accent4)">3</div>
+              <div>Nếu <strong>X⁺ = R</strong> → X là siêu khóa → OK. Nếu X⁺ ≠ R → <span style="color:var(--accent5)">Vi phạm BCNF</span>.</div>
+            </div>
+          </div>
+          <div class="code">
+<span class="cm">-- R(A,B,C,D), F={AB→C, C→B}</span>
+<span class="cm">-- Khóa: {A,B} và {A,C}</span>
+
+<span class="kw">Kiểm tra C→B:</span>
+  C⁺ = {C, B} ≠ {A,B,C,D}
+  → C không phải siêu khóa
+  → <span class="err">Vi phạm BCNF</span>
+  (Dù B là thuộc tính nguyên tố → đạt 3NF nhưng không đạt BCNF)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-full" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(61,214,140,0.1)">⚙️</div>
+        <div class="card-head-text">
+          <div class="card-label">BCNF — Phân rã</div>
+          <div class="card-title">Cách đưa về BCNF (thuật toán)</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" style="background:rgba(61,214,140,0.15);color:var(--accent4)">1</div>
+              <div>Bắt đầu với tập <code>D = {R}</code>.</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(61,214,140,0.15);color:var(--accent4)">2</div>
+              <div>Tìm trong D một quan hệ <code>Ri</code> vi phạm BCNF với PTH <code>X → Y</code>.</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(61,214,140,0.15);color:var(--accent4)">3</div>
+              <div>Tách <code>Ri</code> thành:<br>
+                <code>R1 = X ∪ Y</code> (khóa là X)<br>
+                <code>R2 = Ri − Y</code> (giữ X)
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(61,214,140,0.15);color:var(--accent4)">4</div>
+              <div>Lặp lại cho đến khi tất cả đều đạt BCNF.</div>
+            </div>
+          </div>
+          <div class="code">
+<span class="cm">-- R(A,B,C,D), vi phạm: C→B</span>
+
+<span class="kw">Tách theo C→B:</span>
+  <span class="tbl">R1</span>(<span class="hl">C</span>, B)          <span class="cm">← X∪Y = {C,B}</span>
+  <span class="tbl">R2</span>(<span class="hl">A,C,D</span>)        <span class="cm">← R−{B} = {A,C,D}</span>
+
+<span class="kw">Kiểm tra R2(A,C,D):</span>
+  PTH còn lại: AB→C → chiếu xuống → AC→? 
+  Khóa của R2 = {A,C} → <span class="ok">Đạt BCNF</span>
+          </div>
+          <div class="tip green">
+            <span class="tip-icon">🎯</span>
+            <div><strong>Mẹo:</strong> Khi tách BCNF, PTH vi phạm <code>X → Y</code> thì <code>R1 = XY</code> (X là khóa), <code>R2 = R - Y + X</code> (X là FK). Nhớ kiểm tra lại các bảng mới.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ PHÂN RÃ ═══ -->
+<div class="section" id="spha">
+  <div class="section-header">
+    <div class="section-dot" style="background:var(--accent5)"></div>
+    <div class="section-title" style="color:var(--accent5)">Phân Rã — Bảo Toàn</div>
+    <div class="section-badge" style="border-color:var(--accent5);color:var(--accent5)">Quan trọng</div>
+  </div>
+  <div class="cards-grid">
+
+    <!-- Bảo toàn PTH -->
+    <div class="card card-full" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(247,107,107,0.1)">🔒</div>
+        <div class="card-head-text">
+          <div class="card-label">Kiểm tra — Bảo toàn phụ thuộc hàm</div>
+          <div class="card-title">Phân rã D bảo toàn F không?</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="def">
+            Phân rã <strong>D = {R1, R2, …, Rk}</strong> bảo toàn F nếu: <code>(F1 ∪ F2 ∪ … ∪ Fk)⁺ = F⁺</code><br>
+            trong đó <code>Fi = πRi(F)</code> là chiếu của F lên Ri.
+          </div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,107,107,0.15);color:var(--accent5)">1</div>
+              <div>Với mỗi PTH <code>X → Y</code> trong F, kiểm tra xem có suy dẫn được từ <code>F1 ∪ … ∪ Fk</code> không.</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,107,107,0.15);color:var(--accent5)">2</div>
+              <div><strong>Thuật toán nhanh:</strong> Tính <code>X⁺</code> lặp qua các Ri cho đến khi ổn định.</div>
+            </div>
+          </div>
+          <div class="code">
+<span class="cm">-- Thuật toán kiểm tra bảo toàn PTH X → Y</span>
+<span class="kw">result</span> = X
+<span class="kw">while</span> (result thay đổi):
+    <span class="kw">for each</span> Ri trong D:
+        result = result ∪ ((result ∩ Ri)⁺_F ∩ Ri)
+<span class="kw">if</span> Y ⊆ result → <span class="ok">Bảo toàn PTH X→Y ✓</span>
+<span class="kw">else</span>           → <span class="err">Mất PTH X→Y ✗</span>
+          </div>
+          <div class="tip red">
+            <span class="tip-icon">💡</span>
+            <div><strong>Mẹo nhanh:</strong> Nếu <code>X → Y</code> với X, Y cùng nằm trong một Ri → PTH này chắc chắn được bảo toàn (vì Fi chứa nó).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bảo toàn thông tin -->
+    <div class="card card-full" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(247,107,107,0.1)">🔗</div>
+        <div class="card-head-text">
+          <div class="card-label">Kiểm tra — Bảo toàn thông tin</div>
+          <div class="card-title">Phân rã D bảo toàn thông tin không?</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="def">
+            Phân rã <strong>D = {R1, R2, …, Rk}</strong> bảo toàn thông tin nếu với mọi quan hệ r thỏa F:<br>
+            <code>r = π_R1(r) ⋈ π_R2(r) ⋈ … ⋈ π_Rk(r)</code>
+          </div>
+          <div class="tip blue">
+            <span class="tip-icon">⭐</span>
+            <div><strong>Điều kiện đủ (2 quan hệ):</strong> Phân rã {R1, R2} bảo toàn thông tin nếu:<br>
+            <code>R1 ∩ R2 → R1</code> &nbsp;hoặc&nbsp; <code>R1 ∩ R2 → R2</code><br>
+            tức là giao các thuộc tính là siêu khóa của R1 hoặc R2.</div>
+          </div>
+          <div class="code">
+<span class="cm">-- Kiểm tra bằng bảng (thuật toán Chase)</span>
+<span class="kw">Bước 1:</span> Lập bảng S với |R| cột, |D| hàng
+         Hàng i, cột j: a_j nếu Aj ∈ Ri, ngược lại b_ij
+
+<span class="kw">Bước 2:</span> Với mỗi PTH X→Y trong F:
+         Nếu 2 hàng giống nhau ở X → cho Y giống nhau
+         (ưu tiên ký hiệu a_j)
+
+<span class="kw">Bước 3:</span> Nếu xuất hiện hàng toàn a_j → <span class="ok">Bảo toàn thông tin ✓</span>
+          Ngược lại → <span class="err">Không bảo toàn thông tin ✗</span>
+          </div>
+          <div class="tip yellow">
+            <span class="tip-icon">🎯</span>
+            <div><strong>Mẹo nhanh cho 2 bảng:</strong> Tính giao R1∩R2, rồi tính bao đóng (R1∩R2)⁺. Nếu chứa toàn bộ R1 hoặc R2 → bảo toàn thông tin.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phân rã 3NF + bảo toàn PTH -->
+    <div class="card card-full" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(247,107,107,0.1)">📐</div>
+        <div class="card-head-text">
+          <div class="card-label">Thuật toán</div>
+          <div class="card-title">Phân rã 3NF + Bảo toàn PTH</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,107,107,0.15);color:var(--accent5)">1</div>
+              <div>Tìm <strong>phủ tối thiểu Fc</strong> của F (canonical cover).</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,107,107,0.15);color:var(--accent5)">2</div>
+              <div>Với mỗi PTH <code>X → Y</code> trong Fc, tạo bảng <code>Ri(X ∪ Y)</code>.</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,107,107,0.15);color:var(--accent5)">3</div>
+              <div>Nếu không có bảng nào chứa khóa của R → thêm bảng <code>R0(K)</code> với K là khóa.</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,107,107,0.15);color:var(--accent5)">4</div>
+              <div>Loại bỏ bảng nào là tập con của bảng khác.</div>
+            </div>
+          </div>
+          <div class="tip green">
+            <span class="tip-icon">✅</span>
+            <div>Thuật toán này <strong>luôn</strong> cho kết quả đạt 3NF <em>và</em> bảo toàn phụ thuộc hàm.</div>
+          </div>
+          <div class="tip red">
+            <span class="tip-icon">⚠️</span>
+            <div>Không nhất thiết bảo toàn thông tin! Nếu cần cả hai, thêm bảng chứa khóa (bước 3).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phủ tối thiểu -->
+    <div class="card card-full" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(247,107,107,0.1)">🧮</div>
+        <div class="card-head-text">
+          <div class="card-label">Cần biết</div>
+          <div class="card-title">Cách tìm phủ tối thiểu (Canonical Cover)</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,107,107,0.15);color:var(--accent5)">1</div>
+              <div><strong>Tách vế phải:</strong> Đưa mọi PTH về dạng <code>X → A</code> (1 thuộc tính bên phải).</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,107,107,0.15);color:var(--accent5)">2</div>
+              <div><strong>Loại bỏ thuộc tính dư thừa bên trái:</strong> Với <code>XZ → A</code>, thử xem <code>X → A</code> có suy được không. Nếu có → bỏ Z.</div>
+            </div>
+            <div class="step">
+              <div class="step-num" style="background:rgba(247,107,107,0.15);color:var(--accent5)">3</div>
+              <div><strong>Loại bỏ PTH dư thừa:</strong> Bỏ từng PTH, nếu vẫn suy dẫn được → PTH đó dư thừa.</div>
+            </div>
+          </div>
+          <div class="code">
+<span class="cm">-- Ví dụ: F = {A→BC, B→C, A→B, AB→C}</span>
+
+<span class="kw">Bước 1 (tách):</span> A→B, A→C, B→C, A→B, AB→C
+
+<span class="kw">Bước 2 (loại trùng):</span> A→B, A→C, B→C, AB→C
+
+<span class="kw">Bước 2 (dư thừa trái AB→C):</span>
+  A→C suy được (A→B→C) → bỏ AB→C
+  Còn: A→B, A→C, B→C
+
+<span class="kw">Bước 3 (A→C dư thừa?):</span>
+  Không có A→C trong F-{A→C}, nhưng A→B→C
+  → A→C <span class="err">dư thừa</span>, bỏ đi
+  
+<span class="ok">Fc = {A→B, B→C}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- So sánh tổng hợp -->
+    <div class="card card-full" data-card>
+      <div class="card-head" onclick="toggle(this)">
+        <div class="card-icon" style="background:rgba(247,107,107,0.1)">📊</div>
+        <div class="card-head-text">
+          <div class="card-label">Tổng hợp</div>
+          <div class="card-title">So sánh các loại phân rã</div>
+        </div>
+        <div class="card-toggle">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-content">
+          <div class="tbl-wrap">
+            <table>
+              <tr>
+                <th>Mục tiêu</th>
+                <th>Thuật toán</th>
+                <th>Bảo toàn PTH</th>
+                <th>Bảo toàn TT</th>
+              </tr>
+              <tr>
+                <td>3NF + PTH</td>
+                <td>Synthesis (dùng Fc)</td>
+                <td class="ok-cell">✓ Luôn đúng</td>
+                <td class="err-cell">✗ Không đảm bảo</td>
+              </tr>
+              <tr>
+                <td>BCNF + TT</td>
+                <td>Decomposition (Chase)</td>
+                <td class="err-cell">✗ Không đảm bảo</td>
+                <td class="ok-cell">✓ Luôn đúng</td>
+              </tr>
+              <tr>
+                <td>3NF + PTH + TT</td>
+                <td>Synthesis + thêm khóa</td>
+                <td class="ok-cell">✓ Luôn đúng</td>
+                <td class="ok-cell">✓ Luôn đúng</td>
+              </tr>
+            </table>
+          </div>
+          <div class="tip yellow">
+            <span class="tip-icon">🌟</span>
+            <div><strong>Điểm mấu chốt:</strong> Không thể <em>đồng thời</em> đảm bảo BCNF + bảo toàn PTH (trong trường hợp tổng quát). Đây là lý do 3NF vẫn được dùng rộng rãi.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ QUIZ ═══ -->
+<div class="section" id="squiz">
+  <div class="section-header">
+    <div class="section-dot" style="background:#b06ef7"></div>
+    <div class="section-title" style="color:#b06ef7">Luyện Tập Nhanh</div>
+    <div class="section-badge" style="border-color:#b06ef7;color:#b06ef7">Quiz</div>
+  </div>
+  <div class="cards-grid">
+
+    <div class="quiz-card">
+      <div class="quiz-q">1. R(A,B,C) với khóa {A}. PTH: A→B, B→C. R đạt dạng chuẩn cao nhất nào?</div>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answer(this,'wrong','A→B, B→C là phụ thuộc bắc cầu → vi phạm 3NF')">A. 3NF</button>
+        <button class="quiz-opt" onclick="answer(this,'correct','Đúng! A→B, B→C là bắc cầu → chỉ đạt 2NF')">B. 2NF</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','1NF thấp hơn 2NF')">C. 1NF</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','BCNF cao hơn 3NF, không thể đạt nếu 3NF chưa đạt')">D. BCNF</button>
+      </div>
+      <div class="quiz-feedback" id="qf1"></div>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-q">2. Phân rã {R1, R2} bảo toàn thông tin khi nào?</div>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answer(this,'wrong','Không phải điều kiện bảo toàn thông tin')">A. R1 ∩ R2 = ∅</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','R1 ∪ R2 = R chỉ là điều kiện cần, không đủ')">B. R1 ∪ R2 = R</button>
+        <button class="quiz-opt" onclick="answer(this,'correct','Đúng! Giao là siêu khóa của R1 hoặc R2 → phép kết tự nhiên không sinh dữ liệu giả')">C. R1 ∩ R2 → R1 hoặc R1 ∩ R2 → R2</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','Không liên quan đến bảo toàn thông tin')">D. |F1| + |F2| = |F|</button>
+      </div>
+      <div class="quiz-feedback" id="qf2"></div>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-q">3. BCNF khác 3NF ở điểm nào?</div>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answer(this,'wrong','Không đúng, 1NF là điều kiện cơ bản nhất')">A. BCNF không yêu cầu 1NF</button>
+        <button class="quiz-opt" onclick="answer(this,'correct','Đúng! 3NF cho phép A là thuộc tính nguyên tố, BCNF không có ngoại lệ này')">B. BCNF không có ngoại lệ cho thuộc tính nguyên tố</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','Ngược lại, BCNF chặt hơn nên ít quan hệ đạt BCNF hơn 3NF')">C. BCNF dễ đạt hơn 3NF</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','Không đúng, BCNF không liên quan đến số lượng khóa')">D. BCNF chỉ áp dụng khi có 1 khóa</button>
+      </div>
+      <div class="quiz-feedback" id="qf3"></div>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-q">4. Phủ tối thiểu Fc có đặc điểm gì?</div>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answer(this,'wrong','Không nhất thiết, Fc là tương đương F, không phải tập con')">A. Fc ⊆ F</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','Vế phải Fc có đúng 1 thuộc tính')">B. Mỗi PTH trong Fc có nhiều thuộc tính bên phải</button>
+        <button class="quiz-opt" onclick="answer(this,'correct','Đúng! Fc tương đương F (Fc⁺ = F⁺) và không có PTH, thuộc tính dư thừa')">C. Fc⁺ = F⁺, không có PTH hay thuộc tính dư thừa</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','Fc là duy nhất theo nghĩa tương đương, nhưng có thể có nhiều dạng Fc khác nhau')">D. Fc là duy nhất với mọi F</button>
+      </div>
+      <div class="quiz-feedback" id="qf4"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ BÀI TẬP ═══ -->
+<div class="section" id="sbt">
+  <div class="section-header">
+    <div class="section-dot" style="background:#e879f9"></div>
+    <div class="section-title" style="color:#e879f9">Bài Tập Thực Hành</div>
+    <div class="section-badge" style="border-color:#e879f9;color:#e879f9">6 bài</div>
+  </div>
+
+  <!-- BÀI 1 -->
+  <div class="ex-card" id="ex1">
+    <div class="ex-head" onclick="toggleEx(this)">
+      <div class="ex-num" style="background:rgba(79,142,247,0.15);color:var(--accent1)">01</div>
+      <div class="ex-meta">
+        <div class="ex-tag">1NF · Kiểm tra &amp; Phân rã</div>
+        <div class="ex-title">Bảng đăng ký môn học chưa chuẩn hóa</div>
+      </div>
+      <div class="ex-badge difficulty-easy">Dễ</div>
+      <div class="ex-toggle">▼</div>
+    </div>
+    <div class="ex-body">
+      <div class="ex-content">
+        <div class="ex-problem">
+          <p>Cho quan hệ:</p>
+          <p><strong>DKHOC(MaSV, HoTen, LopHP, {MaMH, TenMH, Diem})</strong></p>
+          <p>Trong đó mỗi sinh viên có thể đăng ký nhiều môn học (nhóm lặp). Hãy:</p>
+          <p>a) Giải thích tại sao quan hệ chưa đạt 1NF.</p>
+          <p>b) Phân rã thành các quan hệ đạt 1NF.</p>
+        </div>
+        <button class="sol-btn" onclick="revealSol(this)">👁 Xem lời giải</button>
+        <div class="solution">
+          <div class="ex-divider">Lời giải</div>
+          <div class="sol-step">
+            <div class="sol-num">a</div>
+            <div><strong style="color:var(--accent5)">Chưa đạt 1NF vì:</strong> có nhóm lặp <code>{MaMH, TenMH, Diem}</code> — một sinh viên có nhiều bộ (MaMH, TenMH, Diem), vi phạm tính nguyên tử.</div>
+          </div>
+          <div class="sol-step">
+            <div class="sol-num">b</div>
+            <div>Tách nhóm lặp ra bảng riêng, đưa khóa chính bảng gốc sang:</div>
+          </div>
+          <div class="code">
+<span class="tbl">SINHVIEN</span>(<span class="hl">MaSV</span>, HoTen, LopHP)
+<span class="tbl">KETQUA</span>(<span class="hl">MaSV, MaMH</span>, TenMH, Diem)
+          </div>
+          <div class="answer-box">
+            <strong>Kết quả:</strong> Khóa của SINHVIEN = {MaSV}, khóa của KETQUA = {MaSV, MaMH}. Cả hai đều đạt 1NF.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BÀI 2 -->
+  <div class="ex-card" id="ex2">
+    <div class="ex-head" onclick="toggleEx(this)">
+      <div class="ex-num" style="background:rgba(124,92,252,0.15);color:var(--accent2)">02</div>
+      <div class="ex-meta">
+        <div class="ex-tag">2NF · Kiểm tra &amp; Phân rã</div>
+        <div class="ex-title">Quan hệ đơn đặt hàng có phụ thuộc từng phần</div>
+      </div>
+      <div class="ex-badge difficulty-easy">Dễ</div>
+      <div class="ex-toggle">▼</div>
+    </div>
+    <div class="ex-body">
+      <div class="ex-content">
+        <div class="ex-problem">
+          <p>Cho quan hệ <strong>DATHANG(MaDH, MaSP, TenSP, SoLuong, DonGia, TenKH)</strong></p>
+          <p>Tập phụ thuộc hàm F:</p>
+          <p><strong>MaDH, MaSP → SoLuong</strong></p>
+          <p><strong>MaSP → TenSP, DonGia</strong></p>
+          <p><strong>MaDH → TenKH</strong></p>
+          <p>Hãy: a) Xác định khóa. b) Kiểm tra 2NF. c) Phân rã về 2NF.</p>
+        </div>
+        <button class="sol-btn" onclick="revealSol(this)">👁 Xem lời giải</button>
+        <div class="solution">
+          <div class="ex-divider">Lời giải</div>
+          <div class="sol-step">
+            <div class="sol-num">a</div>
+            <div><strong>Khóa = {MaDH, MaSP}</strong> (khóa kết hợp, vì chỉ có {MaDH,MaSP} → tất cả thuộc tính).</div>
+          </div>
+          <div class="sol-step">
+            <div class="sol-num">b</div>
+            <div><strong style="color:var(--accent5)">Chưa đạt 2NF</strong> vì có phụ thuộc từng phần:<br>
+              • <code>MaSP → TenSP, DonGia</code> (MaSP là bộ phận của khóa)<br>
+              • <code>MaDH → TenKH</code> (MaDH là bộ phận của khóa)
+            </div>
+          </div>
+          <div class="sol-step">
+            <div class="sol-num">c</div>
+            <div>Tách mỗi phụ thuộc từng phần ra bảng riêng:</div>
+          </div>
+          <div class="code">
+<span class="tbl">CHITIET_DH</span>(<span class="hl">MaDH, MaSP</span>, SoLuong)
+<span class="tbl">SANPHAM</span>(<span class="hl">MaSP</span>, TenSP, DonGia)
+<span class="tbl">DONDATHANG</span>(<span class="hl">MaDH</span>, TenKH)
+          </div>
+          <div class="answer-box">
+            <strong>Kiểm tra:</strong> Mỗi thuộc tính không khóa đều phụ thuộc đầy đủ vào khóa của bảng mình → Cả 3 đạt 2NF.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BÀI 3 -->
+  <div class="ex-card" id="ex3">
+    <div class="ex-head" onclick="toggleEx(this)">
+      <div class="ex-num" style="background:rgba(247,201,72,0.15);color:var(--accent3)">03</div>
+      <div class="ex-meta">
+        <div class="ex-tag">3NF · Kiểm tra &amp; Phân rã</div>
+        <div class="ex-title">Phụ thuộc bắc cầu trong quan hệ nhân viên</div>
+      </div>
+      <div class="ex-badge difficulty-medium">Trung bình</div>
+      <div class="ex-toggle">▼</div>
+    </div>
+    <div class="ex-body">
+      <div class="ex-content">
+        <div class="ex-problem">
+          <p>Cho quan hệ <strong>NHANVIEN(MaNV, HoTen, MaPhong, TenPhong, DiaDiemPhong)</strong></p>
+          <p>Tập PTH F: <strong>MaNV → HoTen, MaPhong</strong> &nbsp;|&nbsp; <strong>MaPhong → TenPhong, DiaDiemPhong</strong></p>
+          <p>Hãy: a) Xác định khóa và thuộc tính nguyên tố. b) Kiểm tra 3NF. c) Phân rã về 3NF.</p>
+        </div>
+        <button class="sol-btn" onclick="revealSol(this)">👁 Xem lời giải</button>
+        <div class="solution">
+          <div class="ex-divider">Lời giải</div>
+          <div class="sol-step">
+            <div class="sol-num">a</div>
+            <div><strong>Khóa = {MaNV}</strong>. Thuộc tính nguyên tố: {MaNV}. Thuộc tính không nguyên tố: HoTen, MaPhong, TenPhong, DiaDiemPhong.</div>
+          </div>
+          <div class="sol-step">
+            <div class="sol-num">b</div>
+            <div><strong style="color:var(--accent5)">Chưa đạt 3NF</strong> vì:<br>
+              <code>MaPhong → TenPhong, DiaDiemPhong</code><br>
+              • MaPhong không phải siêu khóa (MaPhong⁺ = {MaPhong, TenPhong, DiaDiemPhong} ≠ R)<br>
+              • TenPhong, DiaDiemPhong không phải thuộc tính nguyên tố<br>
+              → Phụ thuộc bắc cầu: MaNV → MaPhong → TenPhong
+            </div>
+          </div>
+          <div class="sol-step">
+            <div class="sol-num">c</div>
+            <div>Tách phụ thuộc bắc cầu ra bảng riêng:</div>
+          </div>
+          <div class="code">
+<span class="tbl">NHANVIEN</span>(<span class="hl">MaNV</span>, HoTen, MaPhong)
+<span class="tbl">PHONGBAN</span>(<span class="hl">MaPhong</span>, TenPhong, DiaDiemPhong)
+          </div>
+          <div class="answer-box">
+            <strong>Kiểm tra 3NF:</strong> NHANVIEN: MaNV→MaPhong (MaNV là SK ✓). PHONGBAN: MaPhong→TenPhong (MaPhong là SK ✓). Cả hai đạt 3NF và bảo toàn phụ thuộc hàm.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BÀI 4 -->
+  <div class="ex-card" id="ex4">
+    <div class="ex-head" onclick="toggleEx(this)">
+      <div class="ex-num" style="background:rgba(61,214,140,0.15);color:var(--accent4)">04</div>
+      <div class="ex-meta">
+        <div class="ex-tag">BCNF · Kiểm tra &amp; Phân rã</div>
+        <div class="ex-title">Quan hệ đạt 3NF nhưng chưa đạt BCNF</div>
+      </div>
+      <div class="ex-badge difficulty-medium">Trung bình</div>
+      <div class="ex-toggle">▼</div>
+    </div>
+    <div class="ex-body">
+      <div class="ex-content">
+        <div class="ex-problem">
+          <p>Cho quan hệ <strong>R(SinhVien, MonHoc, GiaoVien)</strong> với ý nghĩa: mỗi sinh viên học một môn với một giáo viên cụ thể.</p>
+          <p>Tập PTH F:</p>
+          <p><strong>SinhVien, MonHoc → GiaoVien</strong></p>
+          <p><strong>GiaoVien → MonHoc</strong></p>
+          <p>Hãy: a) Tìm tất cả khóa. b) Kiểm tra 3NF và BCNF. c) Phân rã về BCNF.</p>
+        </div>
+        <button class="sol-btn" onclick="revealSol(this)">👁 Xem lời giải</button>
+        <div class="solution">
+          <div class="ex-divider">Lời giải</div>
+          <div class="sol-step">
+            <div class="sol-num">a</div>
+            <div><strong>Tìm khóa:</strong><br>
+              • {SinhVien, MonHoc}⁺ = {SinhVien, MonHoc, GiaoVien} = R → Khóa 1<br>
+              • {SinhVien, GiaoVien}⁺ = {SinhVien, GiaoVien, MonHoc} = R → Khóa 2<br>
+              <strong>Hai khóa: {SV, MH} và {SV, GV}</strong>. Thuộc tính nguyên tố: SinhVien, MonHoc, GiaoVien (tất cả!).
+            </div>
+          </div>
+          <div class="sol-step">
+            <div class="sol-num">b</div>
+            <div>
+              <strong style="color:var(--accent4)">Đạt 3NF:</strong> PTH <code>GV → MH</code>: GV không phải SK, nhưng MH là thuộc tính nguyên tố → thỏa điều kiện (2) của 3NF ✓<br>
+              <strong style="color:var(--accent5)">Chưa đạt BCNF:</strong> PTH <code>GV → MH</code>: GV không phải siêu khóa (GV⁺ = {GV, MH} ≠ R) → Vi phạm BCNF!
+            </div>
+          </div>
+          <div class="sol-step">
+            <div class="sol-num">c</div>
+            <div>Tách theo PTH vi phạm <code>GV → MH</code>:</div>
+          </div>
+          <div class="code">
+<span class="tbl">R1</span>(<span class="hl">GiaoVien</span>, MonHoc)       <span class="cm">← GV→MH, khóa={GV}</span>
+<span class="tbl">R2</span>(<span class="hl">SinhVien, GiaoVien</span>)  <span class="cm">← R−{MonHoc}+{GV}</span>
+          </div>
+          <div class="answer-box">
+            <strong>⚠️ Lưu ý:</strong> PTH <code>SV,MH → GV</code> bị <strong>mất</strong> sau phân rã (MH không còn trong R2). Đây là ví dụ điển hình: BCNF không đảm bảo bảo toàn phụ thuộc hàm!
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BÀI 5 -->
+  <div class="ex-card" id="ex5">
+    <div class="ex-head" onclick="toggleEx(this)">
+      <div class="ex-num" style="background:rgba(247,107,107,0.15);color:var(--accent5)">05</div>
+      <div class="ex-meta">
+        <div class="ex-tag">Phủ tối thiểu + Phân rã 3NF</div>
+        <div class="ex-title">Tìm phủ tối thiểu và phân rã đạt 3NF bảo toàn PTH</div>
+      </div>
+      <div class="ex-badge difficulty-medium">Trung bình</div>
+      <div class="ex-toggle">▼</div>
+    </div>
+    <div class="ex-body">
+      <div class="ex-content">
+        <div class="ex-problem">
+          <p>Cho <strong>R(A,B,C,D,E)</strong> và tập phụ thuộc hàm:</p>
+          <p><strong>F = { AB→C, C→B, AB→D, D→E, E→A }</strong></p>
+          <p>Hãy: a) Tìm phủ tối thiểu Fc. b) Phân rã R về 3NF bảo toàn phụ thuộc hàm.</p>
+        </div>
+        <button class="sol-btn" onclick="revealSol(this)">👁 Xem lời giải</button>
+        <div class="solution">
+          <div class="ex-divider">Lời giải</div>
+          <div class="sol-step">
+            <div class="sol-num">a</div>
+            <div><strong>Tìm phủ tối thiểu:</strong></div>
+          </div>
+          <div class="code">
+<span class="kw">Bước 1 — Tách vế phải:</span>
+  AB→C, C→B, AB→D, D→E, E→A  <span class="cm">(đã đơn)</span>
+
+<span class="kw">Bước 2 — Loại thuộc tính dư thừa bên trái:</span>
+  AB→C: thử A→C? A⁺={A} → không. Thử B→C? B⁺={B} → không. Giữ nguyên.
+  AB→D: thử A→D? A⁺={A} → không. Thử B→D? B⁺={B} → không. Giữ nguyên.
+
+<span class="kw">Bước 3 — Loại PTH dư thừa:</span>
+  Bỏ AB→C: từ F−{AB→C}, AB⁺=? AB→D→E→A, C→B → không ra C. 
+  <span class="ok">Giữ AB→C.</span>
+  Bỏ AB→D: từ F−{AB→D}, AB→C→B, D→E→A → không ra D từ AB.
+  <span class="ok">Giữ AB→D.</span>
+  Các PTH còn lại không dư thừa.
+
+<span class="ok">Fc = { AB→C, C→B, AB→D, D→E, E→A }</span>
+          </div>
+          <div class="sol-step">
+            <div class="sol-num">b</div>
+            <div><strong>Phân rã 3NF (thuật toán synthesis):</strong> Tạo bảng từ mỗi PTH trong Fc:</div>
+          </div>
+          <div class="code">
+<span class="tbl">R1</span>(<span class="hl">A,B</span>, C)     <span class="cm">← AB→C</span>
+<span class="tbl">R2</span>(<span class="hl">C</span>, B)       <span class="cm">← C→B</span>
+<span class="tbl">R3</span>(<span class="hl">A,B</span>, D)     <span class="cm">← AB→D</span>
+<span class="tbl">R4</span>(<span class="hl">D</span>, E)       <span class="cm">← D→E</span>
+<span class="tbl">R5</span>(<span class="hl">E</span>, A)       <span class="cm">← E→A</span>
+
+<span class="cm">-- Gộp R1 và R3 (cùng khóa AB):</span>
+<span class="tbl">R13</span>(<span class="hl">A,B</span>, C, D)
+          </div>
+          <div class="answer-box">
+            <strong>Kết quả:</strong> D = { R13(A,B,C,D), R2(C,B), R4(D,E), R5(E,A) }. Bảo toàn tất cả PTH trong Fc → đạt 3NF + bảo toàn PTH ✓
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BÀI 6 -->
+  <div class="ex-card" id="ex6">
+    <div class="ex-head" onclick="toggleEx(this)">
+      <div class="ex-num" style="background:rgba(232,121,249,0.15);color:#e879f9">06</div>
+      <div class="ex-meta">
+        <div class="ex-tag">Tổng hợp · Bảo toàn thông tin</div>
+        <div class="ex-title">Kiểm tra bảo toàn thông tin bằng thuật toán Chase</div>
+      </div>
+      <div class="ex-badge difficulty-hard">Khó</div>
+      <div class="ex-toggle">▼</div>
+    </div>
+    <div class="ex-body">
+      <div class="ex-content">
+        <div class="ex-problem">
+          <p>Cho <strong>R(A,B,C,D)</strong>, F = { A→B, B→C, C→D }</p>
+          <p>Phân rã D = { R1(A,B), R2(B,C), R3(C,D) }</p>
+          <p>Hãy kiểm tra phân rã D có bảo toàn thông tin không (dùng thuật toán Chase).</p>
+        </div>
+        <button class="sol-btn" onclick="revealSol(this)">👁 Xem lời giải</button>
+        <div class="solution">
+          <div class="ex-divider">Lời giải — Thuật toán Chase</div>
+          <div class="sol-step">
+            <div class="sol-num">1</div>
+            <div><strong>Lập bảng ban đầu</strong> (a = giá trị phân biệt, b = ký hiệu):</div>
+          </div>
+          <div class="code">
+     <span class="hl">A      B      C      D</span>
+R1:  a1     a2    b13    b14    <span class="cm">← R1(A,B)</span>
+R2:  b21    a2     a3    b24    <span class="cm">← R2(B,C)</span>
+R3:  b31   b32     a3     a4   <span class="cm">← R3(C,D)</span>
+          </div>
+          <div class="sol-step">
+            <div class="sol-num">2</div>
+            <div><strong>Áp dụng A→B:</strong> Hàng R1 và R2 không có chung A → bỏ qua.</div>
+          </div>
+          <div class="sol-step">
+            <div class="sol-num">3</div>
+            <div><strong>Áp dụng B→C:</strong> R1 và R2 cùng có B=a2 → cho C giống nhau (dùng a3 ưu tiên hơn b13):</div>
+          </div>
+          <div class="code">
+     <span class="hl">A      B      C      D</span>
+R1:  a1     a2    <span class="ok">a3</span>    b14    <span class="cm">← C cập nhật thành a3</span>
+R2:  b21    a2     a3    b24
+R3:  b31   b32     a3     a4
+          </div>
+          <div class="sol-step">
+            <div class="sol-num">4</div>
+            <div><strong>Áp dụng C→D:</strong> R1, R2, R3 cùng có C=a3 → cho D giống nhau (dùng a4):</div>
+          </div>
+          <div class="code">
+     <span class="hl">A      B      C      D</span>
+R1:  a1     a2     a3    <span class="ok">a4</span>   <span class="cm">← D cập nhật thành a4</span>
+R2:  b21    a2     a3    <span class="ok">a4</span>   <span class="cm">← D cập nhật thành a4</span>
+R3:  b31   b32     a3     a4
+          </div>
+          <div class="sol-step">
+            <div class="sol-num">5</div>
+            <div><strong>Áp dụng A→B lần nữa:</strong> Chỉ R1 có A=a1, không trùng với hàng nào → bỏ qua. Tiếp tục cho đến khi ổn định.</div>
+          </div>
+          <div class="answer-box">
+            <strong>Kết luận:</strong> Hàng R1 chưa toàn là a (còn b21 ở cột A cho R2, b31, b32 cho R3). Nhưng R1 = (a1, a2, a3, a4) là hàng toàn ký hiệu <code>a</code> → <strong style="color:var(--accent4)">Bảo toàn thông tin ✓</strong>
+          </div>
+          <div class="tip green">
+            <span class="tip-icon">💡</span>
+            <div><strong>Nhận xét nhanh:</strong> Với chuỗi PTH tuyến tính A→B→C→D và phân rã "sliding window" {AB},{BC},{CD}, phép kết luôn cho lại R ban đầu vì mỗi giao hai bảng liền kề là khóa của một trong hai bảng đó.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</main>
+
+<script>
+  // ── Toggle card ──
+  let opened = 0;
+  function toggle(head) {
+    const card = head.closest('.card');
+    const wasOpen = card.classList.contains('open');
+    card.classList.toggle('open');
+    if (!wasOpen && card.dataset.card !== undefined) {
+      opened++;
+      updateProgress();
+    }
+    updateNavActive();
+  }
+
+  // ── Toggle exercise ──
+  function toggleEx(head) {
+    const card = head.closest('.ex-card');
+    card.classList.toggle('open');
+    updateNavActive();
+  }
+
+  // ── Reveal solution ──
+  function revealSol(btn) {
+    const sol = btn.nextElementSibling;
+    sol.classList.toggle('show');
+    btn.classList.toggle('revealed');
+    btn.textContent = sol.classList.contains('show') ? '🙈 Ẩn lời giải' : '👁 Xem lời giải';
+  }
+
+  // ── Progress ──
+  const TOTAL = 20;
+  function updateProgress() {
+    const pct = Math.min((opened / TOTAL) * 100, 100);
+    document.getElementById('prog-bar').style.width = pct + '%';
+    document.getElementById('prog-text').textContent = Math.min(opened, TOTAL) + ' / ' + TOTAL;
+  }
+
+  // ── Nav scroll ──
+  function scrollTo(id) {
+    document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function updateNavActive() {}
+
+  // ── Quiz ──
+  let qAnswered = [false, false, false, false];
+  function answer(btn, result, msg) {
+    const opts = btn.closest('.quiz-opts');
+    const idx = [...document.querySelectorAll('.quiz-card')].indexOf(btn.closest('.quiz-card'));
+    if (qAnswered[idx]) return;
+    qAnswered[idx] = true;
+    [...opts.querySelectorAll('.quiz-opt')].forEach(b => b.disabled = true);
+    btn.classList.add(result === 'correct' ? 'correct' : 'wrong');
+    const fb = btn.closest('.quiz-card').querySelector('.quiz-feedback');
+    fb.className = 'quiz-feedback show ' + (result === 'correct' ? 'ok' : 'no');
+    fb.textContent = (result === 'correct' ? '✓ Chính xác! ' : '✗ Chưa đúng. ') + msg;
+  }
+
+  // ── Intersection nav highlight ──
+  const sections = ['s1f','s2f','s3f','sbcnf','spha','squiz','sbt'];
+  const navBtns = document.querySelectorAll('.nav-btn');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const i = sections.indexOf(e.target.id);
+        navBtns.forEach((b,j) => b.classList.toggle('active', j === i));
+      }
+    });
+  }, { threshold: 0.2 });
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el);
+  });
+</script>
+</body>
+</html>

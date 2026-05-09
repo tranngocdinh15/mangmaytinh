@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ôn Tập: Mô Hình CSDL Quan Hệ</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Fira+Code:wght@400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #141720;
+    --surface2: #1c2030;
+    --border: #2a2f45;
+    --accent1: #5de4c7;
+    --accent2: #ffd57e;
+    --accent3: #ff7eb3;
+    --accent4: #7eb8ff;
+    --text: #e8eaf6;
+    --text-dim: #8892b0;
+    --correct: #5de4c7;
+    --wrong: #ff6b6b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Lora', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid noise background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(93,228,199,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(93,228,199,.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 60px;
+    animation: fadeDown .8s ease both;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent1);
+    border: 1px solid var(--accent1);
+    padding: 4px 14px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.1;
+    background: linear-gradient(135deg, var(--accent1) 0%, var(--accent4) 50%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    margin-top: 12px;
+    color: var(--text-dim);
+    font-size: .95rem;
+    font-style: italic;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    animation: fadeUp .8s .2s ease both;
+  }
+
+  .progress-label {
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--accent1);
+    white-space: nowrap;
+    min-width: 100px;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent1), var(--accent4));
+    border-radius: 3px;
+    transition: width .6s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+
+  .score-display {
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+
+  /* Section header */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 48px 0 24px;
+    animation: fadeUp .6s ease both;
+  }
+
+  .section-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--bg);
+    background: var(--accent1);
+    padding: 3px 10px;
+    border-radius: 2px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  /* Flashcard */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: border-color .3s, transform .3s;
+    animation: fadeUp .5s ease both;
+  }
+
+  .card:hover { border-color: var(--accent1); transform: translateY(-2px); }
+
+  .card-question {
+    padding: 20px 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    user-select: none;
+  }
+
+  .card-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: transform .3s;
+  }
+
+  .card.open .card-icon { transform: rotate(90deg); }
+
+  .card-q-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.5;
+  }
+
+  .card-term {
+    font-family: 'Fira Code', monospace;
+    font-size: .85rem;
+    color: var(--accent2);
+    background: rgba(255,213,126,.08);
+    border: 1px solid rgba(255,213,126,.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  .card-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .5s cubic-bezier(.4,0,.2,1);
+  }
+
+  .card.open .card-answer { max-height: 800px; }
+
+  .card-answer-inner {
+    padding: 0 24px 20px 58px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  .answer-text {
+    color: var(--text-dim);
+    line-height: 1.8;
+    font-size: .95rem;
+  }
+
+  .highlight {
+    color: var(--accent1);
+    font-weight: 600;
+    font-style: normal;
+  }
+
+  .code {
+    font-family: 'Fira Code', monospace;
+    font-size: .85rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: var(--accent3);
+  }
+
+  .formula {
+    display: block;
+    font-family: 'Fira Code', monospace;
+    font-size: .88rem;
+    background: var(--surface2);
+    border-left: 3px solid var(--accent1);
+    padding: 12px 16px;
+    margin: 12px 0;
+    color: var(--accent1);
+    border-radius: 0 6px 6px 0;
+    line-height: 1.7;
+  }
+
+  .pill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .pill {
+    font-family: 'Fira Code', monospace;
+    font-size: .82rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+
+  .pill.green { color: var(--accent1); border-color: rgba(93,228,199,.3); background: rgba(93,228,199,.06); }
+  .pill.blue  { color: var(--accent4); border-color: rgba(126,184,255,.3); background: rgba(126,184,255,.06); }
+  .pill.pink  { color: var(--accent3); border-color: rgba(255,126,179,.3); background: rgba(255,126,179,.06); }
+  .pill.yellow{ color: var(--accent2); border-color: rgba(255,213,126,.3); background: rgba(255,213,126,.06); }
+
+  /* Quiz section */
+  .quiz-section {
+    margin-top: 60px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    animation: fadeUp .6s ease both;
+  }
+
+  .quiz-header {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+    color: var(--accent2);
+  }
+
+  .quiz-sub {
+    font-size: .88rem;
+    color: var(--text-dim);
+    margin-bottom: 28px;
+    font-style: italic;
+  }
+
+  .quiz-q {
+    margin-bottom: 28px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .quiz-q:last-child { border-bottom: none; }
+
+  .quiz-q-text {
+    font-family: 'Syne', sans-serif;
+    font-size: .98rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .quiz-num {
+    font-family: 'Fira Code', monospace;
+    font-size: .78rem;
+    color: var(--accent4);
+    margin-bottom: 6px;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .2s;
+    background: var(--surface2);
+  }
+
+  .option:hover { border-color: var(--accent4); background: rgba(126,184,255,.05); }
+
+  .option.selected { border-color: var(--accent4); background: rgba(126,184,255,.08); }
+  .option.correct  { border-color: var(--correct); background: rgba(93,228,199,.08); }
+  .option.wrong    { border-color: var(--wrong); background: rgba(255,107,107,.08); }
+
+  .option-letter {
+    font-family: 'Fira Code', monospace;
+    font-size: .82rem;
+    color: var(--accent4);
+    min-width: 20px;
+    margin-top: 1px;
+  }
+
+  .option-text {
+    font-size: .9rem;
+    line-height: 1.5;
+    color: var(--text-dim);
+  }
+
+  .option.correct .option-text,
+  .option.correct .option-letter { color: var(--correct); }
+  .option.wrong .option-text,
+  .option.wrong .option-letter { color: var(--wrong); }
+
+  .explanation {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: .88rem;
+    font-style: italic;
+    display: none;
+    line-height: 1.6;
+  }
+
+  .explanation.show { display: block; }
+  .explanation.correct-exp { background: rgba(93,228,199,.07); color: var(--correct); border-left: 3px solid var(--correct); }
+  .explanation.wrong-exp   { background: rgba(255,107,107,.07); color: var(--wrong); border-left: 3px solid var(--wrong); }
+
+  /* Buttons */
+  .btn {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: .9rem;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .2s;
+    letter-spacing: .5px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent1), var(--accent4));
+    color: var(--bg);
+  }
+
+  .btn-primary:hover { opacity: .85; transform: translateY(-2px); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    margin-left: 12px;
+  }
+
+  .btn-secondary:hover { background: rgba(255,213,126,.08); }
+
+  .quiz-actions {
+    display: flex;
+    align-items: center;
+    margin-top: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  /* Result banner */
+  .result-banner {
+    display: none;
+    margin-top: 20px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-align: center;
+  }
+
+  .result-banner.show { display: block; }
+  .result-banner.great { background: rgba(93,228,199,.12); color: var(--correct); border: 1px solid rgba(93,228,199,.3); }
+  .result-banner.ok    { background: rgba(255,213,126,.10); color: var(--accent2); border: 1px solid rgba(255,213,126,.3); }
+  .result-banner.low   { background: rgba(255,107,107,.10); color: var(--wrong); border: 1px solid rgba(255,107,107,.3); }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity:0; transform:translateY(-20px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(20px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* Tip box */
+  .tip {
+    background: rgba(126,184,255,.06);
+    border: 1px dashed rgba(126,184,255,.25);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    font-size: .88rem;
+    color: var(--accent4);
+    line-height: 1.7;
+  }
+
+  .tip strong { color: var(--accent2); }
+
+  /* Scroll to top */
+  .back-top {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--accent1);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    transition: all .3s;
+  }
+  .back-top:hover { background: var(--surface); border-color: var(--accent1); }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="tag">// Cơ Sở Dữ Liệu</div>
+    <h1>Mô Hình CSDL Quan Hệ</h1>
+    <p class="subtitle">Lý thuyết trọng tâm — click thẻ để xem đáp án</p>
+  </header>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <span class="progress-label">📖 Đã xem</span>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="score-display" id="progressText">0 / 9 thẻ</span>
+  </div>
+
+  <!-- ── PHẦN A ── -->
+  <div class="section-header">
+    <span class="section-num">A</span>
+    <span class="section-title">Các Khái Niệm Cơ Bản</span>
+    <div class="section-line"></div>
+  </div>
+
+  <!-- 1. Relation -->
+  <div class="card" onclick="toggleCard(this)">
+    <div class="card-question">
+      <span class="card-icon">▶</span>
+      <span class="card-q-text">Relation (Quan hệ) là gì? <span class="card-term">Relation</span></span>
+    </div>
+    <div class="card-answer">
+      <div class="card-answer-inner">
+        <p class="answer-text">
+          Một <span class="highlight">Relation</span> là một <strong>bảng 2 chiều</strong> gồm các hàng và cột, biểu diễn một tập thực thể hoặc mối quan hệ trong thế giới thực.
+        </p>
+        <span class="formula">R(A₁, A₂, ..., Aₙ)  →  tên quan hệ + danh sách thuộc tính</span>
+        <p class="answer-text" style="margin-top:8px">
+          Mỗi <span class="highlight">cột</span> = một thuộc tính &nbsp;|&nbsp; Mỗi <span class="highlight">hàng</span> = một bộ (tuple)<br>
+          Các bộ <em>không có thứ tự</em>, các thuộc tính <em>không có thứ tự</em>, giá trị <em>nguyên tử</em>.
+        </p>
+        <div class="tip"><strong>Mẹo nhớ:</strong> Relation ≈ Table trong SQL — nhưng về lý thuyết, Table có thứ tự hàng còn Relation thì không.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Domain -->
+  <div class="card" onclick="toggleCard(this)">
+    <div class="card-question">
+      <span class="card-icon">▶</span>
+      <span class="card-q-text">Domain (Miền giá trị) là gì? <span class="card-term">Domain</span></span>
+    </div>
+    <div class="card-answer">
+      <div class="card-answer-inner">
+        <p class="answer-text">
+          <span class="highlight">Domain</span> là tập hợp <strong>tất cả các giá trị hợp lệ</strong> mà một thuộc tính có thể nhận.
+        </p>
+        <span class="formula">dom(Aᵢ)  =  tập giá trị hợp lệ của thuộc tính Aᵢ</span>
+        <p class="answer-text" style="margin-top:8px">Ví dụ: <code class="code">dom(Tuổi)</code> = {1, 2, …, 150} &nbsp;|&nbsp; <code class="code">dom(Giới tính)</code> = {'Nam', 'Nữ'}</p>
+        <div class="pill-list">
+          <span class="pill green">Nguyên tử (atomic)</span>
+          <span class="pill blue">Không thể chia nhỏ hơn</span>
+          <span class="pill yellow">Định nghĩa kiểu dữ liệu</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Tuple -->
+  <div class="card" onclick="toggleCard(this)">
+    <div class="card-question">
+      <span class="card-icon">▶</span>
+      <span class="card-q-text">Tuple (Bộ) là gì? <span class="card-term">Tuple</span></span>
+    </div>
+    <div class="card-answer">
+      <div class="card-answer-inner">
+        <p class="answer-text">
+          Một <span class="highlight">Tuple</span> là <strong>một hàng</strong> trong quan hệ — biểu diễn một thực thể cụ thể. Mỗi tuple là một ánh xạ từ tên thuộc tính đến giá trị trong miền tương ứng.
+        </p>
+        <span class="formula">t = (v₁, v₂, ..., vₙ)  với  vᵢ ∈ dom(Aᵢ)  ∀ i</span>
+        <p class="answer-text" style="margin-top:8px">Ví dụ: <code class="code">('S001', 'Nguyễn Văn A', 20, 'CNTT')</code></p>
+        <div class="tip"><strong>Mẹo nhớ:</strong> Tuple = 1 Record = 1 Row trong SQL. "t[Aᵢ]" lấy giá trị thuộc tính Aᵢ của tuple t.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Schema -->
+  <div class="card" onclick="toggleCard(this)">
+    <div class="card-question">
+      <span class="card-icon">▶</span>
+      <span class="card-q-text">Schema of a Relation (Lược đồ quan hệ) là gì? <span class="card-term">Schema</span></span>
+    </div>
+    <div class="card-answer">
+      <div class="card-answer-inner">
+        <p class="answer-text">
+          <span class="highlight">Schema</span> = <strong>cấu trúc / đặc tả</strong> của một quan hệ — gồm tên quan hệ và danh sách thuộc tính kèm kiểu dữ liệu. Schema ít thay đổi (thiết kế ban đầu).
+        </p>
+        <span class="formula">SINHVIEN(MaSV: string, HoTen: string, Tuoi: int, Khoa: string)</span>
+        <p class="answer-text" style="margin-top:10px">
+          <strong>Phân biệt:</strong><br>
+          • <span class="highlight">Schema</span> (intension) = "cái khung" — ổn định<br>
+          • <span class="highlight">Instance / State</span> (extension) = dữ liệu thực tế tại một thời điểm — thay đổi liên tục
+        </p>
+        <div class="tip"><strong>Mẹo nhớ:</strong> Schema ≈ CREATE TABLE trong SQL. Instance ≈ nội dung bảng hiện tại.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Key -->
+  <div class="card" onclick="toggleCard(this)">
+    <div class="card-question">
+      <span class="card-icon">▶</span>
+      <span class="card-q-text">Key (Khóa) — các loại khóa cần nhớ <span class="card-term">Key</span></span>
+    </div>
+    <div class="card-answer">
+      <div class="card-answer-inner">
+        <p class="answer-text">
+          <span class="highlight">Superkey</span>: Tập thuộc tính <strong>định danh duy nhất</strong> mỗi tuple. Có thể dư thừa.<br><br>
+          <span class="highlight">Key (Candidate Key)</span>: Superkey <strong>tối tiểu</strong> — bỏ bất kỳ thuộc tính nào thì không còn là superkey nữa.<br><br>
+          <span class="highlight">Primary Key (PK)</span>: Candidate key được chọn làm khóa chính. Gạch chân trong lược đồ.<br><br>
+          <span class="highlight">Foreign Key (FK)</span>: Thuộc tính tham chiếu đến PK của quan hệ khác.
+        </p>
+        <span class="formula">Superkey ⊇ Candidate Key ⊇ Primary Key</span>
+        <div class="pill-list">
+          <span class="pill green">Superkey: đủ định danh</span>
+          <span class="pill blue">Candidate Key: tối tiểu</span>
+          <span class="pill yellow">Primary Key: được chọn</span>
+          <span class="pill pink">Foreign Key: tham chiếu</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PHẦN B ── -->
+  <div class="section-header" style="animation-delay:.1s">
+    <span class="section-num" style="background:var(--accent2);color:#000">B</span>
+    <span class="section-title">Ràng Buộc (Constraints)</span>
+    <div class="section-line"></div>
+  </div>
+
+  <!-- 6. Key Constraints -->
+  <div class="card" onclick="toggleCard(this)">
+    <div class="card-question">
+      <span class="card-icon">▶</span>
+      <span class="card-q-text">i. Ràng buộc khóa (Key Constraints) <span class="card-term">Key Constraint</span></span>
+    </div>
+    <div class="card-answer">
+      <div class="card-answer-inner">
+        <p class="answer-text">
+          <span class="highlight">Key Constraint</span> quy định rằng trong một quan hệ, <strong>không có hai tuple nào có cùng giá trị trên tập thuộc tính khóa</strong>.
+        </p>
+        <span class="formula">∀ t₁, t₂ ∈ r(R) : t₁ ≠ t₂  ⟹  t₁[PK] ≠ t₂[PK]</span>
+        <p class="answer-text" style="margin-top:10px">
+          Điều này đảm bảo mỗi tuple được <strong>định danh duy nhất</strong>. Trong SQL: <code class="code">PRIMARY KEY</code> hoặc <code class="code">UNIQUE</code>.
+        </p>
+        <div class="tip"><strong>Mẹo nhớ:</strong> Không được phép có 2 hàng "giống nhau" trên cột khóa chính.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Entity Integrity -->
+  <div class="card" onclick="toggleCard(this)">
+    <div class="card-question">
+      <span class="card-icon">▶</span>
+      <span class="card-q-text">ii. Ràng buộc toàn vẹn thực thể (Entity Integrity) <span class="card-term">Entity Integrity</span></span>
+    </div>
+    <div class="card-answer">
+      <div class="card-answer-inner">
+        <p class="answer-text">
+          <span class="highlight">Entity Integrity Constraint</span>: <strong>Không có thuộc tính nào của Primary Key được mang giá trị NULL</strong>.
+        </p>
+        <span class="formula">∀ t ∈ r(R) : t[Aᵢ] ≠ NULL  với  Aᵢ ∈ PK</span>
+        <p class="answer-text" style="margin-top:10px">
+          <strong>Lý do:</strong> Khóa chính dùng để định danh duy nhất — nếu NULL thì "không biết đây là thực thể nào", mâu thuẫn với mục đích của PK.
+        </p>
+        <div class="pill-list">
+          <span class="pill green">PK ≠ NULL</span>
+          <span class="pill blue">Áp dụng cho mọi thuộc tính trong PK</span>
+          <span class="pill yellow">Kể cả PK hợp thành (composite)</span>
+        </div>
+        <div class="tip"><strong>Mẹo nhớ:</strong> "Entity" = thực thể — muốn biết thực thể đó là ai thì phải có PK, không thể NULL.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Referential Integrity -->
+  <div class="card" onclick="toggleCard(this)">
+    <div class="card-question">
+      <span class="card-icon">▶</span>
+      <span class="card-q-text">iii. Ràng buộc toàn vẹn tham chiếu (Referential Integrity) <span class="card-term">Referential Integrity</span></span>
+    </div>
+    <div class="card-answer">
+      <div class="card-answer-inner">
+        <p class="answer-text">
+          <span class="highlight">Referential Integrity Constraint</span>: Nếu một tuple trong quan hệ R₁ có <strong>Foreign Key FK tham chiếu đến PK của R₂</strong>, thì giá trị FK hoặc phải <strong>xuất hiện trong R₂</strong> hoặc là <strong>NULL</strong>.
+        </p>
+        <span class="formula">∀ t₁ ∈ r(R₁) :  t₁[FK] = NULL  ∨  ∃ t₂ ∈ r(R₂) : t₁[FK] = t₂[PK]</span>
+        <p class="answer-text" style="margin-top:10px">
+          Ví dụ: <code class="code">DANGKY(MaSV, MaMH)</code> — MaSV phải tồn tại trong <code class="code">SINHVIEN(MaSV)</code>.<br><br>
+          <strong>Khi vi phạm có thể dùng:</strong><br>
+          • <code class="code">RESTRICT</code>: Từ chối thao tác<br>
+          • <code class="code">CASCADE</code>: Xóa/sửa dây chuyền<br>
+          • <code class="code">SET NULL</code>: Đặt FK thành NULL
+        </p>
+        <div class="tip"><strong>Mẹo nhớ:</strong> FK trỏ đến đâu phải có cái đó ở đó — không được "trỏ vào khoảng trống".</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TỔNG KẾT ── -->
+  <div class="section-header" style="animation-delay:.2s">
+    <span class="section-num" style="background:var(--accent3);color:#fff">∑</span>
+    <span class="section-title">Bảng So Sánh 3 Loại Ràng Buộc</span>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="card" onclick="toggleCard(this)">
+    <div class="card-question">
+      <span class="card-icon">▶</span>
+      <span class="card-q-text">Tóm tắt & So sánh 3 ràng buộc một lần</span>
+    </div>
+    <div class="card-answer">
+      <div class="card-answer-inner">
+        <p class="answer-text">
+          <span class="highlight">1. Key Constraint</span><br>
+          &nbsp;&nbsp;→ PK phải <strong>duy nhất</strong> trong quan hệ<br>
+          &nbsp;&nbsp;→ Phạm vi: trong 1 bảng<br><br>
+          <span class="highlight">2. Entity Integrity</span><br>
+          &nbsp;&nbsp;→ PK <strong>không được NULL</strong><br>
+          &nbsp;&nbsp;→ Phạm vi: trong 1 bảng<br><br>
+          <span class="highlight">3. Referential Integrity</span><br>
+          &nbsp;&nbsp;→ FK phải tồn tại trong bảng được tham chiếu (hoặc NULL)<br>
+          &nbsp;&nbsp;→ Phạm vi: <strong>giữa 2 bảng</strong>
+        </p>
+        <div class="pill-list">
+          <span class="pill yellow">Key: unique</span>
+          <span class="pill green">Entity: not null PK</span>
+          <span class="pill pink">Referential: FK → PK tồn tại</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── QUIZ ── -->
+  <div class="quiz-section">
+    <div class="quiz-header">🧠 Kiểm Tra Nhanh</div>
+    <div class="quiz-sub">Chọn đáp án — kết quả hiển thị ngay</div>
+
+    <!-- Q1 -->
+    <div class="quiz-q" id="q1">
+      <div class="quiz-num">// Câu 01</div>
+      <div class="quiz-q-text">Điểm khác biệt giữa <em>Candidate Key</em> và <em>Superkey</em> là gì?</div>
+      <div class="options">
+        <div class="option" onclick="answer(this,'q1',false,'Sai. Superkey có thể chứa nhiều thuộc tính dư thừa hơn Candidate Key.')">
+          <span class="option-letter">A</span>
+          <span class="option-text">Candidate Key bắt buộc phải là một thuộc tính đơn</span>
+        </div>
+        <div class="option" onclick="answer(this,'q1',true,'Đúng! Candidate Key là Superkey tối tiểu — không thể bỏ bất kỳ thuộc tính nào mà vẫn giữ tính định danh duy nhất.')">
+          <span class="option-letter">B</span>
+          <span class="option-text">Candidate Key là Superkey tối tiểu (không dư thừa thuộc tính)</span>
+        </div>
+        <div class="option" onclick="answer(this,'q1',false,'Sai. Primary Key là Candidate Key được chọn, không phải Candidate Key mạnh nhất.')">
+          <span class="option-letter">C</span>
+          <span class="option-text">Candidate Key là Superkey mạnh nhất (có nhiều thuộc tính nhất)</span>
+        </div>
+        <div class="option" onclick="answer(this,'q1',false,'Sai. Mọi Candidate Key đều là Superkey.')">
+          <span class="option-letter">D</span>
+          <span class="option-text">Candidate Key không phải là Superkey</span>
+        </div>
+      </div>
+      <div class="explanation" id="exp-q1"></div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="quiz-q" id="q2">
+      <div class="quiz-num">// Câu 02</div>
+      <div class="quiz-q-text">Ràng buộc toàn vẹn thực thể (Entity Integrity) quy định điều gì?</div>
+      <div class="options">
+        <div class="option" onclick="answer(this,'q2',false,'Sai. Đây là định nghĩa của Referential Integrity.')">
+          <span class="option-letter">A</span>
+          <span class="option-text">Foreign Key không được tham chiếu đến NULL</span>
+        </div>
+        <div class="option" onclick="answer(this,'q2',false,'Sai. Thuộc tính thông thường có thể NULL; chỉ PK mới bị cấm.')">
+          <span class="option-letter">B</span>
+          <span class="option-text">Mọi thuộc tính trong quan hệ không được mang giá trị NULL</span>
+        </div>
+        <div class="option" onclick="answer(this,'q2',true,'Đúng! Entity Integrity: không thuộc tính nào của Primary Key được mang giá trị NULL.')">
+          <span class="option-letter">C</span>
+          <span class="option-text">Không thuộc tính nào thuộc Primary Key được mang giá trị NULL</span>
+        </div>
+        <div class="option" onclick="answer(this,'q2',false,'Sai. Key Constraint mới là ràng buộc về tính duy nhất của PK.')">
+          <span class="option-letter">D</span>
+          <span class="option-text">Không có hai tuple nào có cùng giá trị Primary Key</span>
+        </div>
+      </div>
+      <div class="explanation" id="exp-q2"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="quiz-q" id="q3">
+      <div class="quiz-num">// Câu 03</div>
+      <div class="quiz-q-text">Bảng ĐĂNG_KÝ có Foreign Key <code class="code">MaSV</code> tham chiếu đến SINH_VIÊN. Nếu một sinh viên bị xóa khỏi SINH_VIÊN, hành vi nào <em>không vi phạm</em> Referential Integrity?</div>
+      <div class="options">
+        <div class="option" onclick="answer(this,'q3',false,'Sai. Giữ nguyên thì FK trỏ đến PK không còn tồn tại — vi phạm Referential Integrity.')">
+          <span class="option-letter">A</span>
+          <span class="option-text">Giữ nguyên các hàng trong ĐĂNG_KÝ có MaSV đó</span>
+        </div>
+        <div class="option" onclick="answer(this,'q3',true,'Đúng! Dùng CASCADE xóa dây chuyền hoặc SET NULL đều hợp lệ — FK hoặc không tồn tại hoặc NULL.')">
+          <span class="option-letter">B</span>
+          <span class="option-text">Xóa dây chuyền (CASCADE DELETE) các hàng ĐĂNG_KÝ liên quan</span>
+        </div>
+        <div class="option" onclick="answer(this,'q3',false,'Sai. Thêm bản ghi mới không giải quyết được các hàng đang vi phạm trong ĐĂNG_KÝ.')">
+          <span class="option-letter">C</span>
+          <span class="option-text">Thêm sinh viên mới với MaSV khác vào SINH_VIÊN</span>
+        </div>
+        <div class="option" onclick="answer(this,'q3',false,'Sai. Tạo bảng mới không phải giải pháp xử lý ràng buộc.')">
+          <span class="option-letter">D</span>
+          <span class="option-text">Tạo một bảng mới để lưu các bản ghi bị ảnh hưởng</span>
+        </div>
+      </div>
+      <div class="explanation" id="exp-q3"></div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="quiz-q" id="q4">
+      <div class="quiz-num">// Câu 04</div>
+      <div class="quiz-q-text">Đâu là sự khác biệt giữa <em>Schema</em> và <em>Instance</em> của một quan hệ?</div>
+      <div class="options">
+        <div class="option" onclick="answer(this,'q4',false,'Sai. Schema là đặc tả cấu trúc, không phải dữ liệu hiện tại.')">
+          <span class="option-letter">A</span>
+          <span class="option-text">Schema là tập hợp dữ liệu hiện tại, Instance là cấu trúc bảng</span>
+        </div>
+        <div class="option" onclick="answer(this,'q4',true,'Đúng! Schema = cấu trúc (ổn định), Instance = nội dung dữ liệu tại một thời điểm (thay đổi liên tục).')">
+          <span class="option-letter">B</span>
+          <span class="option-text">Schema là cấu trúc/đặc tả ổn định; Instance là dữ liệu thực tế tại một thời điểm</span>
+        </div>
+        <div class="option" onclick="answer(this,'q4',false,'Sai. Cả hai đều thuộc cùng một quan hệ.')">
+          <span class="option-letter">C</span>
+          <span class="option-text">Schema dùng cho cơ sở dữ liệu quan hệ, Instance dùng cho NoSQL</span>
+        </div>
+        <div class="option" onclick="answer(this,'q4',false,'Sai. Schema chứa tên thuộc tính và kiểu dữ liệu, không phải giá trị cụ thể.')">
+          <span class="option-letter">D</span>
+          <span class="option-text">Schema và Instance là như nhau, chỉ khác tên gọi</span>
+        </div>
+      </div>
+      <div class="explanation" id="exp-q4"></div>
+    </div>
+
+    <div class="quiz-actions">
+      <button class="btn btn-primary" onclick="checkAll()">📊 Xem Kết Quả</button>
+      <button class="btn btn-secondary" onclick="resetQuiz()">🔄 Làm Lại</button>
+    </div>
+
+    <div class="result-banner" id="resultBanner"></div>
+  </div>
+
+</div>
+
+<button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+  // --- Flashcard toggle ---
+  const totalCards = 9;
+  const opened = new Set();
+
+  function toggleCard(el) {
+    el.classList.toggle('open');
+    const idx = [...document.querySelectorAll('.card')].indexOf(el);
+    if (el.classList.contains('open')) {
+      opened.add(idx);
+    }
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const pct = (opened.size / totalCards) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = opened.size + ' / ' + totalCards + ' thẻ';
+  }
+
+  // --- Quiz logic ---
+  const answered = {};
+
+  function answer(optEl, qId, isCorrect, explanation) {
+    if (answered[qId]) return;
+    answered[qId] = isCorrect;
+
+    const allOpts = optEl.closest('.options').querySelectorAll('.option');
+    allOpts.forEach(o => o.style.pointerEvents = 'none');
+
+    if (isCorrect) {
+      optEl.classList.add('correct');
+    } else {
+      optEl.classList.add('wrong');
+      // highlight correct answer
+      allOpts.forEach(o => {
+        const onclick = o.getAttribute('onclick');
+        if (onclick && onclick.includes('true')) o.classList.add('correct');
+      });
+    }
+
+    const expEl = document.getElementById('exp-' + qId);
+    expEl.textContent = (isCorrect ? '✅ ' : '❌ ') + explanation;
+    expEl.className = 'explanation show ' + (isCorrect ? 'correct-exp' : 'wrong-exp');
+  }
+
+  function checkAll() {
+    const total = 4;
+    const correct = Object.values(answered).filter(Boolean).length;
+    const unanswered = total - Object.keys(answered).length;
+
+    const banner = document.getElementById('resultBanner');
+    let msg, cls;
+
+    if (unanswered > 0) {
+      msg = `⚠️ Bạn còn ${unanswered} câu chưa trả lời!`;
+      cls = 'ok';
+    } else if (correct === total) {
+      msg = `🎉 Xuất sắc! ${correct}/${total} — Nắm vững lý thuyết rồi!`;
+      cls = 'great';
+    } else if (correct >= total / 2) {
+      msg = `👍 Khá tốt! ${correct}/${total} — Ôn lại phần sai nhé!`;
+      cls = 'ok';
+    } else {
+      msg = `📚 Cần ôn thêm! ${correct}/${total} — Xem lại các thẻ lý thuyết!`;
+      cls = 'low';
+    }
+
+    banner.textContent = msg;
+    banner.className = 'result-banner show ' + cls;
+    banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function resetQuiz() {
+    ['q1','q2','q3','q4'].forEach(qId => {
+      const opts = document.querySelectorAll('#' + qId + ' .option');
+      opts.forEach(o => {
+        o.classList.remove('correct','wrong','selected');
+        o.style.pointerEvents = '';
+      });
+      const exp = document.getElementById('exp-' + qId);
+      exp.className = 'explanation';
+      exp.textContent = '';
+    });
+    Object.keys(answered).forEach(k => delete answered[k]);
+    document.getElementById('resultBanner').className = 'result-banner';
+  }
+</script>
+</body>
+</html>

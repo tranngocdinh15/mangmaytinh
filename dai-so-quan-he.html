@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đại Số Quan Hệ trong SQL</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #7c3aed;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --code-bg: #0d1117;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    padding: 60px 0 40px;
+    position: relative;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    border: 1px solid rgba(0,212,255,0.3);
+    background: rgba(0,212,255,0.05);
+    padding: 4px 12px;
+    border-radius: 2px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 700;
+    line-height: 1.15;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--accent3) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 14px;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: 3px;
+    background: var(--border);
+    margin-bottom: 0;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    width: 0%;
+    transition: width 0.1s;
+  }
+
+  /* Nav pills */
+  .nav-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 32px 0;
+    padding: 0 8px;
+  }
+
+  .nav-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .nav-pill:hover, .nav-pill.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,212,255,0.07);
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 48px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.5s forwards;
+  }
+  .section:nth-child(1) { animation-delay: 0.05s; }
+  .section:nth-child(2) { animation-delay: 0.1s; }
+  .section:nth-child(3) { animation-delay: 0.15s; }
+  .section:nth-child(4) { animation-delay: 0.2s; }
+  .section:nth-child(5) { animation-delay: 0.25s; }
+  .section:nth-child(6) { animation-delay: 0.3s; }
+  .section:nth-child(7) { animation-delay: 0.35s; }
+  .section:nth-child(8) { animation-delay: 0.4s; }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: none; }
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent-left, var(--accent));
+    border-radius: 4px 0 0 4px;
+  }
+  .card:hover {
+    border-color: rgba(0,212,255,0.3);
+    transform: translateX(3px);
+  }
+
+  .card.orange { --accent-left: var(--accent2); }
+  .card.purple { --accent-left: var(--accent3); }
+  .card.green { --accent-left: var(--green); }
+  .card.yellow { --accent-left: var(--yellow); }
+
+  .card-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: #fff;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    background: rgba(0,212,255,0.12);
+    color: var(--accent);
+    border: 1px solid rgba(0,212,255,0.2);
+  }
+  .badge.orange { background: rgba(255,107,53,0.12); color: var(--accent2); border-color: rgba(255,107,53,0.2); }
+  .badge.purple { background: rgba(124,58,237,0.12); color: #a78bfa; border-color: rgba(124,58,237,0.2); }
+  .badge.green { background: rgba(16,185,129,0.12); color: var(--green); border-color: rgba(16,185,129,0.2); }
+
+  .card p {
+    color: #94a3b8;
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  /* Code block */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    overflow-x: auto;
+    margin-top: 10px;
+    line-height: 1.6;
+    position: relative;
+  }
+
+  .kw { color: #ff79c6; }
+  .fn { color: #50fa7b; }
+  .str { color: #f1fa8c; }
+  .cm { color: #6272a4; font-style: italic; }
+  .op { color: var(--accent); }
+  .tbl { color: #8be9fd; }
+  .num { color: #bd93f9; }
+
+  /* Symbol highlight */
+  .sym {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--accent);
+    margin-right: 4px;
+  }
+
+  /* Tip box */
+  .tip {
+    background: rgba(16,185,129,0.06);
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #6ee7b7;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-top: 10px;
+  }
+  .tip .tip-icon { flex-shrink: 0; font-size: 15px; }
+
+  .warn {
+    background: rgba(245,158,11,0.06);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #fcd34d;
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  /* Grid 2 col */
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } }
+
+  /* Table */
+  .tbl-wrap { overflow-x: auto; margin-top: 10px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th {
+    background: var(--surface2);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(30,45,69,0.7);
+    color: #94a3b8;
+    vertical-align: top;
+  }
+  tr:hover td { background: rgba(0,212,255,0.03); }
+  td:first-child { color: #fff; font-weight: 500; }
+  td code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    background: rgba(0,212,255,0.07);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  /* Quiz */
+  .quiz-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .quiz-header {
+    padding: 16px 24px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    color: #fff;
+  }
+  .quiz-body { padding: 24px; }
+
+  .quiz-item {
+    margin-bottom: 28px;
+  }
+  .quiz-q {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e2e8f0;
+    margin-bottom: 12px;
+    line-height: 1.6;
+    padding-left: 10px;
+    border-left: 2px solid var(--accent3);
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-option {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #94a3b8;
+    transition: all 0.15s;
+    background: var(--bg);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .quiz-option:hover { border-color: rgba(0,212,255,0.3); color: var(--text); }
+  .quiz-option.correct { border-color: var(--green); background: rgba(16,185,129,0.08); color: #6ee7b7; }
+  .quiz-option.wrong { border-color: #ef4444; background: rgba(239,68,68,0.08); color: #fca5a5; }
+  .quiz-option.disabled { pointer-events: none; opacity: 0.6; }
+  .quiz-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    width: 18px;
+    flex-shrink: 0;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  .quiz-explain {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(0,212,255,0.05);
+    border: 1px solid rgba(0,212,255,0.15);
+    border-radius: 5px;
+    font-size: 13px;
+    color: #7dd3fc;
+    display: none;
+  }
+  .quiz-explain.show { display: block; }
+  .quiz-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: right;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 40px 0 20px;
+    color: var(--muted);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+
+  /* Scroll to top */
+  #scrollTop {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 40px;
+    height: 40px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 16px;
+    transition: all 0.2s;
+    opacity: 0;
+    z-index: 99;
+  }
+  #scrollTop.show { opacity: 1; }
+  #scrollTop:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+<div class="container">
+
+  <header>
+    <div class="tag">SQL · Database Theory</div>
+    <h1>Đại Số Quan Hệ<br>trong SQL</h1>
+    <p class="subtitle">Mẹo ghi nhớ & ôn tập lý thuyết nhanh · Relational Algebra Cheatsheet</p>
+  </header>
+
+  <!-- Nav -->
+  <nav class="nav-pills">
+    <a href="#section1" class="nav-pill">σ Chọn</a>
+    <a href="#section2" class="nav-pill">π Chiếu</a>
+    <a href="#section3" class="nav-pill">⋈ Kết nối</a>
+    <a href="#section4" class="nav-pill">∪∩− Tập hợp</a>
+    <a href="#section5" class="nav-pill">× Tích Đề-các</a>
+    <a href="#section6" class="nav-pill">÷ Chia</a>
+    <a href="#section7" class="nav-pill">Bảng tổng hợp</a>
+    <a href="#section8" class="nav-pill">🧠 Quiz</a>
+  </nav>
+
+  <!-- =================== SECTION 1: SELECT =================== -->
+  <div class="section" id="section1">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(0,212,255,0.1);color:var(--accent)">σ</div>
+      <span class="section-title">Phép Chọn (Selection) — σ</span>
+      <span class="section-num">01</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="badge">Ký hiệu</span> σ<sub>điều_kiện</sub>(R)</div>
+      <p>Lọc các hàng (bộ) thỏa mãn điều kiện — tương đương <strong>WHERE</strong> trong SQL.</p>
+      <div class="tip"><span class="tip-icon">💡</span><span>Mẹo nhớ: <strong>σ = "Sieve"</strong> — rây/lọc dữ liệu. Chỉ giữ lại hàng thỏa điều kiện, số cột không đổi.</span></div>
+      <pre><span class="cm">-- Đại số quan hệ:</span>
+σ<sub>tuoi > 25</sub>(NhanVien)
+
+<span class="cm">-- SQL tương đương:</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">NhanVien</span>
+<span class="kw">WHERE</span> tuoi <span class="op">></span> <span class="num">25</span>;</pre>
+    </div>
+
+    <div class="grid2">
+      <div class="card green">
+        <div class="card-title">Điều kiện đơn</div>
+        <pre style="font-size:12px"><span class="fn">σ</span><sub>luong = 5000</sub>(NV)
+<span class="kw">WHERE</span> luong = <span class="num">5000</span></pre>
+      </div>
+      <div class="card orange">
+        <div class="card-title">Điều kiện phức hợp</div>
+        <pre style="font-size:12px"><span class="fn">σ</span><sub>tuoi>25 ∧ phong='IT'</sub>(NV)
+<span class="kw">WHERE</span> tuoi><span class="num">25</span> <span class="kw">AND</span> phong=<span class="str">'IT'</span></pre>
+      </div>
+    </div>
+
+    <div class="warn"><span>⚠️</span><span>σ chỉ lọc <strong>hàng</strong>, không thay đổi số cột. Muốn lọc cột dùng π (phép chiếu).</span></div>
+  </div>
+
+  <!-- =================== SECTION 2: PROJECT =================== -->
+  <div class="section" id="section2">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(255,107,53,0.1);color:var(--accent2)">π</div>
+      <span class="section-title">Phép Chiếu (Projection) — π</span>
+      <span class="section-num">02</span>
+    </div>
+
+    <div class="card orange">
+      <div class="card-title"><span class="badge orange">Ký hiệu</span> π<sub>ds_thuộc_tính</sub>(R)</div>
+      <p>Chọn các cột cần thiết, loại bỏ cột không cần. Tự động loại bỏ hàng trùng lặp — tương đương <strong>SELECT DISTINCT col1, col2</strong>.</p>
+      <div class="tip"><span class="tip-icon">💡</span><span>Mẹo nhớ: <strong>π = "Pick columns"</strong> — chọn cột như chọn chiếu phim. Kết quả không có bộ trùng (đặc tính tập hợp).</span></div>
+      <pre><span class="cm">-- Đại số quan hệ:</span>
+π<sub>hoTen, phong</sub>(NhanVien)
+
+<span class="cm">-- SQL tương đương:</span>
+<span class="kw">SELECT DISTINCT</span> hoTen, phong
+<span class="kw">FROM</span> <span class="tbl">NhanVien</span>;</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Kết hợp σ và π</div>
+      <p>Đọc từ <strong>trong ra ngoài</strong>: thực hiện phép trong trước.</p>
+      <pre><span class="fn">π</span><sub>hoTen</sub>(<span class="fn">σ</span><sub>phong='IT'</sub>(<span class="tbl">NhanVien</span>))
+
+<span class="kw">SELECT DISTINCT</span> hoTen
+<span class="kw">FROM</span> <span class="tbl">NhanVien</span>
+<span class="kw">WHERE</span> phong = <span class="str">'IT'</span>;</pre>
+    </div>
+  </div>
+
+  <!-- =================== SECTION 3: JOIN =================== -->
+  <div class="section" id="section3">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(124,58,237,0.1);color:#a78bfa">⋈</div>
+      <span class="section-title">Phép Kết Nối (Join) — ⋈</span>
+      <span class="section-num">03</span>
+    </div>
+
+    <div class="card purple">
+      <div class="card-title"><span class="badge purple">Natural Join</span> R ⋈ S</div>
+      <p>Kết hợp hai quan hệ theo <strong>cột cùng tên</strong>, loại bỏ cột trùng lặp.</p>
+      <div class="tip"><span class="tip-icon">💡</span><span>Mẹo nhớ: <strong>⋈ = "kết hôn"</strong> — hai bảng ghép lại qua điểm chung, như hai người kết hôn có cùng họ hàng.</span></div>
+      <pre><span class="tbl">NhanVien</span> ⋈ <span class="tbl">PhongBan</span>
+
+<span class="kw">SELECT</span> *
+<span class="kw">FROM</span> <span class="tbl">NhanVien</span>
+<span class="kw">NATURAL JOIN</span> <span class="tbl">PhongBan</span>;</pre>
+    </div>
+
+    <div class="grid2">
+      <div class="card purple">
+        <div class="card-title"><span class="badge purple">Theta Join</span></div>
+        <p style="font-size:13px">R ⋈<sub>điều_kiện</sub> S — kết nối theo điều kiện bất kỳ</p>
+        <pre style="font-size:12px"><span class="tbl">A</span> ⋈<sub>A.id=B.aid</sub> <span class="tbl">B</span>
+<span class="kw">JOIN</span> <span class="tbl">B</span> <span class="kw">ON</span> A.id = B.aid</pre>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="badge">Equi Join</span></div>
+        <p style="font-size:13px">Theta join đặc biệt dùng toán tử <code>=</code></p>
+        <pre style="font-size:12px"><span class="tbl">A</span> ⋈<sub>A.x = B.x</sub> <span class="tbl">B</span>
+<span class="kw">JOIN</span> <span class="tbl">B</span> <span class="kw">ON</span> A.x = B.x</pre>
+      </div>
+    </div>
+
+    <div class="card green">
+      <div class="card-title"><span class="badge green">Outer Join</span> — Kết nối ngoài</div>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Loại</th><th>Ký hiệu</th><th>SQL</th><th>Giữ lại</th></tr>
+          <tr><td>Left Outer</td><td><code>R ⟕ S</code></td><td><code>LEFT JOIN</code></td><td>Mọi hàng của R</td></tr>
+          <tr><td>Right Outer</td><td><code>R ⟖ S</code></td><td><code>RIGHT JOIN</code></td><td>Mọi hàng của S</td></tr>
+          <tr><td>Full Outer</td><td><code>R ⟗ S</code></td><td><code>FULL OUTER JOIN</code></td><td>Mọi hàng cả hai</td></tr>
+        </table>
+      </div>
+      <div class="tip"><span class="tip-icon">💡</span><span>Hàng không khớp được điền <strong>NULL</strong> vào các cột của bên còn lại.</span></div>
+    </div>
+  </div>
+
+  <!-- =================== SECTION 4: SET =================== -->
+  <div class="section" id="section4">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(16,185,129,0.1);color:var(--green)">∪</div>
+      <span class="section-title">Phép Toán Tập Hợp — ∪ ∩ −</span>
+      <span class="section-num">04</span>
+    </div>
+
+    <div class="warn"><span>⚠️</span><span>Yêu cầu <strong>tương thích kiểu (union-compatible)</strong>: hai quan hệ phải có cùng số cột và kiểu dữ liệu tương ứng.</span></div>
+
+    <div class="card green" style="margin-top:12px">
+      <div class="card-title"><span class="badge green">∪ Hợp</span> R ∪ S</div>
+      <p>Tất cả hàng của R hoặc S (không trùng).</p>
+      <pre><span class="tbl">SinhVienA</span> ∪ <span class="tbl">SinhVienB</span>
+
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">SinhVienA</span>
+<span class="kw">UNION</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">SinhVienB</span>;</pre>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title"><span class="badge">∩ Giao</span> R ∩ S</div>
+        <p style="font-size:13px">Hàng có trong <strong>cả hai</strong>.</p>
+        <pre style="font-size:12px"><span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">A</span>
+<span class="kw">INTERSECT</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">B</span></pre>
+      </div>
+      <div class="card orange">
+        <div class="card-title"><span class="badge orange">− Hiệu</span> R − S</div>
+        <p style="font-size:13px">Hàng trong R <strong>không có</strong> trong S.</p>
+        <pre style="font-size:12px"><span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">A</span>
+<span class="kw">EXCEPT</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">B</span></pre>
+      </div>
+    </div>
+
+    <div class="tip"><span class="tip-icon">💡</span><span>Mẹo nhớ: Vẽ sơ đồ Venn trong đầu. ∪ = cả vòng tròn, ∩ = phần giao, − = phần R nằm ngoài S.</span></div>
+  </div>
+
+  <!-- =================== SECTION 5: CARTESIAN =================== -->
+  <div class="section" id="section5">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(245,158,11,0.1);color:var(--yellow)">×</div>
+      <span class="section-title">Tích Đề-các (Cartesian Product) — ×</span>
+      <span class="section-num">05</span>
+    </div>
+
+    <div class="card yellow">
+      <div class="card-title"><span class="badge" style="color:var(--yellow);border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.08)">Ký hiệu</span> R × S</div>
+      <p>Kết hợp <strong>mọi hàng</strong> của R với <strong>mọi hàng</strong> của S. Nếu R có m hàng, S có n hàng → kết quả có <strong>m×n hàng</strong>.</p>
+      <div class="warn"><span>⚠️</span><span>Rất tốn kém! Thường dùng kết hợp với σ để lọc bớt → trở thành Theta Join.</span></div>
+      <pre><span class="tbl">NhanVien</span> × <span class="tbl">DuAn</span>
+
+<span class="cm">-- SQL: CROSS JOIN</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="tbl">NhanVien</span>
+<span class="kw">CROSS JOIN</span> <span class="tbl">DuAn</span>;
+
+<span class="cm">-- σ(R×S) = Theta Join:</span>
+σ<sub>NV.id=DA.nvId</sub>(<span class="tbl">NV</span> × <span class="tbl">DA</span>)
+<span class="cm">≡ NV ⋈<sub>NV.id=DA.nvId</sub> DA</span></pre>
+    </div>
+  </div>
+
+  <!-- =================== SECTION 6: DIVIDE =================== -->
+  <div class="section" id="section6">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(124,58,237,0.1);color:#a78bfa">÷</div>
+      <span class="section-title">Phép Chia (Division) — ÷</span>
+      <span class="section-num">06</span>
+    </div>
+
+    <div class="card purple">
+      <div class="card-title"><span class="badge purple">Ký hiệu</span> R ÷ S</div>
+      <p>Tìm các giá trị trong R <strong>liên quan đến TẤT CẢ</strong> giá trị trong S. Không có toán tử trực tiếp trong SQL — phải dùng NOT EXISTS hoặc GROUP BY HAVING.</p>
+      <div class="tip"><span class="tip-icon">💡</span><span>Mẹo nhớ: "Sinh viên nào <strong>đã học TẤT CẢ</strong> các môn trong danh sách S?" — câu hỏi dạng "FOR ALL" → dùng phép chia.</span></div>
+      <pre><span class="cm">-- Sinh viên đã học TẤT CẢ môn trong DanhSach</span>
+<span class="tbl">DaHoc</span>(maSV, maMon) ÷ <span class="tbl">DanhSach</span>(maMon)
+
+<span class="cm">-- SQL (NOT EXISTS double negation):</span>
+<span class="kw">SELECT DISTINCT</span> maSV <span class="kw">FROM</span> <span class="tbl">DaHoc</span> d1
+<span class="kw">WHERE NOT EXISTS</span> (
+  <span class="kw">SELECT</span> maMon <span class="kw">FROM</span> <span class="tbl">DanhSach</span>
+  <span class="kw">EXCEPT</span>
+  <span class="kw">SELECT</span> maMon <span class="kw">FROM</span> <span class="tbl">DaHoc</span> d2
+  <span class="kw">WHERE</span> d2.maSV = d1.maSV
+);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cách nhận ra dùng phép chia</div>
+      <p>Câu hỏi chứa từ khóa:</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+        <span class="badge purple">tất cả</span>
+        <span class="badge purple">every</span>
+        <span class="badge purple">all</span>
+        <span class="badge orange">mọi</span>
+        <span class="badge orange">toàn bộ</span>
+        <span class="badge green">đầy đủ</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== SECTION 7: TABLE =================== -->
+  <div class="section" id="section7">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(0,212,255,0.1);color:var(--accent)">≡</div>
+      <span class="section-title">Bảng Tổng Hợp Toán Tử</span>
+      <span class="section-num">07</span>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="tbl-wrap">
+        <table>
+          <tr>
+            <th>Ký hiệu</th>
+            <th>Tên</th>
+            <th>SQL</th>
+            <th>Tác động</th>
+            <th>Mẹo nhớ</th>
+          </tr>
+          <tr>
+            <td><code>σ</code></td>
+            <td>Chọn (Selection)</td>
+            <td><code>WHERE</code></td>
+            <td>Lọc hàng</td>
+            <td>σ = Sieve (rây)</td>
+          </tr>
+          <tr>
+            <td><code>π</code></td>
+            <td>Chiếu (Projection)</td>
+            <td><code>SELECT DISTINCT</code></td>
+            <td>Lọc cột</td>
+            <td>π = Pick columns</td>
+          </tr>
+          <tr>
+            <td><code>⋈</code></td>
+            <td>Kết nối tự nhiên</td>
+            <td><code>NATURAL JOIN</code></td>
+            <td>Ghép bảng theo cột chung</td>
+            <td>⋈ = Kết hôn (điểm chung)</td>
+          </tr>
+          <tr>
+            <td><code>⋈<sub>θ</sub></code></td>
+            <td>Theta Join</td>
+            <td><code>JOIN ON</code></td>
+            <td>Ghép theo điều kiện</td>
+            <td>θ = Theta = điều kiện</td>
+          </tr>
+          <tr>
+            <td><code>×</code></td>
+            <td>Tích Đề-các</td>
+            <td><code>CROSS JOIN</code></td>
+            <td>Mọi cặp hàng</td>
+            <td>× = nhân bùng nổ</td>
+          </tr>
+          <tr>
+            <td><code>∪</code></td>
+            <td>Hợp</td>
+            <td><code>UNION</code></td>
+            <td>Gộp, loại trùng</td>
+            <td>∪ = Union (chữ U)</td>
+          </tr>
+          <tr>
+            <td><code>∩</code></td>
+            <td>Giao</td>
+            <td><code>INTERSECT</code></td>
+            <td>Phần chung</td>
+            <td>∩ = Intersection</td>
+          </tr>
+          <tr>
+            <td><code>−</code></td>
+            <td>Hiệu</td>
+            <td><code>EXCEPT / MINUS</code></td>
+            <td>Có trong R, không trong S</td>
+            <td>− = trừ đi</td>
+          </tr>
+          <tr>
+            <td><code>÷</code></td>
+            <td>Chia</td>
+            <td><code>NOT EXISTS</code></td>
+            <td>Liên kết với TẤT CẢ</td>
+            <td>÷ = "FOR ALL" queries</td>
+          </tr>
+          <tr>
+            <td><code>ρ</code></td>
+            <td>Đổi tên (Rename)</td>
+            <td><code>AS</code></td>
+            <td>Đặt lại tên quan hệ/cột</td>
+            <td>ρ = Rename</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== SECTION 8: QUIZ =================== -->
+  <div class="section" id="section8">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(245,158,11,0.1);color:var(--yellow)">🧠</div>
+      <span class="section-title">Quiz Kiểm Tra</span>
+      <span class="section-num">08</span>
+    </div>
+
+    <div class="quiz-section">
+      <div class="quiz-header">
+        <span>🎯</span> Trả lời để kiểm tra hiểu biết
+        <span style="margin-left:auto;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--muted)" id="scoreDisplay">0 / 6 đúng</span>
+      </div>
+      <div class="quiz-body" id="quizBody">
+
+        <!-- Q1 -->
+        <div class="quiz-item">
+          <div class="quiz-q">1. Phép toán nào trong đại số quan hệ tương đương với mệnh đề WHERE trong SQL?</div>
+          <div class="quiz-options">
+            <div class="quiz-option" onclick="answer(this,0,'wrong','1')"><span class="quiz-label">A.</span> π (Chiếu)</div>
+            <div class="quiz-option" onclick="answer(this,0,'correct','1')"><span class="quiz-label">B.</span> σ (Chọn)</div>
+            <div class="quiz-option" onclick="answer(this,0,'wrong','1')"><span class="quiz-label">C.</span> ⋈ (Kết nối)</div>
+            <div class="quiz-option" onclick="answer(this,0,'wrong','1')"><span class="quiz-label">D.</span> ÷ (Chia)</div>
+          </div>
+          <div class="quiz-explain" id="explain-0">✓ σ (sigma) là phép chọn, tương đương WHERE — lọc hàng theo điều kiện.</div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-item">
+          <div class="quiz-q">2. Kết quả của π<sub>hoTen</sub>(NhanVien) khác gì so với SELECT hoTen FROM NhanVien?</div>
+          <div class="quiz-options">
+            <div class="quiz-option" onclick="answer(this,1,'correct','2')"><span class="quiz-label">A.</span> π tự động loại bỏ hàng trùng lặp (như DISTINCT)</div>
+            <div class="quiz-option" onclick="answer(this,1,'wrong','2')"><span class="quiz-label">B.</span> π sắp xếp kết quả theo thứ tự tăng dần</div>
+            <div class="quiz-option" onclick="answer(this,1,'wrong','2')"><span class="quiz-label">C.</span> Không có sự khác biệt nào</div>
+            <div class="quiz-option" onclick="answer(this,1,'wrong','2')"><span class="quiz-label">D.</span> π chỉ lấy hàng đầu tiên</div>
+          </div>
+          <div class="quiz-explain" id="explain-1">✓ Trong đại số quan hệ, quan hệ là tập hợp (set) nên tự động không có phần tử trùng — tương đương SELECT DISTINCT.</div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-item">
+          <div class="quiz-q">3. Để dùng phép Hợp (∪), hai quan hệ phải thỏa điều kiện gì?</div>
+          <div class="quiz-options">
+            <div class="quiz-option" onclick="answer(this,2,'wrong','3')"><span class="quiz-label">A.</span> Phải có cùng tên bảng</div>
+            <div class="quiz-option" onclick="answer(this,2,'wrong','3')"><span class="quiz-label">B.</span> Phải có cùng khóa chính</div>
+            <div class="quiz-option" onclick="answer(this,2,'correct','3')"><span class="quiz-label">C.</span> Phải tương thích kiểu (union-compatible): cùng số cột, cùng kiểu dữ liệu</div>
+            <div class="quiz-option" onclick="answer(this,2,'wrong','3')"><span class="quiz-label">D.</span> Không cần điều kiện gì</div>
+          </div>
+          <div class="quiz-explain" id="explain-2">✓ Union-compatible: hai quan hệ phải có cùng bậc (số cột) và các cột tương ứng có cùng kiểu dữ liệu.</div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-item">
+          <div class="quiz-q">4. Câu hỏi "Tìm khách hàng đã mua TẤT CẢ sản phẩm trong danh mục A" nên dùng phép toán nào?</div>
+          <div class="quiz-options">
+            <div class="quiz-option" onclick="answer(this,3,'wrong','4')"><span class="quiz-label">A.</span> σ (Chọn)</div>
+            <div class="quiz-option" onclick="answer(this,3,'wrong','4')"><span class="quiz-label">B.</span> ∪ (Hợp)</div>
+            <div class="quiz-option" onclick="answer(this,3,'wrong','4')"><span class="quiz-label">C.</span> × (Tích Đề-các)</div>
+            <div class="quiz-option" onclick="answer(this,3,'correct','4')"><span class="quiz-label">D.</span> ÷ (Chia)</div>
+          </div>
+          <div class="quiz-explain" id="explain-3">✓ Phép chia (÷) dùng cho dạng câu hỏi "tất cả / every / all". Tương đương NOT EXISTS trong SQL.</div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-item">
+          <div class="quiz-q">5. Biểu thức σ<sub>A.id=B.id</sub>(A × B) tương đương với gì?</div>
+          <div class="quiz-options">
+            <div class="quiz-option" onclick="answer(this,4,'wrong','5')"><span class="quiz-label">A.</span> A ∪ B</div>
+            <div class="quiz-option" onclick="answer(this,4,'correct','5')"><span class="quiz-label">B.</span> A ⋈<sub>A.id=B.id</sub> B (Theta Join)</div>
+            <div class="quiz-option" onclick="answer(this,4,'wrong','5')"><span class="quiz-label">C.</span> A − B</div>
+            <div class="quiz-option" onclick="answer(this,4,'wrong','5')"><span class="quiz-label">D.</span> A ∩ B</div>
+          </div>
+          <div class="quiz-explain" id="explain-4">✓ Theta Join chính là Tích Đề-các + Chọn: A ⋈<sub>θ</sub> B ≡ σ<sub>θ</sub>(A × B).</div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-item">
+          <div class="quiz-q">6. Để đọc biểu thức π<sub>ten</sub>(σ<sub>tuoi>30</sub>(NhanVien)), ta thực hiện theo thứ tự nào?</div>
+          <div class="quiz-options">
+            <div class="quiz-option" onclick="answer(this,5,'wrong','6')"><span class="quiz-label">A.</span> Chiếu trước, rồi mới chọn</div>
+            <div class="quiz-option" onclick="answer(this,5,'correct','6')"><span class="quiz-label">B.</span> Chọn (σ) trước từ NhanVien, rồi chiếu (π) kết quả</div>
+            <div class="quiz-option" onclick="answer(this,5,'wrong','6')"><span class="quiz-label">C.</span> Thứ tự tùy ý, kết quả như nhau</div>
+            <div class="quiz-option" onclick="answer(this,5,'wrong','6')"><span class="quiz-label">D.</span> Đọc từ ngoài vào trong</div>
+          </div>
+          <div class="quiz-explain" id="explain-5">✓ Đọc biểu thức đại số quan hệ từ trong ra ngoài — thực hiện phép trong cùng trước (như hàm lồng nhau trong toán học).</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    &lt;/dai-so-quan-he&gt; · Ôn tập SQL Relational Algebra
+  </footer>
+</div>
+
+<div id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
+
+<script>
+  // Progress bar
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const p = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+    document.getElementById('progress').style.width = p + '%';
+    document.getElementById('scrollTop').classList.toggle('show', h.scrollTop > 300);
+  });
+
+  // Quiz
+  let scores = {};
+  let correct = 0;
+
+  function answer(el, qIdx, type, qNum) {
+    if (scores[qIdx] !== undefined) return;
+    scores[qIdx] = type === 'correct' ? 1 : 0;
+
+    const options = el.closest('.quiz-options').querySelectorAll('.quiz-option');
+    options.forEach(o => {
+      o.classList.add('disabled');
+      if (o === el) o.classList.add(type);
+      if (type === 'wrong' && o.getAttribute('onclick') && o.getAttribute('onclick').includes("'correct'")) {
+        o.classList.add('correct');
+      }
+    });
+
+    document.getElementById('explain-' + qIdx).classList.add('show');
+
+    if (type === 'correct') correct++;
+    document.getElementById('scoreDisplay').textContent = correct + ' / 6 đúng';
+  }
+
+  // Active nav
+  const sections = document.querySelectorAll('.section');
+  const pills = document.querySelectorAll('.nav-pill');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        pills.forEach(p => p.classList.remove('active'));
+        const id = e.target.id;
+        const active = document.querySelector(`.nav-pill[href="#${id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { threshold: 0.4 });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
